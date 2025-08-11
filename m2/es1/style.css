@@ -3,6 +3,7 @@ input{
 }
 
 input[type="text"]{
+    border: 2px solid grey;
     border-radius: 4px;
 }
 
@@ -10,12 +11,8 @@ input[name="pass"]{
     margin-right: 10px;
 }
 
-.notYetValid{
-    border-color: grey;
-}
-
 .valid{
-    border-color: green;
+    border-top-color: green;
 }
 
 .invalid{
