@@ -16,6 +16,34 @@ function validNaming(event) {
         }
 }
 
+function validPass() {
+
+        const lowCase = /[a-z]/g;
+        const upCase = /[A-Z]/g;
+        const num = /[0-9]/g; 
+
+        if( String(pass.value).length >= 8 && String(pass.value).match(lowCase) && String(pass.value).match(upCase) && String(pass.value).match(num) ){
+                pass.classList.add("valid");
+                pass.classList.remove("invalid");
+        }else{
+                pass.classList.add("invalid");
+                pass.classList.remove("valid");
+        }
+}
+
+function validConfirm() {
+
+        if(pass.classList.contains("valid") && pass.value === confirmPass.value){
+                confirmPass.classList.add("valid");
+                confirmPass.classList.remove("invalid");
+        }else{
+                confirmPass.classList.add("invalid");
+                confirmPass.classList.remove("valid");
+        }
+}
+
 subBtn.disabled = true;
 
 naming.forEach(input => input.addEventListener("input", validNaming));
+pass.addEventListener("input", validPass);
+confirmPass.addEventListener("input", validConfirm);
