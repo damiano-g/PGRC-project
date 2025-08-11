@@ -11,7 +11,7 @@ input[name="pass"]{
 }
 
 .valid{
-    color: green;
+    border-color: green;
 }
 
 .invalid{
