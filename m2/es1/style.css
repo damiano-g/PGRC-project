@@ -2,6 +2,10 @@ input{
     margin-bottom: 10px;
 }
 
+input[type="text"]{
+    border-radius: 4px;
+}
+
 input[name="pass"]{
     margin-right: 10px;
 }
