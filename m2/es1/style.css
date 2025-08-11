@@ -2,7 +2,10 @@ input{
     margin-bottom: 10px;
 }
 
-input[type="text"]{
+input[type="text"],
+input[type="text"]:active,
+input[type="text"]:focus {
+    outline: none;
     border: 2px solid grey;
     border-radius: 4px;
 }
