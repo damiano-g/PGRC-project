@@ -6,3 +6,14 @@ input[name="pass"]{
     margin-right: 10px;
 }
 
+.notYetValid{
+    border-color: grey;
+}
+
+.valid{
+    border-color: green;
+}
+
+.invalid{
+    border-color: red;
+}
