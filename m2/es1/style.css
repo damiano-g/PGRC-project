@@ -14,8 +14,8 @@ input[name="pass"]{
     margin-right: 10px;
 }
 
-.valid{
-    border-top-color: green;
+input[type="text"].valid{
+    border-color: green;
 }
 
 .invalid{
