@@ -18,6 +18,6 @@ input[type="text"].valid{
     border-color: green;
 }
 
-.invalid{
+input[type="text"].invalid{
     border-color: red;
 }
