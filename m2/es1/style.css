@@ -1,0 +1,8 @@
+input{
+    margin-bottom: 10px;
+}
+
+input[name="pass"]{
+    margin-right: 10px;
+}
+
