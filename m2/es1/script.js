@@ -13,8 +13,13 @@ function validNaming(event) {
                 event.target.classList.add("valid");
                 event.target.classList.remove("invalid");        
         }else{
-                event.target.classList.add("invalid");
-                event.target.classList.remove("valid");
+                if(String(event.target.value).length > 0){
+                        event.target.classList.add("invalid");
+                        event.target.classList.remove("valid");
+                }else{
+                        event.target.classList.remove("invalid");
+                        event.target.classList.remove("valid");
+                }
         }
 }
 
@@ -26,8 +31,13 @@ function validMail(){
                 email.classList.add("valid");
                 email.classList.remove("invalid");
         }else{
-                email.classList.add("invalid");
-                email.classList.remove("valid");
+                if(String(email.value).length > 0){
+                        email.classList.add("invalid");
+                        email.classList.remove("valid");
+                }else{
+                        email.classList.remove("invalid");
+                        email.classList.remove("valid");
+                }
         }
 }
 
@@ -41,8 +51,13 @@ function validPass() {
                 pass.classList.add("valid");
                 pass.classList.remove("invalid");
         }else{
-                pass.classList.add("invalid");
-                pass.classList.remove("valid");
+                if(String(pass.value).length > 0){
+                        pass.classList.add("invalid");
+                        pass.classList.remove("valid");
+                }else{
+                        pass.classList.remove("invalid");
+                        pass.classList.remove("valid");
+                }
         }
 }
 
@@ -52,8 +67,22 @@ function validConfirm() {
                 confirmPass.classList.add("valid");
                 confirmPass.classList.remove("invalid");
         }else{
-                confirmPass.classList.add("invalid");
-                confirmPass.classList.remove("valid");
+                if(String(confirmPass.value).length > 0){
+                        confirmPass.classList.add("invalid");
+                        confirmPass.classList.remove("valid");
+                }else{
+                        confirmPass.classList.remove("invalid");
+                        confirmPass.classList.remove("valid");
+                }
+        }
+}
+
+function displayErrors(event){
+
+        if(!event.target.classList.contains("valid")){
+                document.getElementById(String(event.target.id)+"Check").classList.remove("hidden");
+        }else{
+                document.getElementById(String(event.target.id)+"Check").classList.add("hidden");
         }
 }
 
@@ -65,22 +94,23 @@ function validateSub(){
                 if(!inBox[i].classList.contains("valid")) ready = false;
         }
 
-        if(ready) subBtn.disabled = false;
+        if(ready) {
+                subBtn.disabled = false;
+        }else{
+                subBtn.disabled = true;
+        }
 }
 
 
 naming.forEach(input => input.addEventListener("input", validNaming));
-firstName.addEventListener("focus", () => document.getElementById("fnameCheck").classList.remove("hidden"));
-firstName.addEventListener("blur", () => document.getElementById("fnameCheck").classList.add("hidden"));
-lastName.addEventListener("focus", () => document.getElementById("lnameCheck").classList.remove("hidden"));
-lastName.addEventListener("blur", () => document.getElementById("lnameCheck").classList.add("hidden"));
-
-pass.addEventListener("input", validPass);
-pass.addEventListener("focus", () => document.getElementById("passCheck").classList.remove("hidden"));
-pass.addEventListener("blur", () => document.getElementById("passCheck").classList.add("hidden"));
-
-confirmPass.addEventListener("input", validConfirm);
 
 email.addEventListener("input", validMail);
 
+pass.addEventListener("input", validPass);
+
+confirmPass.addEventListener("input", validConfirm);
+
+inBox.forEach(input => input.addEventListener("focus", displayErrors));
+inBox.forEach(input => input.addEventListener("input", displayErrors));
+inBox.forEach(input => input.addEventListener("blur", event => document.getElementById(String(event.target.id)+"Check").classList.add("hidden")));
 inBox.forEach(input => input.addEventListener("input", validateSub));
