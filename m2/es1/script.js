@@ -1,4 +1,4 @@
-const inBox = document.querySelectorAll("input[type='text']");
+const inBox = document.querySelectorAll(".inBox");
 const naming = document.querySelectorAll(".fullName");
 const firstName = document.getElementById("firstName");
 const lastName = document.getElementById("lastName");
