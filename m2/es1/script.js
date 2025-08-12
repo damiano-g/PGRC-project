@@ -16,6 +16,19 @@ function validNaming(event) {
         }
 }
 
+function validMail(){
+
+        const pattern = /^(?!.*\.\.)(?!.*\.\@)[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/
+
+        if(pattern.test(email.value)){
+                email.classList.add("valid");
+                email.classList.remove("invalid");
+        }else{
+                email.classList.add("invalid");
+                email.classList.remove("valid");
+        }
+}
+
 function validPass() {
 
         const lowCase = /[a-z]/g;
@@ -47,3 +60,4 @@ subBtn.disabled = true;
 naming.forEach(input => input.addEventListener("input", validNaming));
 pass.addEventListener("input", validPass);
 confirmPass.addEventListener("input", validConfirm);
+email.addEventListener("input", validMail);
