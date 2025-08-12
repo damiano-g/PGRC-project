@@ -1,0 +1,33 @@
+Sintesi sulle regex usate per la validazione email e spiegazione dei simboli principali:
+
+1. Lookahead e negative lookahead:
+   - Lookahead positivo (?=...): verifica che una sequenza sia presente dopo la posizione corrente, senza includerla nel match.
+   - Negative lookahead (?!...): verifica che una sequenza NON sia presente dopo la posizione corrente.
+
+2. Sequenza .*:
+   - Il punto (.) rappresenta qualsiasi carattere.
+   - L’asterisco (*) indica zero o più occorrenze.
+   - Quindi, .* significa “qualsiasi sequenza di caratteri”.
+
+3. Simboli principali nelle regex:
+   - ^ : inizio della stringa.
+   - $ : fine della stringa.
+   - [ ] : insieme di caratteri ammessi.
+   - \w : carattere alfanumerico o underscore.
+   - . : qualsiasi carattere.
+   - - : trattino (se usato dentro [ ]).
+   - + : uno o più occorrenze.
+   - {n,} : almeno n occorrenze.
+   - \. : punto letterale (il punto ha significato speciale, quindi va “escapato” con \).
+   - @ : chiocciola letterale.
+
+4. Regex per email:
+   - ^(?!.*\.\.)(?!.*\.\@)[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$
+   - (?!.*\.\.) vieta due punti consecutivi ovunque nella stringa.
+   - (?!.*\.\@) vieta un punto subito prima della chiocciola.
+   - [\w.-]+ indica uno o più caratteri alfanumerici, punti o trattini.
+   - @ è la chiocciola obbligatoria.
+   - \.[a-zA-Z]{2,} richiede un’estensione di almeno due lettere.
+   - ^ e $ indicano inizio e fine stringa.
+
+Queste regole rendono la validazione più restrittiva e adatta ai casi comuni.
