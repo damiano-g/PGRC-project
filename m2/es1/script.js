@@ -4,6 +4,7 @@ const email = document.querySelector("#email");
 const pass = document.querySelector("#pass");
 const confirmPass = document.querySelector("#confirmPass");
 const subBtn = document.querySelector("input[type='submit']");
+const checkers = document.querySelectorAll(".checkers");
 
 function validNaming(event) {
         
@@ -66,7 +67,6 @@ function validateSub(){
         if(ready) subBtn.disabled = false;
 }
 
-subBtn.disabled = true;
 
 naming.forEach(input => input.addEventListener("input", validNaming));
 pass.addEventListener("input", validPass);
