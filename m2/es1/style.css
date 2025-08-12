@@ -11,15 +11,15 @@ input[type="text"]:focus {
     border-radius: 4px;
 }
 
-div[name="passCheck"]>h4{
+#passCheck>h4{
     margin: 0px;
 }
 
-div[name="passCheck"]>ul{
+#passCheck>ul{
     margin-top: 5px;
 }
 
-input[name="pass"]{
+#pass{
     margin-right: 10px;
 }
 
