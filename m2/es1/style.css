@@ -3,9 +3,9 @@ input{
     margin-bottom: 10px;
 }
 
-input[type="text"],
-input[type="text"]:active,
-input[type="text"]:focus {
+.inBox,
+.inBox:active,
+.inBox:focus {
     outline: none;
     border: 2px solid grey;
     border-radius: 4px;
@@ -23,11 +23,11 @@ input[type="text"]:focus {
     margin-right: 10px;
 }
 
-input[type="text"].valid{
+.inBox.valid{
     border-color: green;
 }
 
-input[type="text"].invalid{
+.inBox.invalid{
     border-color: red;
 }
 
