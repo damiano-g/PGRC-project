@@ -49,4 +49,5 @@ span.checkers{
 .checkers li.valid{
     color: green;
     padding-left: 2px;
+    font-size: 105%;
 }
