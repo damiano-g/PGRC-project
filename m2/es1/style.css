@@ -31,6 +31,10 @@ input{
     border-color: red;
 }
 
+span.checkers{
+    margin-left: 10px;
+}
+
 .hidden{
     display: none;
 }
