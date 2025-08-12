@@ -43,9 +43,33 @@ function validMail(){
 
 function validPass() {
 
-        const lowCase = /[a-z]/g;
         const upCase = /[A-Z]/g;
-        const num = /[0-9]/g; 
+        const lowCase = /[a-z]/g;
+        const num = /[0-9]/g;
+        
+        if(String(pass.value).match(upCase)){
+                document.getElementById("upCase").classList.add("valid");
+        }else{
+                document.getElementById("upCase").classList.remove("valid");
+        }
+
+        if(String(pass.value).match(lowCase)){
+                document.getElementById("lowCase").classList.add("valid");
+        }else{
+                document.getElementById("lowCase").classList.remove("valid");
+        }
+
+        if(String(pass.value).match(num)){
+                document.getElementById("num").classList.add("valid");
+        }else{
+                document.getElementById("num").classList.remove("valid");
+        }
+
+        if(String(pass.value).length >= 8){
+                document.getElementById("passLen").classList.add("valid");
+        }else{
+                document.getElementById("passLen").classList.remove("valid");
+        }
 
         if( String(pass.value).length >= 8 && String(pass.value).match(lowCase) && String(pass.value).match(upCase) && String(pass.value).match(num) ){
                 pass.classList.add("valid");
