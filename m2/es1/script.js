@@ -1,10 +1,11 @@
 const inBox = document.querySelectorAll("input[type='text']");
 const naming = document.querySelectorAll(".fullName");
+const firstName = document.getElementById("firstName");
+const lastName = document.getElementById("lastName");
 const email = document.querySelector("#email");
 const pass = document.querySelector("#pass");
 const confirmPass = document.querySelector("#confirmPass");
 const subBtn = document.querySelector("input[type='submit']");
-const checkers = document.querySelectorAll(".checkers");
 
 function validNaming(event) {
         
@@ -69,7 +70,17 @@ function validateSub(){
 
 
 naming.forEach(input => input.addEventListener("input", validNaming));
+firstName.addEventListener("focus", () => document.getElementById("fnameCheck").classList.remove("hidden"));
+firstName.addEventListener("blur", () => document.getElementById("fnameCheck").classList.add("hidden"));
+lastName.addEventListener("focus", () => document.getElementById("lnameCheck").classList.remove("hidden"));
+lastName.addEventListener("blur", () => document.getElementById("lnameCheck").classList.add("hidden"));
+
 pass.addEventListener("input", validPass);
+pass.addEventListener("focus", () => document.getElementById("passCheck").classList.remove("hidden"));
+pass.addEventListener("blur", () => document.getElementById("passCheck").classList.add("hidden"));
+
 confirmPass.addEventListener("input", validConfirm);
+
 email.addEventListener("input", validMail);
+
 inBox.forEach(input => input.addEventListener("input", validateSub));
