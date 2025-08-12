@@ -14,11 +14,11 @@
         
         <label for="firstName">Nome: </label>
         <input type="text" class="fullName" id="firstName"><br>
-        <span class="checkers hidden" name="fnameCheck">Il nome deve contenere almeno due caratteri<br></span>
+        <span class="checkers hidden" id="fnameCheck">Il nome deve contenere almeno due caratteri<br></span>
         
         <label for="lastName">Cognome: </label>
-        <input type="text" class="fullName" name="lastName"><br>
-        <span class="checkers hidden" name="lnameCheck">Il cognome deve contenere almeno due caratteri<br></span>
+        <input type="text" class="fullName" id="lastName"><br>
+        <span class="checkers hidden" id="lnameCheck">Il cognome deve contenere almeno due caratteri<br></span>
         
         <label for="email">e-Mail: </label>
         <input type="text" id="email"><br>
@@ -28,7 +28,7 @@
         
         <label for="confirmPass">Conferma password: </label>
         <input type="text" id="confirmPass"><br>
-        <div class="checkers hidden" name="passCheck">
+        <div class="checkers hidden" id="passCheck">
             <h4>La password deve contenere:</h4>
             <ul>
                 <li>Almeno una lettera maiuscola</li>
