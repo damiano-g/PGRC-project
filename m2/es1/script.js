@@ -55,9 +55,21 @@ function validConfirm() {
         }
 }
 
+function validateSub(){
+
+        let ready = true;
+
+        for(let i=0; i < inBox.length; i++){
+                if(!inBox[i].classList.contains("valid")) ready = false;
+        }
+
+        if(ready) subBtn.disabled = false;
+}
+
 subBtn.disabled = true;
 
 naming.forEach(input => input.addEventListener("input", validNaming));
 pass.addEventListener("input", validPass);
 confirmPass.addEventListener("input", validConfirm);
 email.addEventListener("input", validMail);
+inBox.forEach(input => input.addEventListener("input", validateSub));
