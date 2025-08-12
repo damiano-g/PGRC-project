@@ -38,3 +38,15 @@ span.checkers{
 .hidden{
     display: none;
 }
+
+.checkers ul{
+    color: grey;
+    list-style-type: none;
+    text-align: left;
+    padding: 0px;
+}
+
+.checkers li.valid{
+    color: green;
+    padding-left: 2px;
+}
