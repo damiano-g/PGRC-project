@@ -77,3 +77,15 @@ ul{
 progress{
     width: 100%;
 }
+
+.job>h3 span{
+    font-weight: lighter;
+    font-style: italic;
+    color: dimgrey;
+    margin-left: 30px;
+    font-size: smaller;
+}
+
+.hide{
+    display: none;
+}
