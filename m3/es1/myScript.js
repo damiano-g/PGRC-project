@@ -14,7 +14,7 @@ function delaySearch(){
 
     currentPage = 1;
 
-    debounceTimeout = setTimeout(retrieveSearch);
+    debounceTimeout = setTimeout(retrieveSearch, 500);
 }
 
 function retrieveSearch(){
