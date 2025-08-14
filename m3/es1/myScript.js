@@ -1,6 +1,7 @@
 const searchBar = document.getElementById("searchBar");
 const searchStart = document.getElementById("searchStart");
 const resultsContainer = document.getElementById("showResults");
+const navButtons =document.getElementById("navButtons");
 
 let searchContent;
 let contentJSON;
@@ -78,7 +79,12 @@ function showResults(dataJSON){
 }
 
 function showPageControls(){
-
+    
+    if(String(searchBar.value) != ""){
+        navButtons.classList.remove("hidden");
+    }else{
+        navButtons.classList.add("hidden");
+    }
 }
 
 searchBar.addEventListener("input", delaySearch);
