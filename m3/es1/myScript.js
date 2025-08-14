@@ -48,13 +48,18 @@ function showResults(dataJSON){
     dataArray.forEach(item => {
         //crea un elemento ed aggiunge la classe bootstrap .card
         const film = document.createElement("div");
-        film.classList.add("card");
+        film.classList.add("col-md-4");
+        film.classList.add("mb-3");
 
         film.innerHTML = `
-            <h4>${item.original_title}</h4>
-            <p>Anno: ${item.release_date}</p>
-            <p>Valutazione: ${item.vote_average}</p>
-            <img class="class-img-top" src="${`https://image.tmdb.org/t/p/w500${item.poster_path}`}" alt="Poster">
+            <div class="card">
+                <h4 class="card-title">${item.original_title}</h4>
+                <img class="card-img-top mb-3" src="${`https://image.tmdb.org/t/p/w500${item.poster_path}`}" alt="Poster">
+                <div class="card-body>
+                    <p class="card-text">Uscita: ${item.release_date}</p>
+                    <p class="card-text">Valutazione: ${item.vote_average}</p>
+                </div>
+            </div>
         `;
 
         resultsContainer.appendChild(film);
