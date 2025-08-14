@@ -1,14 +1,18 @@
 const searchBar = document.getElementById("searchBar");
 const searchStart = document.getElementById("searchStart");
+const resultsContainer = document.getElementById("showResults");
 
 let searchContent;
 let contentJSON;
+let currentPage;
 
 let debounceTimeout;
 
 function delaySearch(){
 
     clearTimeout(debounceTimeout);
+
+    currentPage = 1;
 
     debounceTimeout = setTimeout(retrieveSearch);
 }
@@ -18,9 +22,9 @@ function retrieveSearch(){
     if(String(searchBar.value) != ""){
         
         searchContent = String(searchBar.value);
-        
+
         //encodeURIComponent evita caratteri che potrebbero compromettere la ricerca
-        let url = `https://api.themoviedb.org/3/search/movie?api_key=571d7713f769aae024b522b1d9231927&query=${encodeURIComponent(searchContent)}&page=1`;
+        let url = `https://api.themoviedb.org/3/search/movie?api_key=571d7713f769aae024b522b1d9231927&query=${encodeURIComponent(searchContent)}&page=${currentPage}`;
 
         fetch(url)
             .then(response => {
@@ -32,16 +36,17 @@ function retrieveSearch(){
             .then(response => {
                 contentJSON = response;
                 showResults(contentJSON);
+                showPageControls();
             })
             .catch(() => alert("Impossibile effettuare la richiesta"));
+    }else{
+            resultsContainer.innerHTML = "";
     }
 }
 
 function showResults(dataJSON){
 
     let dataArray = dataJSON.results;
-
-    const resultsContainer = document.getElementById("showResults");
 
     resultsContainer.innerHTML = "";
 
@@ -70,6 +75,9 @@ function showResults(dataJSON){
 
         resultsContainer.appendChild(film);
     })
+}
+
+function showPageControls(){
 
 }
 
