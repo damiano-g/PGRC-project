@@ -1,17 +1,12 @@
-.main{
+.container{
     margin-top: 30px;
     border: 2px solid black;
     padding-top: 20px;
     padding-bottom: 20px;
 }
 
-#mainTitle{
-    justify-self: center;
-}
-
 .form-control{
     width: 50%;
     justify-self: center;
     border: 2px solid gray;
-    margin: 15px;
 }
