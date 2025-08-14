@@ -1,4 +1,6 @@
 const searchBar = document.getElementById("searchBar");
+const searchStart = document.getElementById("searchStart");
+
 let searchContent;
 let contentJSON;
 
@@ -27,9 +29,37 @@ function retrieveSearch(){
                 }
                 return response.json();
             })
-            .then(response => contentJSON = response)
+            .then(response => {
+                contentJSON = response;
+                showResults(contentJSON);
+            })
             .catch(() => alert("Impossibile effettuare la richiesta"));
     }
+}
+
+function showResults(dataJSON){
+
+    let dataArray = dataJSON.results;
+
+    const resultsContainer = document.getElementById("showResults");
+
+    resultsContainer.innerHTML = "";
+
+    dataArray.forEach(item => {
+        //crea un elemento ed aggiunge la classe bootstrap .card
+        const film = document.createElement("div");
+        film.classList.add("card");
+
+        film.innerHTML = `
+            <h4>${item.original_title}</h4>
+            <p>Anno: ${item.release_date}</p>
+            <p>Valutazione: ${item.vote_average}</p>
+            <img class="class-img-top" src="${`https://image.tmdb.org/t/p/w500${item.poster_path}`}" alt="Poster">
+        `;
+
+        resultsContainer.appendChild(film);
+    })
+
 }
 
 searchBar.addEventListener("input", delaySearch);
