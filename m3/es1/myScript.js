@@ -1,7 +1,11 @@
 const searchBar = document.getElementById("searchBar");
 const searchStart = document.getElementById("searchStart");
 const resultsContainer = document.getElementById("showResults");
-const navButtons =document.getElementById("navButtons");
+const navButtons = document.getElementById("navButtons");
+const prevPage = document.getElementById("prev");
+const nextPage = document.getElementById("next");
+const firstPage = document.getElementById("first");
+const lastPage = document.getElementById("last");
 
 let searchContent;
 let contentJSON;
@@ -12,8 +16,6 @@ let debounceTimeout;
 function delaySearch(){
 
     clearTimeout(debounceTimeout);
-
-    currentPage = 1;
 
     debounceTimeout = setTimeout(retrieveSearch, 500);
 }
@@ -36,6 +38,7 @@ function retrieveSearch(){
             })
             .then(response => {
                 contentJSON = response;
+                console.log(contentJSON.total_pages);
                 showResults(contentJSON);
                 showPageControls();
             })
@@ -81,10 +84,62 @@ function showResults(dataJSON){
 function showPageControls(){
     
     if(String(searchBar.value) != ""){
+
+        document.getElementById("displayPage").innerText = String(currentPage);
+
+        if(currentPage <= 1){
+            prevPage.classList.add("disabled");
+            firstPage.classList.add("disabled");
+            prevPage.setAttribute("tabindex", "-1");
+            firstPage.setAttribute("tabindex", "-1");
+        }else{
+            prevPage.classList.remove("disabled");
+            firstPage.classList.remove("disabled");
+            prevPage.setAttribute("tabindex", "1");
+            firstPage.setAttribute("tabindex", "1");
+        }
+
+        if(currentPage >= contentJSON.total_pages){
+            nextPage.classList.add("disabled");
+            lastPage.classList.add("disabled");
+            nextPage.setAttribute("tabindex", "-1");
+            lastPage.setAttribute("tabindex", "-1");
+        }else{
+            nextPage.classList.remove("disabled");
+            lastPage.classList.remove("disabled");
+            nextPage.setAttribute("tabindex", "1");
+            lastPage.setAttribute("tabindex", "1");
+        }
+
         navButtons.classList.remove("hidden");
     }else{
         navButtons.classList.add("hidden");
     }
 }
 
-searchBar.addEventListener("input", delaySearch);
+
+//Events
+searchBar.addEventListener("input", () => {
+    currentPage = 1;
+    delaySearch();
+});
+
+prevPage.addEventListener("click", () =>{
+    currentPage--;
+    delaySearch();
+})
+
+firstPage.addEventListener("click", () => {
+    currentPage = 1;
+    delaySearch();
+})
+
+nextPage.addEventListener("click", () => {
+    currentPage++;
+    delaySearch();
+})
+
+lastPage.addEventListener("click", () => {
+    currentPage = contentJSON.total_pages;
+    delaySearch();
+})
