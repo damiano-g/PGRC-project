@@ -51,10 +51,16 @@ function showResults(dataJSON){
         film.classList.add("col-md-4");
         film.classList.add("mb-3");
 
+        if (item.poster_path) {
+            posterUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+        } else {
+                posterUrl = "./images/no_image.jpg";
+            }
+
         film.innerHTML = `
             <div class="card">
                 <h4 class="card-title">${item.original_title}</h4>
-                <img class="card-img-top mb-3" src="${`https://image.tmdb.org/t/p/w500${item.poster_path}`}" alt="Poster">
+                <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
                 <div class="card-body>
                     <p class="card-text">Uscita: ${item.release_date}</p>
                     <p class="card-text">Valutazione: ${item.vote_average}</p>
