@@ -15,3 +15,6 @@
     visibility: hidden;
 }
 
+.float-end{
+    clear: left;
+}

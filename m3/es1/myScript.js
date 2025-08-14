@@ -73,8 +73,8 @@ function showResults(dataJSON){
                 <div class="card-body>
                     <p class="card-text">Uscita: ${item.release_date}</p>
                     <p class="card-text">Valutazione: ${item.vote_average}</p>
-                    <button class="btn">Trama</button>
-                    <p class="card-text film-details d-none">${item.overview}</p>
+                    <button class="btn float-end">Trama</button>
+                    <p class="card-text film-details d-none float-start">${item.overview}</p>
                 </div>
             </div>
         `;
