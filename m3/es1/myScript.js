@@ -73,9 +73,13 @@ function showResults(dataJSON){
                 <div class="card-body>
                     <p class="card-text">Uscita: ${item.release_date}</p>
                     <p class="card-text">Valutazione: ${item.vote_average}</p>
+                    <button class="btn">Trama</button>
+                    <p class="card-text film-details d-none">${item.overview}</p>
                 </div>
             </div>
         `;
+
+        film.querySelector(".btn").addEventListener("click", () => film.querySelector(".film-details").classList.toggle("d-none"));
 
         resultsContainer.appendChild(film);
     })
@@ -143,3 +147,4 @@ lastPage.addEventListener("click", () => {
     currentPage = contentJSON.total_pages;
     delaySearch();
 })
+
