@@ -1,6 +1,6 @@
 .container{
     margin-top: 30px;
-    border: 2px solid black;
+    /* border: 2px solid black; */
     padding-top: 20px;
     padding-bottom: 20px;
 }
@@ -17,4 +17,8 @@
 
 .float-end{
     clear: left;
+}
+
+.header li{
+    padding: 10px;
 }
