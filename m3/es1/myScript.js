@@ -10,7 +10,7 @@ const lastPage = document.getElementById("last");
 
 let searchContent;
 let contentJSON;
-let currentPage;
+let searchPage;
 let bookmarksArray = [];
 
 let debounceTimeout;
@@ -24,7 +24,7 @@ function delaySearch(){
 
 function retrieveSearch(){
 
-    sessionStorage.setItem("searchPage", currentPage);
+    sessionStorage.setItem("searchPage", searchPage);
     sessionStorage.setItem("searchValue", searchBar.value);
 
     if(String(searchBar.value) != ""){
@@ -32,7 +32,7 @@ function retrieveSearch(){
         searchContent = String(searchBar.value);
 
         //encodeURIComponent evita caratteri che potrebbero compromettere la ricerca
-        let url = `https://api.themoviedb.org/3/search/movie?api_key=571d7713f769aae024b522b1d9231927&query=${encodeURIComponent(searchContent)}&page=${currentPage}`;
+        let url = `https://api.themoviedb.org/3/search/movie?api_key=571d7713f769aae024b522b1d9231927&query=${encodeURIComponent(searchContent)}&page=${searchPage}`;
 
         fetch(url)
             .then(response => {
@@ -140,9 +140,9 @@ function showPageControls(){
     
     if(String(searchBar.value) != "" && contentJSON.results.length > 0){
 
-        document.getElementById("displayPage").innerText = String(currentPage);
+        document.getElementById("displayPage").innerText = String(searchPage);
 
-        if(currentPage <= 1){
+        if(searchPage <= 1){
             prevPage.classList.add("disabled");
             firstPage.classList.add("disabled");
             prevPage.setAttribute("tabindex", "-1");
@@ -154,7 +154,7 @@ function showPageControls(){
             firstPage.setAttribute("tabindex", "1");
         }
 
-        if(currentPage >= contentJSON.total_pages){
+        if(searchPage >= contentJSON.total_pages){
             nextPage.classList.add("disabled");
             lastPage.classList.add("disabled");
             nextPage.setAttribute("tabindex", "-1");
@@ -196,22 +196,22 @@ function toggleBookmark(thisFilm){
 
 //Events
 prevPage.addEventListener("click", () =>{
-    currentPage--;
+    searchPage--;
     delaySearch();
 })
 
 firstPage.addEventListener("click", () => {
-    currentPage = 1;
+    searchPage = 1;
     delaySearch();
 })
 
 nextPage.addEventListener("click", () => {
-    currentPage++;
+    searchPage++;
     delaySearch();
 })
 
 lastPage.addEventListener("click", () => {
-    currentPage = contentJSON.total_pages;
+    searchPage = contentJSON.total_pages;
     delaySearch();
 })
 
@@ -230,7 +230,7 @@ window.onload = function() {
     if(resultsContainer){
         
         searchBar.addEventListener("input", () => {
-            currentPage = 1;
+            searchPage = 1;
             delaySearch();
         });
 
@@ -239,7 +239,7 @@ window.onload = function() {
             searchBar.value = savedSearch;
         }
         if(savedResults && savedSearch != ""){
-            currentPage = Number(sessionStorage.getItem("searchPage"));
+            searchPage = Number(sessionStorage.getItem("searchPage"));
             contentJSON = JSON.parse(savedResults); 
             showResults(contentJSON);
             showPageControls();
