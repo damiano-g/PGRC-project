@@ -1,6 +1,7 @@
 const searchBar = document.getElementById("searchBar");
 const searchStart = document.getElementById("searchStart");
 const resultsContainer = document.getElementById("showResults");
+const bookmarksContainer = document.getElementById("showBookmarks");
 const navButtons = document.getElementById("navButtons");
 const prevPage = document.getElementById("prev");
 const nextPage = document.getElementById("next");
@@ -10,6 +11,7 @@ const lastPage = document.getElementById("last");
 let searchContent;
 let contentJSON;
 let currentPage;
+let bookmarksArray = [];
 
 let debounceTimeout;
 
@@ -63,41 +65,45 @@ function showResults(dataJSON){
         empty.innerText = "Nessun risultato";
         resultsContainer.appendChild(empty);
     }else{ 
-        dataArray.forEach(item => {
-            //crea un elemento ed aggiunge la classe bootstrap .card
-            const film = document.createElement("div");
-            film.classList.add("col-md-4");
-            film.classList.add("mb-3");
-
-            if (item.poster_path) {
-                posterUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-            } else {
-                    posterUrl = "./images/no_image.jpg";
-                }
-
-            film.innerHTML = `
-                <div class="card">
-                    <h4 class="card-title">${item.original_title}</h4>
-                    <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
-                    <div class="card-body">
-                        <p class="card-text">Uscita: ${item.release_date}</p>
-                        <p class="card-text">Valutazione: ${item.vote_average}</p>
-                        <nav class="mb-3">
-                            <ul class="nav float-end">
-                                <li class="nav-item" id="bookmark"><button class="nav-link">Preferito</button></li>
-                                <li class="nav-item" id="overview"><button class="nav-link">Trama</button></li>
-                            </ul>
-                        </nav>
-                        <p class="card-text film-details d-none float-start">${item.overview}</p>
-                    </div>
-                </div>
-            `;
-
-            film.querySelector("#overview").addEventListener("click", () => film.querySelector(".film-details").classList.toggle("d-none"));
-
-            resultsContainer.appendChild(film);
-        })
+        dataArray.forEach(item => resultsContainer.appendChild(createCard(item)));
     }
+}
+
+function createCard(film){
+
+    //crea un elemento ed aggiunge la classe bootstrap .card
+    const film = document.createElement("div");
+    film.classList.add("col-md-4");
+    film.classList.add("mb-3");
+
+    if (item.poster_path) {
+        posterUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+    } else {
+            posterUrl = "./images/no_image.jpg";
+        }
+
+    film.innerHTML = `
+        <div class="card">
+            <h4 class="card-title">${item.original_title}</h4>
+            <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
+            <div class="card-body">
+                <p class="card-text">Uscita: ${item.release_date}</p>
+                <p class="card-text">Valutazione: ${item.vote_average}</p>
+                <nav class="mb-3">
+                    <ul class="nav float-end">
+                        <li class="nav-item" id="bookmarkBtn"><button class="nav-link">Preferito</button></li>
+                        <li class="nav-item" id="overview"><button class="nav-link">Trama</button></li>
+                    </ul>
+                </nav>
+                <p class="card-text film-details d-none float-start">${item.overview}</p>
+            </div>
+        </div>
+    `;
+
+    film.querySelector("#overview").addEventListener("click", () => film.querySelector(".film-details").classList.toggle("d-none"));
+    film.querySelector("#bookmarkBtn").addEventListener("click", () => toggleBookmark(item));
+
+    return film;
 }
 
 function showPageControls(){
@@ -134,6 +140,17 @@ function showPageControls(){
     }else{
         navButtons.classList.add("hidden");
     }
+}
+
+function toggleBookmark(thisFilm){
+
+    if(!bookmarksArray.includes(thisFilm)){
+        bookmarksArray.push(thisFilm);
+    }else{
+        bookmarksArray.splice(bookmarksArray.findIndex(item => item === thisFilm), 1);
+    }
+
+    bookmarksArray.sort((a, b) => a.original_title.localeCOmpare(b.original_title));
 }
 
 
