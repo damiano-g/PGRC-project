@@ -69,6 +69,20 @@ function showResults(dataJSON){
     }
 }
 
+function showBookmarks(){
+
+    bookmarksContainer.innerHTML = "";
+
+    if(bookmarksArray.length < 1){
+        const empty = document.createElement("p");
+        empty.classList.add("text-center");
+        empty.innerText = "Nessun preferito salvato";
+        bookmarksContainer.appendChild(empty);
+    }else{
+        bookmarksArray.forEach(item => bookmarksContainer.appendChild(createCard(item)));
+    }
+}
+
 function createCard(film){
 
     //crea un elemento ed aggiunge la classe bootstrap .card
@@ -84,6 +98,12 @@ function createCard(film){
         posterUrl = "./images/no_image.jpg";
         }
 
+    let bookmarkString = "Rimuovi dai preferiti";
+
+    if(resultsContainer && bookmarksArray.findIndex(item => item.id === film.id) === -1){
+        bookmarkString = "Aggiungi ai preferiti";
+    }
+
     card.innerHTML = `
         <div class="card">
             <h4 class="card-title">${film.original_title}</h4>
@@ -93,8 +113,8 @@ function createCard(film){
                 <p class="card-text">Valutazione: ${film.vote_average}</p>
                 <nav class="mb-3">
                     <ul class="nav float-end">
-                        <li class="nav-item" id="bookmarkBtn"><button class="nav-link">Preferito</button></li>
-                        <li class="nav-item" id="overview"><button class="nav-link">Trama</button></li>
+                        <li class="nav-item"><button class="nav-link bookmarkBtn">${bookmarkString}</button></li>
+                        <li class="nav-item"><button class="nav-link overview">Trama</button></li>
                     </ul>
                 </nav>
                 <p class="card-text film-details d-none float-start">${film.overview}</p>
@@ -102,8 +122,15 @@ function createCard(film){
         </div>
     `;
 
-    card.querySelector("#overview").addEventListener("click", () => card.querySelector(".film-details").classList.toggle("d-none"));
-    card.querySelector("#bookmarkBtn").addEventListener("click", () => toggleBookmark(film));
+    card.querySelector(".overview").addEventListener("click", () => card.querySelector(".film-details").classList.toggle("d-none"));
+    card.querySelector(".bookmarkBtn").addEventListener("click", () => {
+        toggleBookmark(film)
+        if(bookmarksArray.findIndex(item => item.id === film.id) != -1){
+            card.querySelector(".bookmarkBtn").innerText = "Rimuovi dai preferiti"; 
+        }else{
+            card.querySelector(".bookmarkBtn").innerText = "Aggiungi ai preferiti";
+        }   
+    });
 
     return card;
 }
@@ -146,22 +173,27 @@ function showPageControls(){
 
 function toggleBookmark(thisFilm){
 
-    if(!bookmarksArray.includes(thisFilm)){
+    bookmarksArray = JSON.parse(localStorage.getItem("localBookmarks")) || [];
+
+    const index = bookmarksArray.findIndex(item => item.id === thisFilm.id);
+    
+    if(index === -1){
         bookmarksArray.push(thisFilm);
     }else{
-        bookmarksArray.splice(bookmarksArray.findIndex(item => item === thisFilm), 1);
+        bookmarksArray.splice(index, 1);
     }
 
-    bookmarksArray.sort((a, b) => a.original_title.localeCOmpare(b.original_title));
+    bookmarksArray.sort((a, b) => a.original_title.localeCompare(b.original_title));
+
+    localStorage.setItem("localBookmarks", JSON.stringify(bookmarksArray));
+
+    if(bookmarksContainer){
+        showBookmarks();
+    }
 }
 
 
 //Events
-searchBar.addEventListener("input", () => {
-    currentPage = 1;
-    delaySearch();
-});
-
 prevPage.addEventListener("click", () =>{
     currentPage--;
     delaySearch();
@@ -186,14 +218,34 @@ window.onload = function() {
     
     const savedSearch = sessionStorage.getItem("searchValue");
     const savedResults = sessionStorage.getItem("searchResults");
-    
-    if(savedSearch){
-        searchBar.value = savedSearch;
+
+    if(!localStorage.getItem("localBookmarks")){
+        bookmarksArray = [];
+        localStorage.setItem("localBookmarks", JSON.stringify(bookmarksArray));
+    }else{
+        bookmarksArray = JSON.parse(localStorage.getItem("localBookmarks"));
     }
-    if(savedResults){
-        currentPage = sessionStorage.getItem("searchPage");
-        contentJSON = JSON.parse(savedResults); 
-        showResults(contentJSON);
-        showPageControls();
+    
+    if(resultsContainer){
+        
+        searchBar.addEventListener("input", () => {
+            currentPage = 1;
+            delaySearch();
+        });
+
+        //mantiene i dati della ricerca al refresh della pagina
+        if(savedSearch){
+            searchBar.value = savedSearch;
+        }
+        if(savedResults){
+            currentPage = Number(sessionStorage.getItem("searchPage"));
+            contentJSON = JSON.parse(savedResults); 
+            showResults(contentJSON);
+            showPageControls();
+        }
+    }
+
+    if(bookmarksContainer){
+        showBookmarks();
     }
 }
