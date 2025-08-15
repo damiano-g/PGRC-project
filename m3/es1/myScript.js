@@ -50,6 +50,7 @@ function retrieveSearch(){
             .catch(() => alert("Impossibile effettuare la richiesta"));
     }else{
             resultsContainer.innerHTML = "";
+            navButtons.classList.add("hidden");
     }
 }
 
@@ -237,7 +238,7 @@ window.onload = function() {
         if(savedSearch){
             searchBar.value = savedSearch;
         }
-        if(savedResults){
+        if(savedResults && savedSearch != ""){
             currentPage = Number(sessionStorage.getItem("searchPage"));
             contentJSON = JSON.parse(savedResults); 
             showResults(contentJSON);
