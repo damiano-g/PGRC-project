@@ -54,40 +54,47 @@ function showResults(dataJSON){
 
     resultsContainer.innerHTML = "";
 
-    dataArray.forEach(item => {
-        //crea un elemento ed aggiunge la classe bootstrap .card
-        const film = document.createElement("div");
-        film.classList.add("col-md-4");
-        film.classList.add("mb-3");
+    if(dataArray.length < 1){
+        const empty = document.createElement("p");
+        empty.classList.add("text-center");
+        empty.innerText = "Nessun risultato";
+        resultsContainer.appendChild(empty);
+    }else{ 
+        dataArray.forEach(item => {
+            //crea un elemento ed aggiunge la classe bootstrap .card
+            const film = document.createElement("div");
+            film.classList.add("col-md-4");
+            film.classList.add("mb-3");
 
-        if (item.poster_path) {
-            posterUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-        } else {
-                posterUrl = "./images/no_image.jpg";
-            }
+            if (item.poster_path) {
+                posterUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+            } else {
+                    posterUrl = "./images/no_image.jpg";
+                }
 
-        film.innerHTML = `
-            <div class="card">
-                <h4 class="card-title">${item.original_title}</h4>
-                <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
-                <div class="card-body>
-                    <p class="card-text">Uscita: ${item.release_date}</p>
-                    <p class="card-text">Valutazione: ${item.vote_average}</p>
-                    <button class="btn float-end">Trama</button>
-                    <p class="card-text film-details d-none float-start">${item.overview}</p>
+            film.innerHTML = `
+                <div class="card">
+                    <h4 class="card-title">${item.original_title}</h4>
+                    <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
+                    <div class="card-body>
+                        <p class="card-text">Uscita: ${item.release_date}</p>
+                        <p class="card-text">Valutazione: ${item.vote_average}</p>
+                        <button class="btn float-end">Trama</button>
+                        <p class="card-text film-details d-none float-start">${item.overview}</p>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
-        film.querySelector(".btn").addEventListener("click", () => film.querySelector(".film-details").classList.toggle("d-none"));
+            film.querySelector(".btn").addEventListener("click", () => film.querySelector(".film-details").classList.toggle("d-none"));
 
-        resultsContainer.appendChild(film);
-    })
+            resultsContainer.appendChild(film);
+        })
+    }
 }
 
 function showPageControls(){
     
-    if(String(searchBar.value) != ""){
+    if(String(searchBar.value) != "" && contentJSON.results > 0){
 
         document.getElementById("displayPage").innerText = String(currentPage);
 
