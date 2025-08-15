@@ -88,7 +88,7 @@ function createCard(film){
 
     //crea un elemento ed aggiunge la classe bootstrap .card
     const card = document.createElement("div");
-    card.classList.add("col-md-4");
+    card.classList.add("col-md-3");
     card.classList.add("mb-3");
 
     let posterUrl;

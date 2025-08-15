@@ -1,8 +1,8 @@
-.container{
-    margin-top: 60px;
-    /* border: 2px solid black; */
-    padding-top: 20px;
+.main{
+    padding-top: 80px;
     padding-bottom: 20px;
+    padding-left: 70px;
+    padding-right: 70px;
 }
 
 .form-control{
