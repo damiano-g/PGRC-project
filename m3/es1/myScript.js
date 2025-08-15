@@ -22,6 +22,8 @@ function delaySearch(){
 
 function retrieveSearch(){
 
+    sessionStorage.setItem("searchValue", searchBar.value);
+
     if(String(searchBar.value) != ""){
         
         searchContent = String(searchBar.value);
@@ -38,7 +40,7 @@ function retrieveSearch(){
             })
             .then(response => {
                 contentJSON = response;
-                console.log(contentJSON.total_pages);
+                sessionStorage.setItem("searchResults", JSON.stringify(contentJSON));
                 showResults(contentJSON);
                 showPageControls();
             })
@@ -155,3 +157,15 @@ lastPage.addEventListener("click", () => {
     delaySearch();
 })
 
+window.onload = function() {
+    
+    const savedSearch = sessionStorage.getItem("searchValue");
+    const savedResults = sessionStorage.getItem("searchResults");
+    
+    if(savedSearch){
+        searchBar.value = savedSearch;
+    }
+    if(savedResults){
+        showResults(JSON.parse(savedResults));
+    }
+}
