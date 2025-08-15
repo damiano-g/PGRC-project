@@ -72,38 +72,40 @@ function showResults(dataJSON){
 function createCard(film){
 
     //crea un elemento ed aggiunge la classe bootstrap .card
-    const film = document.createElement("div");
-    film.classList.add("col-md-4");
-    film.classList.add("mb-3");
+    const card = document.createElement("div");
+    card.classList.add("col-md-4");
+    card.classList.add("mb-3");
 
-    if (item.poster_path) {
-        posterUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+    let posterUrl;
+
+    if (film.poster_path) {
+        posterUrl = `https://image.tmdb.org/t/p/w500${film.poster_path}`;
     } else {
-            posterUrl = "./images/no_image.jpg";
+        posterUrl = "./images/no_image.jpg";
         }
 
-    film.innerHTML = `
+    card.innerHTML = `
         <div class="card">
-            <h4 class="card-title">${item.original_title}</h4>
+            <h4 class="card-title">${film.original_title}</h4>
             <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
             <div class="card-body">
-                <p class="card-text">Uscita: ${item.release_date}</p>
-                <p class="card-text">Valutazione: ${item.vote_average}</p>
+                <p class="card-text">Uscita: ${film.release_date}</p>
+                <p class="card-text">Valutazione: ${film.vote_average}</p>
                 <nav class="mb-3">
                     <ul class="nav float-end">
                         <li class="nav-item" id="bookmarkBtn"><button class="nav-link">Preferito</button></li>
                         <li class="nav-item" id="overview"><button class="nav-link">Trama</button></li>
                     </ul>
                 </nav>
-                <p class="card-text film-details d-none float-start">${item.overview}</p>
+                <p class="card-text film-details d-none float-start">${film.overview}</p>
             </div>
         </div>
     `;
 
-    film.querySelector("#overview").addEventListener("click", () => film.querySelector(".film-details").classList.toggle("d-none"));
-    film.querySelector("#bookmarkBtn").addEventListener("click", () => toggleBookmark(item));
+    card.querySelector("#overview").addEventListener("click", () => card.querySelector(".film-details").classList.toggle("d-none"));
+    card.querySelector("#bookmarkBtn").addEventListener("click", () => toggleBookmark(film));
 
-    return film;
+    return card;
 }
 
 function showPageControls(){
