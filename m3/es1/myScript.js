@@ -22,6 +22,7 @@ function delaySearch(){
 
 function retrieveSearch(){
 
+    sessionStorage.setItem("searchPage", currentPage);
     sessionStorage.setItem("searchValue", searchBar.value);
 
     if(String(searchBar.value) != ""){
@@ -78,16 +79,21 @@ function showResults(dataJSON){
                 <div class="card">
                     <h4 class="card-title">${item.original_title}</h4>
                     <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
-                    <div class="card-body>
+                    <div class="card-body">
                         <p class="card-text">Uscita: ${item.release_date}</p>
                         <p class="card-text">Valutazione: ${item.vote_average}</p>
-                        <button class="btn float-end">Trama</button>
+                        <nav class="mb-3">
+                            <ul class="nav float-end">
+                                <li class="nav-item" id="bookmark"><button class="nav-link">Preferito</button></li>
+                                <li class="nav-item" id="overview"><button class="nav-link">Trama</button></li>
+                            </ul>
+                        </nav>
                         <p class="card-text film-details d-none float-start">${item.overview}</p>
                     </div>
                 </div>
             `;
 
-            film.querySelector(".btn").addEventListener("click", () => film.querySelector(".film-details").classList.toggle("d-none"));
+            film.querySelector("#overview").addEventListener("click", () => film.querySelector(".film-details").classList.toggle("d-none"));
 
             resultsContainer.appendChild(film);
         })
@@ -96,7 +102,7 @@ function showResults(dataJSON){
 
 function showPageControls(){
     
-    if(String(searchBar.value) != "" && contentJSON.results > 0){
+    if(String(searchBar.value) != "" && contentJSON.results.length > 0){
 
         document.getElementById("displayPage").innerText = String(currentPage);
 
@@ -166,6 +172,9 @@ window.onload = function() {
         searchBar.value = savedSearch;
     }
     if(savedResults){
-        showResults(JSON.parse(savedResults));
+        currentPage = sessionStorage.getItem("searchPage");
+        contentJSON = JSON.parse(savedResults); 
+        showResults(contentJSON);
+        showPageControls();
     }
 }
