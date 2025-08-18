@@ -8,10 +8,12 @@ const nextPage = document.getElementById("next");
 const firstPage = document.getElementById("first");
 const lastPage = document.getElementById("last");
 
-let searchContent;
-let contentJSON;
+let bookmarkArray = [];
+
+let currentSearch;
+let savedSearch;
 let searchPage;
-let bookmarksArray = [];
+let maxPage;
 
 let debounceTimeout;
 
@@ -19,20 +21,25 @@ function delaySearch(){
 
     clearTimeout(debounceTimeout);
 
-    debounceTimeout = setTimeout(retrieveSearch, 500);
+    if(pageType === "home"){
+        debounceTimeout = setTimeout(APISearch, 200);
+    }
+    if(pageType === "bookmarks"){
+        debounceTimeout = setTimeout(bookmarksSearch, 200);
+    }
 }
 
-function retrieveSearch(){
+function APISearch(){
 
-    sessionStorage.setItem("searchPage", searchPage);
-    sessionStorage.setItem("searchValue", searchBar.value);
+    sessionStorage.setItem("homeSearchPage", searchPage);
+    sessionStorage.setItem("homeSearchValue", searchBar.value);
 
     if(String(searchBar.value) != ""){
         
-        searchContent = String(searchBar.value);
+        currentSearch = String(searchBar.value);
 
         //encodeURIComponent evita caratteri che potrebbero compromettere la ricerca
-        let url = `https://api.themoviedb.org/3/search/movie?api_key=571d7713f769aae024b522b1d9231927&query=${encodeURIComponent(searchContent)}&page=${searchPage}`;
+        let url = `https://api.themoviedb.org/3/search/movie?api_key=571d7713f769aae024b522b1d9231927&query=${encodeURIComponent(currentSearch)}&page=${searchPage}`;
 
         fetch(url)
             .then(response => {
@@ -42,10 +49,12 @@ function retrieveSearch(){
                 return response.json();
             })
             .then(response => {
-                contentJSON = response;
-                sessionStorage.setItem("searchResults", JSON.stringify(contentJSON));
-                showResults(contentJSON);
-                showPageControls();
+                const contentJSON = response;
+                maxPage = contentJSON.total_pages;
+                sessionStorage.setItem("homeSearchResults", JSON.stringify(contentJSON.results));
+                sessionStorage.setItem("homeMaxPage", maxPage);
+                showResults(contentJSON.results);
+                //showPageControls();
             })
             .catch(() => alert("Impossibile effettuare la richiesta"));
     }else{
@@ -54,33 +63,58 @@ function retrieveSearch(){
     }
 }
 
-function showResults(dataJSON){
+function bookmarksSearch(){
+    
+    sessionStorage.setItem("bookmarksSearchPage", searchPage);
+    sessionStorage.setItem("bookmarksSearchValue", searchBar.value);
 
-    let dataArray = dataJSON.results;
+    currentSearch = String(searchBar.value);
+    
+    let filteredArray = [];
 
-    resultsContainer.innerHTML = "";
+    if(currentSearch != ""){
+        bookmarkArray.forEach(item => {
+            if(String(item.original_title).toLocaleLowerCase().includes(currentSearch.toLocaleLowerCase())){
+                filteredArray.push(item);
+            }
+        })
+    }else{
+        filteredArray = bookmarkArray;
+    }
 
-    if(dataArray.length < 1){
-        const empty = document.createElement("p");
-        empty.classList.add("text-center");
-        empty.innerText = "Nessun risultato";
-        resultsContainer.appendChild(empty);
-    }else{ 
-        dataArray.forEach(item => resultsContainer.appendChild(createCard(item)));
+    sessionStorage.setItem("bookmarksSearchResults", JSON.stringify(filteredArray));   
+    
+    if(pageType === "bookmarks"){
+        showResults(filteredArray);
     }
 }
 
-function showBookmarks(){
-
-    bookmarksContainer.innerHTML = "";
-
-    if(bookmarksArray.length < 1){
+function showResults(dataArray){
+    
+    resultsContainer.innerHTML = "";
+    
+    if(dataArray.length < 1){
         const empty = document.createElement("p");
         empty.classList.add("text-center");
-        empty.innerText = "Nessun preferito salvato";
-        bookmarksContainer.appendChild(empty);
+        if(pageType === "home" || (pageType === "bookmarks" && searchBar.value != "")){
+            empty.innerText = "Nessun risultato";
+        }
+        if(pageType === "bookmarks" && searchBar.value === ""){
+            empty.innerText = "Nessun preferito salvato";
+        }
+        resultsContainer.appendChild(empty);
     }else{
-        bookmarksArray.forEach(item => bookmarksContainer.appendChild(createCard(item)));
+        if(pageType === "home"){
+            dataArray.forEach(item => resultsContainer.appendChild(createCard(item)));
+        }
+        if(pageType === "bookmarks"){
+            maxPage = Math.ceil(dataArray.length/20);
+            sessionStorage.setItem("bookmarksMaxPage", maxPage);
+            for(let i=20*(searchPage-1); i < (20*searchPage) && i < dataArray.length; i++){
+                resultsContainer.appendChild(createCard(dataArray[i]));
+            }
+        }
+        showPageControls();
     }
 }
 
@@ -96,12 +130,16 @@ function createCard(film){
     if (film.poster_path) {
         posterUrl = `https://image.tmdb.org/t/p/w500${film.poster_path}`;
     } else {
-        posterUrl = "./images/no_image.jpg";
+            if(pageType === "home"){
+                posterUrl = "./images/no_image.jpg";
+            }else{
+                posterUrl = "../images/no_image.jpg";
+            }
         }
 
     let bookmarkString = "Rimuovi dai preferiti";
 
-    if(resultsContainer && bookmarksArray.findIndex(item => item.id === film.id) === -1){
+    if(pageType === "home" && bookmarkArray.findIndex(item => item.id === film.id) === -1){
         bookmarkString = "Aggiungi ai preferiti";
     }
 
@@ -111,7 +149,7 @@ function createCard(film){
             <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
             <div class="card-body">
                 <p class="card-text">Uscita: ${film.release_date}</p>
-                <p class="card-text">Valutazione: ${film.vote_average}</p>
+                <p class="card-text">Valutazione: ${film.vote_average}/10<br><progress value="${film.vote_average}" max="10"></progress></p>
                 <nav class="mb-3">
                     <ul class="nav float-end">
                         <li class="nav-item"><button class="nav-link bookmarkBtn">${bookmarkString}</button></li>
@@ -126,7 +164,7 @@ function createCard(film){
     card.querySelector(".overview").addEventListener("click", () => card.querySelector(".film-details").classList.toggle("d-none"));
     card.querySelector(".bookmarkBtn").addEventListener("click", () => {
         toggleBookmark(film)
-        if(bookmarksArray.findIndex(item => item.id === film.id) != -1){
+        if(bookmarkArray.findIndex(item => item.id === film.id) != -1){
             card.querySelector(".bookmarkBtn").innerText = "Rimuovi dai preferiti"; 
         }else{
             card.querySelector(".bookmarkBtn").innerText = "Aggiungi ai preferiti";
@@ -138,7 +176,7 @@ function createCard(film){
 
 function showPageControls(){
     
-    if(String(searchBar.value) != "" && contentJSON.results.length > 0){
+    if( maxPage > 0){
 
         document.getElementById("displayPage").innerText = String(searchPage);
 
@@ -154,7 +192,7 @@ function showPageControls(){
             firstPage.setAttribute("tabindex", "1");
         }
 
-        if(searchPage >= contentJSON.total_pages){
+        if(searchPage >= maxPage){
             nextPage.classList.add("disabled");
             lastPage.classList.add("disabled");
             nextPage.setAttribute("tabindex", "-1");
@@ -174,27 +212,34 @@ function showPageControls(){
 
 function toggleBookmark(thisFilm){
 
-    bookmarksArray = JSON.parse(localStorage.getItem("localBookmarks")) || [];
+    bookmarkArray = JSON.parse(localStorage.getItem("localBookmarks")) || [];
 
-    const index = bookmarksArray.findIndex(item => item.id === thisFilm.id);
+    const index = bookmarkArray.findIndex(item => item.id === thisFilm.id);
     
     if(index === -1){
-        bookmarksArray.push(thisFilm);
+        bookmarkArray.push(thisFilm);
     }else{
-        bookmarksArray.splice(index, 1);
+        bookmarkArray.splice(index, 1);
     }
 
-    bookmarksArray.sort((a, b) => a.original_title.localeCompare(b.original_title));
+    bookmarkArray.sort((a, b) => a.original_title.localeCompare(b.original_title));
 
-    localStorage.setItem("localBookmarks", JSON.stringify(bookmarksArray));
+    localStorage.setItem("localBookmarks", JSON.stringify(bookmarkArray));
 
-    if(bookmarksContainer){
-        showBookmarks();
+    if(pageType === "bookmarks"){
+        showResults(bookmarkArray);
+    }else{
+        bookmarksSearch();
     }
 }
 
 
 //Events
+searchBar.addEventListener("input", () => {
+    searchPage = 1;
+    delaySearch();
+});
+
 prevPage.addEventListener("click", () =>{
     searchPage--;
     delaySearch();
@@ -211,42 +256,33 @@ nextPage.addEventListener("click", () => {
 })
 
 lastPage.addEventListener("click", () => {
-    searchPage = contentJSON.total_pages;
+    searchPage = maxPage;
     delaySearch();
 })
 
 window.onload = function() {
     
-    const savedSearch = sessionStorage.getItem("searchValue");
-    const savedResults = sessionStorage.getItem("searchResults");
-
     if(!localStorage.getItem("localBookmarks")){
-        bookmarksArray = [];
-        localStorage.setItem("localBookmarks", JSON.stringify(bookmarksArray));
+        bookmarkArray = [];
+        localStorage.setItem("localBookmarks", JSON.stringify(bookmarkArray));
     }else{
-        bookmarksArray = JSON.parse(localStorage.getItem("localBookmarks"));
+        bookmarkArray = JSON.parse(localStorage.getItem("localBookmarks"));
     }
     
-    if(resultsContainer){
-        
-        searchBar.addEventListener("input", () => {
-            searchPage = 1;
-            delaySearch();
-        });
-
-        //mantiene i dati della ricerca al refresh della pagina
-        if(savedSearch){
-            searchBar.value = savedSearch;
-        }
-        if(savedResults && savedSearch != ""){
-            searchPage = Number(sessionStorage.getItem("searchPage"));
-            contentJSON = JSON.parse(savedResults); 
-            showResults(contentJSON);
-            showPageControls();
-        }
+    if(pageType === "home"){
+        savedSearch = sessionStorage.getItem("homeSearchValue");
+        searchPage = Number(sessionStorage.getItem("homeSearchPage"));
+        maxPage = Number(sessionStorage.getItem("homeMaxPage"));
     }
 
-    if(bookmarksContainer){
-        showBookmarks();
+    if(pageType === "bookmarks"){
+        savedSearch = sessionStorage.getItem("bookmarksSearchValue");
+        searchPage = Number(sessionStorage.getItem("bookmarksSearchPage"));
     }
+
+    if(!searchPage || searchPage < 1){
+        searchPage = 1;
+    }
+    searchBar.value = savedSearch;
+    delaySearch();
 }
