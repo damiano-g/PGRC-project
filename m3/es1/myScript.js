@@ -7,6 +7,7 @@ const prevPage = document.getElementById("prev");
 const nextPage = document.getElementById("next");
 const firstPage = document.getElementById("first");
 const lastPage = document.getElementById("last");
+const genresList = document.getElementById("genresList")
 
 let bookmarkArray = [];
 
@@ -16,6 +17,30 @@ let searchPage;
 let maxPage;
 
 let debounceTimeout;
+
+function fetchGenres() {
+
+    fetch('https://api.themoviedb.org/3/genre/movie/list?api_key=571d7713f769aae024b522b1d9231927&language=en')
+        .then(response => {
+            if(!response.ok){
+                throw new Error("Errore nella risposta");
+            }
+            return response.json();
+        })
+        .then(response => {
+            response.genres.forEach(item => {
+                const listItem = document.createElement("li");
+                listItem.innerHTML = `
+                    <div class="form-check">
+                        <label class="form-check-label w-100"><input class="form-check-input" type="checkbox" value=${item.id}>${item.name}</label>
+                    </div>
+                `
+                genresList.appendChild(listItem);
+            })
+        })
+        .catch(() => alert("Impossibile effettuare la richiesta"));
+}
+
 
 function delaySearch(){
 
@@ -268,6 +293,8 @@ window.onload = function() {
     }else{
         bookmarkArray = JSON.parse(localStorage.getItem("localBookmarks"));
     }
+
+    fetchGenres();
     
     if(pageType === "home"){
         savedSearch = sessionStorage.getItem("homeSearchValue");
