@@ -18,9 +18,9 @@
         </nav>
     </div>
 
+
     <div class="fluidContainer main">
-        
-        <div class="container mb-3" id="searchArea">
+        <div class="container mb-5" id="searchArea">
 
             <h2 class="text-center mb-3">Ricerca film</h2>
             
@@ -31,14 +31,14 @@
                 <li class="nav-item"><button class="nav-link" id="resetFilters">Reset filtri</button></li>
             </ul>
             
-            <form class="row d-none mb-2" id="filters">
+            <form class="row d-none" id="filters">
                 <div class="col-md-4">
-                    <label for="year">Anno</label>
-                    <input type="text" class="input form-control form-control-sm" id="year" placeholder="Anno">
+                    <label for="yearFilter">Anno</label>
+                    <input type="number" min="1900" max="2025" class="input form-control form-control-sm" id="yearFilter" placeholder="Anno">
                 </div>
                 <div class="col-md-4">
-                    <label for="rating">Valutazione</label>
-                    <select class="input form-select form-select-sm" id="rating">
+                    <label for="ratingFilter">Valutazione</label>
+                    <select class="input form-select form-select-sm" id="ratingFilter">
                         <option value="0">-</option>
                         <option value="1">1+</option>
                         <option value="2">2+</option>

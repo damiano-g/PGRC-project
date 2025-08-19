@@ -7,7 +7,12 @@ const prevPage = document.getElementById("prev");
 const nextPage = document.getElementById("next");
 const firstPage = document.getElementById("first");
 const lastPage = document.getElementById("last");
-const genresList = document.getElementById("genresList")
+
+const genresList = document.getElementById("genresList");
+const yearFilter = document.getElementById("yearFilter");
+const ratingFilter = document.getElementById("ratingFilter");
+
+let filtersOn = false;
 
 let bookmarkArray = [];
 
@@ -54,6 +59,16 @@ function delaySearch(){
     }
 }
 
+function directSearch(){
+
+    if(pageType === "home"){
+        APISearch();
+    }
+    if(pageType === "bookmarks"){
+        bookmarksSearch();
+    }
+}
+
 function APISearch(){
 
     sessionStorage.setItem("homeSearchPage", searchPage);
@@ -79,7 +94,6 @@ function APISearch(){
                 sessionStorage.setItem("homeSearchResults", JSON.stringify(contentJSON.results));
                 sessionStorage.setItem("homeMaxPage", maxPage);
                 showResults(contentJSON.results);
-                //showPageControls();
             })
             .catch(() => alert("Impossibile effettuare la richiesta"));
     }else{
@@ -115,8 +129,12 @@ function bookmarksSearch(){
 }
 
 function showResults(dataArray){
-    
+
     resultsContainer.innerHTML = "";
+
+    if(filtersOn){
+        dataArray = filterResults(dataArray);
+    }
     
     if(dataArray.length < 1){
         const empty = document.createElement("p");
@@ -142,6 +160,7 @@ function showResults(dataArray){
         showPageControls();
     }
 }
+
 
 function createCard(film){
 
@@ -259,6 +278,35 @@ function toggleBookmark(thisFilm){
 }
 
 
+function filterResults(dataArray){
+
+    let filteredArray = [];
+
+    const checkedGenres = Array.from(document.querySelectorAll("#genresList input[type='checkbox']:checked")); 
+    
+    filteredArray = dataArray.filter(item => {
+
+        if(yearFilter && Number(yearFilter.value) >= 1900 && Number(yearFilter.value) <= 2025){
+            if(parseInt(item.release_date.split("-")[0]) != Number(yearFilter.value)){
+                return false;
+            } 
+        }
+
+        if(item.vote_average < ratingFilter.value){
+            return false;
+        }
+        
+        if(checkedGenres.length > 0 && !checkedGenres.some(checkbox => item.genre_ids.includes(Number(checkbox.value)))){
+            return false;
+        }
+
+        return true;
+    })
+    
+    return filteredArray;
+}
+
+
 //Events
 searchBar.addEventListener("input", () => {
     searchPage = 1;
@@ -285,10 +333,33 @@ lastPage.addEventListener("click", () => {
     delaySearch();
 })
 
+yearFilter.addEventListener("input", () => {
+    if(yearFilter.value != "" && (Number(yearFilter.value) < 1900 || Number(yearFilter.value) > 2025)){
+        yearFilter.classList.add("is-invalid");
+    }else{
+        yearFilter.classList.remove("is-invalid");
+    }
+});
+
 document.getElementById("showFilters").addEventListener("click", () => document.getElementById("filters").classList.toggle("d-none"));
+
+document.getElementById("applyFilters").addEventListener("click", () => {
+    filtersOn = true;
+    showResults(JSON.parse(sessionStorage.getItem(pageType+"SearchResults")));
+});
+
+document.getElementById("resetFilters").addEventListener("click", () => {
+    filtersOn = false;
+    yearFilter.value = "";
+    ratingFilter.value = "0";
+    document.querySelectorAll("#genresList input[type='checkbox']").forEach(item => item.checked = false);
+    showResults(JSON.parse(sessionStorage.getItem(pageType+"SearchResults")));
+});
 
 
 window.onload = function() {
+
+    //console.log(JSON.parse(sessionStorage.getItem(pageType+"SearchResults")));
   
     if(!localStorage.getItem("localBookmarks")){
         bookmarkArray = [];
