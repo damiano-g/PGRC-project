@@ -20,9 +20,45 @@
 
     <div class="fluidContainer main">
         
-        <h2 class="text-center mb-3">Ricerca film</h2>
-        
-        <input type="text" class="form-control mb-5" id="searchBar" placeholder="Search film...">
+        <div class="container" id="searchArea">
+
+            <h2 class="text-center mb-3">Ricerca film</h2>
+            
+            <input type="text" class="input form-control mb-5" id="searchBar" placeholder="Search film...">
+            
+            <form class="row">
+                <div class="col-md-4">
+                    <label for="year">Anno</label>
+                    <input type="text" class="input form-control form-control-sm" id="year" placeholder="Anno">
+                </div>
+                <div class="col-md-4">
+                    <label for="rating">Valutazione</label>
+                    <select class="input form-select form-select-sm" id="rating">
+                        <option value="0">-</option>
+                        <option value="1">1+</option>
+                        <option value="2">2+</option>
+                        <option value="3">3+</option>
+                        <option value="4">4+</option>
+                        <option value="5">5+</option>
+                        <option value="6">6+</option>
+                        <option value="7">7+</option>
+                        <option value="8">8+</option>
+                        <option value="9">9+</option>
+                    </select>
+                </div>
+                <div class="col-md-4 dropdown">
+                    <label for="genresList">Genere</label>
+                    <button class="input form-select form-select-sm text-start" data-bs-toggle="dropdown">-</button>
+                    <ul class="dropdown-menu w-100"  id="genresList">
+                        <li>
+                            <div class="form-check">
+                                <label class="form-check-label w-100"><input class="form-check-input" type="checkbox">Test</label>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
         
         <div class="row mb-4" id="showResults"></div>
 
