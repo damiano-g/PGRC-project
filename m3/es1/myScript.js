@@ -285,8 +285,11 @@ lastPage.addEventListener("click", () => {
     delaySearch();
 })
 
+document.getElementById("showFilters").addEventListener("click", () => document.getElementById("filters").classList.toggle("d-none"));
+
+
 window.onload = function() {
-    
+  
     if(!localStorage.getItem("localBookmarks")){
         bookmarkArray = [];
         localStorage.setItem("localBookmarks", JSON.stringify(bookmarkArray));
