@@ -5,8 +5,12 @@
     padding-right: 70px;
 }
 
-.form-control{
-    width: 50%;
+#searchArea{
+    width: 60%;
+    /* border: 2px solid black; */
+}
+
+.input{
     justify-self: center;
     border: 2px solid gray;
 }
