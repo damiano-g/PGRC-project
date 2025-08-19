@@ -20,13 +20,18 @@
 
     <div class="fluidContainer main">
         
-        <div class="container" id="searchArea">
+        <div class="container mb-3" id="searchArea">
 
             <h2 class="text-center mb-3">Ricerca film</h2>
             
-            <input type="text" class="input form-control mb-5" id="searchBar" placeholder="Search film...">
+            <input type="text" class="input form-control mb-1" id="searchBar" placeholder="Search film...">
+            <ul class="nav mb-2 d-flex justify-content-end">
+                <li class="nav-item"><button class="nav-link" id="showFilters">Mostra filtri</button></li>
+                <li class="nav-item"><button class="nav-link" id="applyFilters">Applica filtri</button></li>
+                <li class="nav-item"><button class="nav-link" id="resetFilters">Reset filtri</button></li>
+            </ul>
             
-            <form class="row">
+            <form class="row mb-2">
                 <div class="col-md-4">
                     <label for="year">Anno</label>
                     <input type="text" class="input form-control form-control-sm" id="year" placeholder="Anno">
@@ -50,17 +55,33 @@
                     <label for="genresList">Genere</label>
                     <button class="input form-select form-select-sm text-start" data-bs-toggle="dropdown">-</button>
                     <ul class="dropdown-menu w-100"  id="genresList">
-                        <li>
+                        <!-- <li>
                             <div class="form-check">
-                                <label class="form-check-label w-100"><input class="form-check-input" type="checkbox">Test</label>
+                                <label class="form-check-label w-100"><input class="form-check-input" type="checkbox" value="">Test</label>
                             </div>
-                        </li>
+                        </li> -->
                     </ul>
                 </div>
             </form>
         </div>
         
-        <div class="row mb-4" id="showResults"></div>
+        <div class="row mb-4" id="showResults">
+            <!-- <div class="card">
+                <h4 class="card-title">${film.original_title}</h4>
+                <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
+                <div class="card-body">
+                    <p class="card-text">Uscita: ${film.release_date}</p>
+                    <p class="card-text">Valutazione: ${film.vote_average}/10<br><progress value="${film.vote_average}" max="10"></progress></p>
+                    <nav class="mb-3">
+                        <ul class="nav float-end">
+                            <li class="nav-item"><button class="nav-link bookmarkBtn">${bookmarkString}</button></li>
+                            <li class="nav-item"><button class="nav-link overview">Trama</button></li>
+                        </ul>
+                    </nav>
+                    <p class="card-text film-details d-none float-start">${film.overview}</p>
+                </div>
+            </div> -->
+        </div>
 
         <nav id="navButtons" class="hidden fixed-bottom">
             <ul class="pagination justify-content-center">
