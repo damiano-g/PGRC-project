@@ -20,52 +20,11 @@
     </div>
 
     <div class="fluidContainer main">
-        <div class="container mb-5" id="searchArea">
+        
+        <h2 class="text-center mb-3">Film preferiti</h2>
 
-            <h2 class="text-center mb-3">Film preferiti</h2>
-            
-            <input type="text" class="input form-control mb-1" id="searchBar" placeholder="Search film...">
-            <ul class="nav mb-2 d-flex justify-content-end">
-                <li class="nav-item"><button class="nav-link" id="showFilters">Mostra filtri</button></li>
-                <li class="nav-item"><button class="nav-link" id="applyFilters">Applica filtri</button></li>
-                <li class="nav-item"><button class="nav-link" id="resetFilters">Reset filtri</button></li>
-            </ul>
-            
-            <form class="row d-none" id="filters">
-                <div class="col-md-4">
-                    <label for="yearFilter">Anno</label>
-                    <input type="number" min="1900" max="2025" class="input form-control form-control-sm" id="yearFilter" placeholder="Anno">
-                </div>
-                <div class="col-md-4">
-                    <label for="ratingFilter">Valutazione</label>
-                    <select class="input form-select form-select-sm" id="ratingFilter">
-                        <option value="0">-</option>
-                        <option value="1">1+</option>
-                        <option value="2">2+</option>
-                        <option value="3">3+</option>
-                        <option value="4">4+</option>
-                        <option value="5">5+</option>
-                        <option value="6">6+</option>
-                        <option value="7">7+</option>
-                        <option value="8">8+</option>
-                        <option value="9">9+</option>
-                    </select>
-                </div>
-                <div class="col-md-4 dropdown">
-                    <label for="genresList">Genere</label>
-                    <button class="input form-select form-select-sm text-start" data-bs-toggle="dropdown">-</button>
-                    <ul class="dropdown-menu w-100"  id="genresList">
-                        <!-- <li>
-                            <div class="form-check">
-                                <label class="form-check-label w-100"><input class="form-check-input" type="checkbox" value="">Test</label>
-                            </div>
-                        </li> -->
-                    </ul>
-                </div>
-            </form>
-        </div>
-
-
+        <input type="text" class="form-control mb-5" id="searchBar" placeholder="Search bookmark...">
+        
         <div class="row mb-4" id="showResults"></div>
 
         <nav id="navButtons" class="hidden fixed-bottom">
