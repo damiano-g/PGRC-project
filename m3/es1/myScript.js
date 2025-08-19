@@ -193,7 +193,7 @@ function createCard(film){
             <img class="card-img-top mb-3" src="${posterUrl}" alt="Poster">
             <div class="card-body">
                 <p class="card-text">Uscita: ${film.release_date}</p>
-                <p class="card-text">Valutazione: ${film.vote_average}/10<br><progress value="${film.vote_average}" max="10"></progress></p>
+                <p class="card-text">Valutazione: ${film.vote_average}/10<br><progress class="w-100" value="${film.vote_average}" max="10"></progress></p>
                 <nav class="mb-3">
                     <ul class="nav float-end">
                         <li class="nav-item"><button class="nav-link bookmarkBtn">${bookmarkString}</button></li>
