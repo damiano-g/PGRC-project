@@ -2,17 +2,17 @@
 // Script per la validazione e gestione del form di registrazione utente
 
 // Dichiarazione variabili
-const usernameInput = {
+export const usernameInput = {
         DOMelement: document.getElementById("username"),
         inputStatus: 0,
 }
 
-const emailInput = {
+export const emailInput = {
         DOMelement: document.getElementById("email"),
         inputStatus: 0,
 } 
 
-const passwordInput = {
+export const passwordInput = {
         DOMelement: document.getElementById("password"),
         inputStatus: 0,
 }
@@ -22,10 +22,10 @@ const confirmPassInput = {
         inputStatus: 0,
 } 
 
-const clearBtn = document.getElementById("clear");
-const subBtn = document.getElementById("submit");
+export const clearBtn = document.getElementById("clear");
+export const subBtn = document.getElementById("submit");
 
-const requiredInputFields = [usernameInput, emailInput, passwordInput, confirmPassInput];
+export const requiredInputFields = [usernameInput, emailInput, passwordInput, confirmPassInput];
 
 
 // Dichiarazione funzioni

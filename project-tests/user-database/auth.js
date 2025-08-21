@@ -1,11 +1,12 @@
+import { subBtn, clearBtn, requiredInputFields, usernameInput, emailInput, passwordInput } from "./validate.js";
 
 // Chiave usata per salvare l'array utenti in localStorage
 const usersDBKey = "users";
-let usersArray = [];
+let registeredUsers = [];
 
 // Recupera e restituisce l'array di utenti dal localStorage (se non esiste, restituisce array vuoto)
 function retrieveList(localStorageKey) {
-    const array = [];
+    let array = [];
     const JSONFile = localStorage.getItem(localStorageKey);
     if(JSONFile){
         array = JSON.parse(JSONFile);
@@ -14,8 +15,8 @@ function retrieveList(localStorageKey) {
 }
 
 // Controlla se username o email sono già presenti nell'array utenti (restituisce true se non ci sono duplicati)
-function validateUserEntry(chosenUsername, chosenEmail, registeredUsersArray){
-    if(registeredUsersArray.some(item => (item.username === chosenUsername) || (item.email === chosenEmail))){
+function validateUserEntry(chosenUsername, chosenEmail, usersArray){
+    if(usersArray.some(item => (item.username === chosenUsername) || (item.email === chosenEmail))){
         return false;
     }
     return true;
@@ -42,29 +43,61 @@ async function hashString(originalString) {
 }
 
 // Crea un oggetto utente con i dati forniti e la password hashata
-async function createUserCard(chosenUsername, chosenEmail, chosenPassword){
+async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
     const hashPassword = await hashString(chosenPassword);
-    const timestamp = new Date();
+    const timestamp = Date.now();
     const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); 
-    const newUser = {
-        id: `user_${String(timestamp)}_${rnd}`,
+    const userObject = {
+        id: `user_${timestamp}_${rnd}`,
         username: chosenUsername,
         email: chosenEmail,
         password: hashPassword,
         favorites: [],
-        creationDate: timestamp.toISOString(),
+        creationDate: new Date().toISOString(),
     }
-    return newUser;
+    return userObject;
 }
 
 // Aggiunge un nuovo utente all'array e aggiorna il localStorage
-function addNewUser(newUser, registeredUsersArray, localStorageKey){
-    registeredUsersArray.push(newUser);
-    localStorage.setItem(localStorageKey, JSON.stringify(registeredUsersArray));
-    return registeredUsersArray;
+function addNewUser(userObject, usersArray, localStorageKey){
+    usersArray.push(userObject);
+    localStorage.setItem(localStorageKey, JSON.stringify(usersArray));
+    return usersArray;
 }
+
+
+//Eventi
+
+subBtn.addEventListener("click", async () => {
+    
+    subBtn.disabled = true;
+    clearBtn.disabled = true;
+    requiredInputFields.forEach(item => item.DOMelement.disabled = true);
+
+    try{
+        const currentUsername = usernameInput.DOMelement.value;
+        const currentEmail = emailInput.DOMelement.value;
+        const currentPassword = passwordInput.DOMelement.value;
+    
+        if(validateUserEntry(currentUsername, currentEmail, registeredUsers)){
+            const newUser = await createUserObject(currentUsername, currentEmail, currentPassword);
+            registeredUsers = addNewUser(newUser, registeredUsers, usersDBKey);
+            localStorage.setItem(usersDBKey, JSON.stringify(registeredUsers));
+            clearBtn.disabled = false;
+            clearBtn.click();
+            alert("Utente registrato con successo");
+        }else{
+            alert("Nome utente o email già in uso");
+        }
+    }finally{
+        subBtn.disabled = false;
+        requiredInputFields.forEach(item => item.DOMelement.disabled = false);
+    }
+
+});
+
 
 // All'avvio della pagina, recupera l'array utenti dal localStorage
 window.addEventListener("load", () => {
-    usersArray = retrieveList(usersDBKey);
+    registeredUsers = retrieveList(usersDBKey);
 });
