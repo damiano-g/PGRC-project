@@ -1,3 +1,4 @@
+// Importa riferimenti agli elementi del form e oggetti di input dal modulo validate.js
 import { subBtn, clearBtn, requiredInputFields, usernameInput, emailInput, passwordInput } from "./validate.js";
 
 // Chiave usata per salvare l'array utenti in localStorage
@@ -80,6 +81,7 @@ function addNewUser(userObject, usersArray, localStorageKey){
 
 //Eventi
 
+// Gestisce il click sul bottone di submit: disabilita i campi, valida i dati, crea l’utente, aggiorna il database e mostra messaggi di feedback
 subBtn.addEventListener("click", async () => {
     
     subBtn.disabled = true;
@@ -95,11 +97,9 @@ subBtn.addEventListener("click", async () => {
         if(!duplicateUser){
             const newUser = await createUserObject(currentUsername, currentEmail, currentPassword);
             registeredUsers = addNewUser(newUser, registeredUsers, usersDBKey);
-            // Gestione errori di scrittura su localStorage (es. storage pieno, permessi negati)
             try{
                 localStorage.setItem(usersDBKey, JSON.stringify(registeredUsers));
             }catch(err){
-                // Mostra un alert all'utente e logga l'errore in console per debug
                 alert("Errore di scrittura nel database: "+err.message);
                 console.error(err);
             }
@@ -113,7 +113,6 @@ subBtn.addEventListener("click", async () => {
             }
         }
     }catch(err){
-    // Gestione errori generici durante la registrazione utente (es. errori inattesi in async/await)
         alert("Errore: "+err.message+"\nCodice errore: "+(err.code || "N/A"));
         console.error(err);
     }
