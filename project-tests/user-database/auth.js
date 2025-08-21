@@ -6,20 +6,32 @@ let registeredUsers = [];
 
 // Recupera e restituisce l'array di utenti dal localStorage (se non esiste, restituisce array vuoto)
 function retrieveList(localStorageKey) {
+    
     let array = [];
-    const JSONFile = localStorage.getItem(localStorageKey);
-    if(JSONFile){
-        array = JSON.parse(JSONFile);
+
+    // Gestione errori di lettura da localStorage (es. storage pieno, permessi negati, modalità privata)
+    try{
+        const JSONFile = localStorage.getItem(localStorageKey);
+        if(JSONFile){
+            array = JSON.parse(JSONFile);
+        }
+    }catch(err){
+    // Mostra un alert all'utente in caso di errore di lettura e non blocca l'applicazione
+        alert("Errore di lettura nel database: "+err.message);
     }
     return array;
 }
 
 // Controlla se username o email sono già presenti nell'array utenti (restituisce true se non ci sono duplicati)
 function validateUserEntry(chosenUsername, chosenEmail, usersArray){
-    if(usersArray.some(item => (item.username === chosenUsername) || (item.email === chosenEmail))){
-        return false;
+    
+    if(usersArray.some(item => (item.username === chosenUsername))){
+        return "username";
     }
-    return true;
+    if(usersArray.some(item => (item.email === chosenEmail))){
+        return "email";
+    }
+    return null;
 }
 
 // Funzione asincrona che riceve una stringa e restituisce il suo hash SHA-256 in formato esadecimale
@@ -78,22 +90,33 @@ subBtn.addEventListener("click", async () => {
         const currentUsername = usernameInput.DOMelement.value;
         const currentEmail = emailInput.DOMelement.value;
         const currentPassword = passwordInput.DOMelement.value;
+        const duplicateUser = validateUserEntry(currentUsername, currentEmail, registeredUsers);
     
-        if(validateUserEntry(currentUsername, currentEmail, registeredUsers)){
+        if(!duplicateUser){
             const newUser = await createUserObject(currentUsername, currentEmail, currentPassword);
             registeredUsers = addNewUser(newUser, registeredUsers, usersDBKey);
-            localStorage.setItem(usersDBKey, JSON.stringify(registeredUsers));
-            clearBtn.disabled = false;
-            clearBtn.click();
+            // Gestione errori di scrittura su localStorage (es. storage pieno, permessi negati)
+            try{
+                localStorage.setItem(usersDBKey, JSON.stringify(registeredUsers));
+            }catch(err){
+                // Mostra un alert all'utente e logga l'errore in console per debug
+                alert("Errore di scrittura nel database: "+err.message);
+                console.error(err);
+            }
             alert("Utente registrato con successo");
         }else{
-            alert("Nome utente o email già in uso");
+            if(duplicateUser === "username"){
+                alert("Nome utente non disponibile");
+            }
+            if(duplicateUser === "email"){
+                alert("Errore: email già registrata. Utilizzare un'altra email o effettuare il login");
+            }
         }
-    }finally{
-        subBtn.disabled = false;
-        requiredInputFields.forEach(item => item.DOMelement.disabled = false);
+    }catch(err){
+    // Gestione errori generici durante la registrazione utente (es. errori inattesi in async/await)
+        alert("Errore: "+err.message+"\nCodice errore: "+(err.code || "N/A"));
+        console.error(err);
     }
-
 });
 
 
