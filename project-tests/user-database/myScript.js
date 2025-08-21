@@ -1,7 +1,7 @@
 
 // Script per la validazione e gestione del form di registrazione utente
 
-//Dichiarazione variabili
+// Dichiarazione variabili
 const usernameInput = {
         DOMelement: document.getElementById("username"),
         inputStatus: 0,
@@ -27,9 +27,9 @@ const subBtn = document.getElementById("submit");
 const requiredInputFields = [usernameInput, emailInput, passwordInput, confirmPassInput];
 
 
-//Dichiarazione funzioni
+// Dichiarazione funzioni
 
-// Valida il campo username: deve avere almeno 2 caratteri
+// Controlla che lo username abbia almeno 2 caratteri
 function validateUsername(inputObject) {
 
         const inputString = String(inputObject.DOMelement.value);
@@ -133,7 +133,8 @@ function validatePassConfirm(inputObject, referObject) {
         }
 }
 
-// Controlla se tutti i campi sono validi e abilita/disabilita il pulsante di submit
+
+// Abilita/disabilita il submit in base alla validità di tutti i campi
 function validateSub(inputFieldsArray){
 
     let ready = !inputFieldsArray.some(item => item.inputStatus != 1);
@@ -145,7 +146,8 @@ function validateSub(inputFieldsArray){
     }
 }
 
-// Esegue azioni specifiche sul campo input del form in base allo status -> positiveNum: valid, negativeNum: invalid, else: not provided 
+ 
+// Aggiorna le classi visive del campo in base allo stato di validità -> positiveNum: valid, negativeNum: invalid, else: not provided 
 function formatInputField(inputObject) {
 
         const validity = Number(inputObject.inputStatus);
@@ -166,7 +168,7 @@ function formatInputField(inputObject) {
 
 
 
-//Eventi
+// Event listeners
 
 // Attiva la validazione del campo username ad ogni input
 usernameInput.DOMelement.addEventListener("input", () => validateUsername(usernameInput));
@@ -174,7 +176,7 @@ usernameInput.DOMelement.addEventListener("input", () => validateUsername(userna
 // Attiva la validazione del campo email ad ogni input
 emailInput.DOMelement.addEventListener("input", () => validateEmail(emailInput));
 
-// Attiva la validazione del campo password ad ogni input
+// Attiva la validazione del campo password ad ogni input (agisce anche su classi visive di conferma password)
 passwordInput.DOMelement.addEventListener("input", () => validatePassword(passwordInput));
 passwordInput.DOMelement.addEventListener("input", () => validatePassConfirm(confirmPassInput, passwordInput));
 passwordInput.DOMelement.addEventListener("input", () => formatInputField(confirmPassInput));
