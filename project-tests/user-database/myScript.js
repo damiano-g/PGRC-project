@@ -189,6 +189,7 @@ confirmPassInput.DOMelement.addEventListener("input", () => validatePassConfirm(
 requiredInputFields.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => validateSub(requiredInputFields)));
 requiredInputFields.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => formatInputField(inputObject)));
 
+//Resetta tutto alla condizione iniziale
 clearBtn.addEventListener("click", () => {
         requiredInputFields.forEach(item => {
                 item.inputStatus = 0;
