@@ -161,4 +161,32 @@ Registro (iniziale):
 	- Eventuale aggiunta di messaggi di errore testuali e centralizzazione della logica CSS.
 	- Proseguire con la gestione del salvataggio profili e login.
 
-<!-- Aggiungere qui le voci man mano che completi gli step -->
+
+- Data: 2025-08-21
+- Autore: damia
+- Area interessata: refactor validazione e gestione stato input
+- Sommario delle modifiche / esperimento:
+	- Refactor della logica di validazione: ogni campo input gestito come oggetto con riferimento DOM e stato.
+	- Centralizzazione della validazione e dello stato per tutti i campi richiesti.
+	- Aggiornamento della UI tramite funzione unica per le classi visive.
+	- Eventi configurati per chiamare le funzioni di validazione e aggiornare lo stato/feedback in modo uniforme.
+	- Testata la disabilitazione/abilitazione del submit in base alla validità globale.
+	- Merge della branch di refactor nel main.
+- Scelte effettuate (breve):
+	- Gestione degli input come oggetti per scalabilità e leggibilità.
+	- Validazione centralizzata e feedback visivo uniforme.
+	- Eventi configurati con funzioni anonime per evitare chiamate premature.
+- Problemi riscontrati:
+	- Errori di sintassi e chiamata funzioni negli event listener corretti durante il refactor.
+	- Attenzione alla sincronizzazione tra stato JS e DOM dopo reset o refresh.
+- Soluzioni adottate / workaround:
+	- Aggiornamento dello stato e della UI ad ogni input.
+	- Test manuale di edge case e input errati.
+- File/Artifacts prodotti (path nel repo):
+	- `project-tests/user-database/myScript.js` (refactor oggetti input, validazione centralizzata)
+- Impatto sulla progettazione generale (note):
+	- Codice più scalabile, leggibile e pronto per estensioni future (es. login, modifica profilo).
+	- Struttura pronta per essere suddivisa in moduli se necessario.
+- Prossimi passi:
+	- Integrare la logica di salvataggio profili e autenticazione.
+	- Eventuale modularizzazione del codice JS per pagine/funzionalità.
