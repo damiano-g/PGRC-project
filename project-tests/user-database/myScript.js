@@ -127,6 +127,7 @@ function validatePassConfirm(inputObject, referObject) {
                     }
                 }   
         }else{  
+                inputObject.DOMelement.value = "";
                 inputObject.inputStatus = 0;
                 inputObject.DOMelement.disabled = true;
         }
@@ -176,6 +177,7 @@ emailInput.DOMelement.addEventListener("input", () => validateEmail(emailInput))
 // Attiva la validazione del campo password ad ogni input
 passwordInput.DOMelement.addEventListener("input", () => validatePassword(passwordInput));
 passwordInput.DOMelement.addEventListener("input", () => validatePassConfirm(confirmPassInput, passwordInput));
+passwordInput.DOMelement.addEventListener("input", () => formatInputField(confirmPassInput));
 
 // Attiva la validazione del campo conferma password ad ogni input
 confirmPassInput.DOMelement.addEventListener("input", () => validatePassConfirm(confirmPassInput, passwordInput));
