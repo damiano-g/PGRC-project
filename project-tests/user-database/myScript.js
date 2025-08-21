@@ -22,6 +22,7 @@ const confirmPassInput = {
         inputStatus: 0,
 } 
 
+const clearBtn = document.getElementById("clear");
 const subBtn = document.getElementById("submit");
 
 const requiredInputFields = [usernameInput, emailInput, passwordInput, confirmPassInput];
@@ -187,3 +188,12 @@ confirmPassInput.DOMelement.addEventListener("input", () => validatePassConfirm(
 // Controlla lo stato di tutti i campi ad ogni input per abilitare/disabilitare il submit
 requiredInputFields.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => validateSub(requiredInputFields)));
 requiredInputFields.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => formatInputField(inputObject)));
+
+clearBtn.addEventListener("click", () => {
+        requiredInputFields.forEach(item => {
+                item.inputStatus = 0;
+                formatInputField(item);
+        });
+        confirmPassInput.DOMelement.disabled = true;
+        validateSub(requiredInputFields);       
+});
