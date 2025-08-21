@@ -1,25 +1,25 @@
 
 // Script per la validazione e gestione del form di registrazione utente
 const inBox = document.querySelectorAll(".form-control");
-const username = document.getElementById("username");
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-const confirmPassword = document.getElementById("confirmPassword");
+const usernameInput = document.getElementById("username");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const confirmPassInput = document.getElementById("confirmPassword");
 const subBtn = document.getElementById("submit");
 
 // Valida il campo username: deve avere almeno 2 caratteri
 function validateUsername() {
         
-    if(String(username.value).length >= 2){
-            username.classList.add("is-valid");
-            username.classList.remove("is-invalid");        
+    if(String(usernameInput.value).length >= 2){
+            usernameInput.classList.add("is-valid");
+            usernameInput.classList.remove("is-invalid");        
     }else{
-            if(String(username.value).length > 0){
-                    username.classList.add("is-invalid");
-                    username.classList.remove("is-valid");
+            if(String(usernameInput.value).length > 0){
+                    usernameInput.classList.add("is-invalid");
+                    usernameInput.classList.remove("is-valid");
             }else{
-                    username.classList.remove("is-invalid");
-                    username.classList.remove("is-valid");
+                    usernameInput.classList.remove("is-invalid");
+                    usernameInput.classList.remove("is-valid");
             }
     }
 }
@@ -29,16 +29,16 @@ function validateEmail(){
 
     const pattern = /^(?!.*\.\.)(?!.*\.\@)[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/
 
-    if(pattern.test(email.value)){
-            email.classList.add("is-valid");
-            email.classList.remove("is-invalid");
+    if(pattern.test(emailInput.value)){
+            emailInput.classList.add("is-valid");
+            emailInput.classList.remove("is-invalid");
     }else{
-            if(String(email.value).length > 0){
-                    email.classList.add("is-invalid");
-                    email.classList.remove("is-valid");
+            if(String(emailInput.value).length > 0){
+                    emailInput.classList.add("is-invalid");
+                    emailInput.classList.remove("is-valid");
             }else{
-                    email.classList.remove("is-invalid");
-                    email.classList.remove("is-valid");
+                    emailInput.classList.remove("is-invalid");
+                    emailInput.classList.remove("is-valid");
             }
     }
 }
@@ -50,43 +50,43 @@ function validatePassword() {
     const lowCase = /[a-z]/g;
     const num = /[0-9]/g;
     
-    if(String(password.value).match(upCase)){
+    if(String(passwordInput.value).match(upCase)){
             document.getElementById("upCase").classList.add("valid-text");
     }else{
             document.getElementById("upCase").classList.remove("valid-text");
     }
 
-    if(String(password.value).match(lowCase)){
+    if(String(passwordInput.value).match(lowCase)){
             document.getElementById("lowCase").classList.add("valid-text");
     }else{
             document.getElementById("lowCase").classList.remove("valid-text");
     }
 
-    if(String(password.value).match(num)){
+    if(String(passwordInput.value).match(num)){
             document.getElementById("num").classList.add("valid-text");
     }else{
             document.getElementById("num").classList.remove("valid-text");
     }
 
-    if(String(password.value).length >= 8){
+    if(String(passwordInput.value).length >= 8){
             document.getElementById("passLen").classList.add("valid-text");
     }else{
             document.getElementById("passLen").classList.remove("valid-text");
     }
 
-    if( String(password.value).length >= 8 && String(password.value).match(lowCase) && String(password.value).match(upCase) && String(password.value).match(num) ){
-            password.classList.add("is-valid");
-            password.classList.remove("is-invalid");
-            confirmPassword.disabled = false;
+    if( String(passwordInput.value).length >= 8 && String(passwordInput.value).match(lowCase) && String(passwordInput.value).match(upCase) && String(passwordInput.value).match(num) ){
+            passwordInput.classList.add("is-valid");
+            passwordInput.classList.remove("is-invalid");
+            confirmPassInput.disabled = false;
     }else{
-            confirmPassword.disabled = true;
+            confirmPassInput.disabled = true;
 
-            if(String(password.value).length > 0){
-                    password.classList.add("is-invalid");
-                    password.classList.remove("is-valid");
+            if(String(passwordInput.value).length > 0){
+                    passwordInput.classList.add("is-invalid");
+                    passwordInput.classList.remove("is-valid");
             }else{
-                    password.classList.remove("is-invalid");
-                    password.classList.remove("is-valid");
+                    passwordInput.classList.remove("is-invalid");
+                    passwordInput.classList.remove("is-valid");
             }
     }
 }
@@ -94,16 +94,16 @@ function validatePassword() {
 // Valida il campo di conferma password: deve coincidere con la password e la password deve essere valida
 function validatePassConfirm() {
 
-    if(password.classList.contains("is-valid") && password.value === confirmPassword.value){
-            confirmPassword.classList.add("is-valid");
-            confirmPassword.classList.remove("is-invalid");
+    if(passwordInput.classList.contains("is-valid") && passwordInput.value === confirmPassInput.value){
+            confirmPassInput.classList.add("is-valid");
+            confirmPassInput.classList.remove("is-invalid");
     }else{
-            if(String(confirmPassword.value).length > 0){
-                    confirmPassword.classList.add("is-invalid");
-                    confirmPassword.classList.remove("is-valid");
+            if(String(confirmPassInput.value).length > 0){
+                    confirmPassInput.classList.add("is-invalid");
+                    confirmPassInput.classList.remove("is-valid");
             }else{
-                    confirmPassword.classList.remove("is-invalid");
-                    confirmPassword.classList.remove("is-valid");
+                    confirmPassInput.classList.remove("is-invalid");
+                    confirmPassInput.classList.remove("is-valid");
             }
     }
 }
@@ -126,16 +126,16 @@ function validateSub(){
 
 
 // Attiva la validazione del campo username ad ogni input
-username.addEventListener("input", validateUsername);
+usernameInput.addEventListener("input", validateUsername);
 
 // Attiva la validazione del campo email ad ogni input
-email.addEventListener("input", validateEmail);
+emailInput.addEventListener("input", validateEmail);
 
 // Attiva la validazione del campo password ad ogni input
-password.addEventListener("input", validatePassword);
+passwordInput.addEventListener("input", validatePassword);
 
 // Attiva la validazione del campo conferma password ad ogni input
-confirmPassword.addEventListener("input", validatePassConfirm);
+confirmPassInput.addEventListener("input", validatePassConfirm);
 
 // Controlla lo stato di tutti i campi ad ogni input per abilitare/disabilitare il submit
 inBox.forEach(input => input.addEventListener("input", validateSub));
