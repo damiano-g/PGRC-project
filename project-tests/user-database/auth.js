@@ -1,24 +1,23 @@
+
+// Chiave usata per salvare l'array utenti in localStorage
 const usersDBKey = "users";
 let usersArray = [];
 
+// Recupera e restituisce l'array di utenti dal localStorage (se non esiste, restituisce array vuoto)
 function retrieveList(localStorageKey) {
-
     const array = [];
     const JSONFile = localStorage.getItem(localStorageKey);
-
     if(JSONFile){
         array = JSON.parse(JSONFile);
     }
-
     return array;
 }
 
+// Controlla se username o email sono già presenti nell'array utenti (restituisce true se non ci sono duplicati)
 function validateUserEntry(chosenUsername, chosenEmail, registeredUsersArray){
-
     if(registeredUsersArray.some(item => (item.username === chosenUsername) || (item.email === chosenEmail))){
         return false;
     }
-
     return true;
 }
 
@@ -42,13 +41,11 @@ async function hashString(originalString) {
     return hashPassword;
 }
 
+// Crea un oggetto utente con i dati forniti e la password hashata
 async function createUserCard(chosenUsername, chosenEmail, chosenPassword){
-
     const hashPassword = await hashString(chosenPassword);
-
     const timestamp = new Date();
     const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); 
-
     const newUser = {
         id: `user_${String(timestamp)}_${rnd}`,
         username: chosenUsername,
@@ -57,19 +54,17 @@ async function createUserCard(chosenUsername, chosenEmail, chosenPassword){
         favorites: [],
         creationDate: timestamp.toISOString(),
     }
-
     return newUser;
 }
 
+// Aggiunge un nuovo utente all'array e aggiorna il localStorage
 function addNewUser(newUser, registeredUsersArray, localStorageKey){
-
     registeredUsersArray.push(newUser);
-
     localStorage.setItem(localStorageKey, JSON.stringify(registeredUsersArray));
-
     return registeredUsersArray;
 }
 
+// All'avvio della pagina, recupera l'array utenti dal localStorage
 window.addEventListener("load", () => {
     usersArray = retrieveList(usersDBKey);
 });
