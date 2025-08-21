@@ -1,3 +1,4 @@
+
 # Step operativi per gestione profili utente (frontend, localStorage)
 
 Questo documento elenca passo-passo le attività da seguire per implementare la gestione dei profili utente usando solo il client e il `localStorage`.
@@ -190,3 +191,28 @@ Registro (iniziale):
 - Prossimi passi:
 	- Integrare la logica di salvataggio profili e autenticazione.
 	- Eventuale modularizzazione del codice JS per pagine/funzionalità.
+
+---
+
+- Data: 2025-08-21
+- Autore: damia
+- Area interessata: robustezza storage, commenti, modularità
+- Sommario delle modifiche / esperimento:
+	- Aggiunta gestione degli errori di accesso a localStorage (lettura/scrittura) con try/catch e messaggi all'utente.
+	- Commentato il flusso generale del programma per facilitare la comprensione e la manutenzione.
+	- Verificata la modularità tra validate.js e auth.js tramite export/import.
+	- Testata la disabilitazione dei campi durante operazioni asincrone e la gestione dei duplicati.
+- Scelte effettuate (breve):
+	- Gestione errori localStorage per maggiore robustezza.
+	- Commenti generali solo sul flusso, senza dettagli tecnici superflui.
+	- Modularità tramite ES6 modules.
+- Problemi riscontrati:
+	- Nessun problema bloccante, solo attenzione alla sincronizzazione tra moduli e DOM.
+- Soluzioni adottate / workaround:
+	- Test manuale e revisione dei commenti.
+- File/Artifacts prodotti (path nel repo):
+	- `project-tests/user-database/auth.js` (gestione errori, commenti flusso)
+- Impatto sulla progettazione generale (note):
+	- Codice più robusto, leggibile e pronto per estensioni future.
+- Prossimi passi:
+	- Proseguire con la UI e la gestione login/modifica profilo.
