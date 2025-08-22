@@ -1,45 +1,42 @@
-//Dichiarazioni variabili
-
-// DOM objects
-export const usernameInput = {
-        DOMelement: document.getElementById("username"),
-        inputStatus: 0,
-}
-
-export const emailInput = {
-        DOMelement: document.getElementById("email"),
-        inputStatus: 0,
-}
-
-export const passwordInput = {
-        DOMelement: document.getElementById("password"),
-        inputStatus: 0,
-}
-
-export const clearBtn = document.getElementById("clear");
-export const subBtn = document.getElementById("submit");
+// Oggetti e funzioni di utilità comune e gestione database locali
 
 
-// Chiave usata per salvare l'array utenti in localStorage
-export const usersDBKey = "users";
+
+// Chiavi per dati web storage
+const usersDBKey = "users";
+const loggedUserKey = "loggedUser";
+
 
 // Registro utenti registrati aggiornato ad ogni caricamento di pagina -> vedi window.onload
 // L'aggiornamento costante permette un'eventuale ricerca in tempo reale di username e/o mail già utilizzate
 // Da valutare l'implementazione - potrebbe essere superfluo
-export let registeredUsers = [];
+
+let registeredUsers = [];
+
+export function getRegisteredUsers() {
+    registeredUsers = retrieveRegisteredUsers() || [];
+    return registeredUsers;
+}
+
+let loggedUserId = "";
+
+export function getLoggedUserId() {
+    loggedUserId = retreiveLoggedUser() || "";
+    return loggedUserId;
+}
 
 
 
 //Dichiarazioni funzioni
 
 // Recupera e restituisce l'array di utenti dal localStorage (se non esiste, restituisce array vuoto)
-function retrieveList(localStorageKey) {
+function retrieveRegisteredUsers() {
     
     let array = [];
 
     // Gestione errori di lettura da localStorage (es. storage pieno, permessi negati, modalità privata)
     try{
-        const JSONFile = localStorage.getItem(localStorageKey);
+        const JSONFile = localStorage.getItem(usersDBKey);
         if(JSONFile){
             array = JSON.parse(JSONFile);
         }
@@ -50,6 +47,48 @@ function retrieveList(localStorageKey) {
     return array;
 }
 
+function retreiveLoggedUser(){
+    
+    let userId = "";
+    
+    try{
+        userId = sessionStorage.getItem(loggedUserKey) || "";
+    }catch(err){
+        alert("Errore di lettura nel database: "+err.message);
+    }
+    return userId;
+}
+
+export function addNewUser(newUserObject){
+    registeredUsers.push(newUserObject);
+    updateUsersDB(registeredUsers);
+}
+
+export function deleteUser(userId){
+    const index = registeredUsers.findIndex(item => item.id === userId);
+    registeredUsers.splice(index, 1);
+    updateUsersDB(registeredUsers);
+}
+
+function updateUsersDB(usersArray){
+    
+    try{
+        localStorage.setItem(usersDBKey, JSON.stringify(usersArray));
+    }catch(err){
+        alert("Errore di scrittura nel database: "+err.message);
+        console.error(err);
+    }
+}
+
+export function updateLoggedUser(userId){
+
+    try{
+        sessionStorage.setItem(loggedUserKey, userId);
+    }catch(err){
+        alert("Errore di scrittura nel database: "+err.message);
+        console.error(err);
+    }
+}
 
 // Funzione asincrona che riceve una stringa e restituisce il suo hash SHA-256 in formato esadecimale
 export async function hashString(originalString) {
@@ -71,23 +110,3 @@ export async function hashString(originalString) {
     return hashPassword;
 }
 
-// Abilita/disabilita il submit in base alla validità di tutti i campi
-export function validateSub(inputFieldsArray){
-
-    let ready = !inputFieldsArray.some(item => item.inputStatus != 1);
-
-    if(ready) {
-            subBtn.disabled = false;
-    }else{
-            subBtn.disabled = true;
-    }
-}
-
-
-
-//Gestione eventi
-
-// All'avvio della pagina, recupera l'array utenti dal localStorage
-window.addEventListener("load", () => {
-    registeredUsers = retrieveList(usersDBKey);
-});

@@ -1,38 +1,8 @@
-import { clearBtn, usernameInput, emailInput, passwordInput, validateSub } from "./common.js";
+// Collezione di funzioni per la validazione di input utente e formattazione form
 
-// Script per la validazione e gestione del form di registrazione utente
-
-// Dichiarazione variabili
-// export const usernameInput = {
-//         DOMelement: document.getElementById("username"),
-//         inputStatus: 0,
-// }
-
-// export const emailInput = {
-//         DOMelement: document.getElementById("email"),
-//         inputStatus: 0,
-// } 
-
-// export const passwordInput = {
-//         DOMelement: document.getElementById("password"),
-//         inputStatus: 0,
-// }
-
-const confirmPassInput = {
-        DOMelement: document.getElementById("confirmPassword"),
-        inputStatus: 0,
-} 
-
-// export const clearBtn = document.getElementById("clear");
-// export const subBtn = document.getElementById("submit");
-
-export const requiredInputFields = [usernameInput, emailInput, passwordInput, confirmPassInput];
-
-
-// Dichiarazione funzioni
 
 // Controlla che lo username abbia almeno 2 caratteri
-function validateUsername(inputObject) {
+export function validateUsername(inputObject) {
 
         const inputString = String(inputObject.DOMelement.value);
 
@@ -48,7 +18,7 @@ function validateUsername(inputObject) {
 }
 
 // Valida il campo email: controlla che sia nel formato corretto
-function validateEmail(inputObject){
+export function validateEmail(inputObject){
 
         const inputString = String(inputObject.DOMelement.value);
 
@@ -66,7 +36,7 @@ function validateEmail(inputObject){
 }
 
 // Valida il campo password: verifica lunghezza, presenza di maiuscole, minuscole e numeri
-function validatePassword(inputObject) {
+export function validatePassword(inputObject) {
 
         const inputString = String(inputObject.DOMelement.value);
 
@@ -109,8 +79,9 @@ function validatePassword(inputObject) {
         }
 }
 
+
 // Valida il campo di conferma password: deve coincidere con la password e la password deve essere valida
-function validatePassConfirm(inputObject, referObject) {
+export function validatePassConfirm(inputObject, referObject) {
 
         const inputString = String(inputObject.DOMelement.value);
         const referString = String(referObject.DOMelement.value);
@@ -137,20 +108,20 @@ function validatePassConfirm(inputObject, referObject) {
 
 
 // Abilita/disabilita il submit in base alla validità di tutti i campi
-// function validateSub(inputFieldsArray){
+export function validateBtn(inputFieldsArray, button){
 
-//     let ready = !inputFieldsArray.some(item => item.inputStatus != 1);
+    let ready = !inputFieldsArray.some(item => item.inputStatus != 1);
 
-//     if(ready) {
-//             subBtn.disabled = false;
-//     }else{
-//             subBtn.disabled = true;
-//     }
-// }
+    if(ready) {
+            button.disabled = false;
+    }else{
+            button.disabled = true;
+    }
+}
 
  
 // Aggiorna le classi visive del campo in base allo stato di validità -> positiveNum: valid, negativeNum: invalid, else: not provided 
-function formatInputField(inputObject) {
+export function formatInputField(inputObject) {
 
         const validity = Number(inputObject.inputStatus);
 
@@ -167,35 +138,3 @@ function formatInputField(inputObject) {
                 }
         }
 }
-
-
-
-// Event listeners
-
-// Attiva la validazione del campo username ad ogni input
-usernameInput.DOMelement.addEventListener("input", () => validateUsername(usernameInput));
-
-// Attiva la validazione del campo email ad ogni input
-emailInput.DOMelement.addEventListener("input", () => validateEmail(emailInput));
-
-// Attiva la validazione del campo password ad ogni input (agisce anche su classi visive di conferma password)
-passwordInput.DOMelement.addEventListener("input", () => validatePassword(passwordInput));
-passwordInput.DOMelement.addEventListener("input", () => validatePassConfirm(confirmPassInput, passwordInput));
-passwordInput.DOMelement.addEventListener("input", () => formatInputField(confirmPassInput));
-
-// Attiva la validazione del campo conferma password ad ogni input
-confirmPassInput.DOMelement.addEventListener("input", () => validatePassConfirm(confirmPassInput, passwordInput));
-
-// Controlla lo stato di tutti i campi ad ogni input per abilitare/disabilitare il submit
-requiredInputFields.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => validateSub(requiredInputFields)));
-requiredInputFields.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => formatInputField(inputObject)));
-
-//Resetta tutto alla condizione iniziale
-clearBtn.addEventListener("click", () => {
-        requiredInputFields.forEach(item => {
-                item.inputStatus = 0;
-                formatInputField(item);
-        });
-        confirmPassInput.DOMelement.disabled = true;
-        validateSub(requiredInputFields);       
-});

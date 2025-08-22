@@ -1,53 +1,72 @@
-import { usernameInput, passwordInput, registeredUsers, hashString, subBtn, clearBtn } from "./common.js";
+import { getRegisteredUsers, updateLoggedUser, } from "./common.js";
+import { searchUserbyName, admitUser, } from "./auth.js";
+import { validateBtn, } from "./validate.js";
 
-const requiredInputFields = [usernameInput, passwordInput];
-
-
-function searchUser(providedUsername) {
-
-    const index = registeredUsers.findIndex(item => item.username === providedUsername);
-
-    if(index < 0) return null;
-    return registeredUsers[index].id;
+// DOM objects
+const loginUsernameInput = {
+        DOMelement: document.getElementById("username"),
+        inputStatus: 0,
 }
 
-async function admitUser(userId, providedPassword){
-
-    const index = registeredUsers.findIndex(item => item.id === userId);
-    const userHash = registeredUsers[index].password;
-
-    const providedHash = await hashString(providedPassword);
-
-    return userHash === providedHash;
+const loginPasswordInput = {
+        DOMelement: document.getElementById("password"),
+        inputStatus: 0,
 }
 
+const loginRequiredInputs = [loginUsernameInput, loginPasswordInput];
+
+const loginCLearBtn = document.getElementById("clear");
+const loginSubBtn = document.getElementById("submit");
 
 
-subBtn.addEventListener("click", async () => {
 
-    subBtn.disabled = true;
-    clearBtn.disabled = true;
-    requiredInputFields.forEach(item => item.DOMelement.disabled = true);
+// Events management
+
+loginUsernameInput.DOMelement.addEventListener("input", () => {
+    if(loginUsernameInput.DOMelement.value.length > 0){
+        loginUsernameInput.inputStatus = 1;
+    }else{
+        loginUsernameInput.inputStatus = 0;
+    }
+});
+
+loginPasswordInput.DOMelement.addEventListener("input", () => {
+    if(loginPasswordInput.DOMelement.value.length > 0){
+        loginPasswordInput.inputStatus = 1;
+    }else{
+        loginPasswordInput.inputStatus = 0;
+    }
+});
+
+loginRequiredInputs.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => validateBtn(loginRequiredInputs, loginSubBtn)));
+
+loginSubBtn.addEventListener("click", async () => {
+
+    loginSubBtn.disabled = true;
+    loginCLearBtn.disabled = true;
+    loginRequiredInputs.forEach(item => item.DOMelement.disabled = true);
 
     try{
-        const currentUsername = usernameInput.DOMelement.value;
-        const currentPassword = passwordInput.DOMelement.value;
-        const foundId = searchUser(currentUsername);
+        const currentUsername = loginUsernameInput.DOMelement.value;
+        const currentPassword = loginPasswordInput.DOMelement.value;
+        const foundId = searchUserbyName(currentUsername, getRegisteredUsers());
+        loginRequiredInputs.forEach(item => item.DOMelement.disabled = false);
+        loginPasswordInput.DOMelement.value = "";
+        loginPasswordInput.inputStatus = 0;
         if(!foundId){
             alert("Nome utente non trovato");
         }else{
-            const admitted = await admitUser(foundId, currentPassword);
+            const admitted = await admitUser(foundId, currentPassword, getRegisteredUsers());
             if(admitted){
+                updateLoggedUser(foundId);
                 alert("Login effettuato");
+                window.location.href = "./pages/landing.html";
             }else{
                 alert("Password errata");
             }
         }
     }finally{
-        clearBtn.disabled = false;
-        requiredInputFields.forEach(item => item.DOMelement.disabled = false);
-        clearBtn.click();
-        subBtn.disabled = false;
+        loginCLearBtn.disabled = false;
     }
 });
 

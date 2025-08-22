@@ -1,9 +1,9 @@
-// Importa riferimenti agli elementi del form e oggetti di input dal modulo validate.js
-import { requiredInputFields, } from "./validate.js";
-import { subBtn, clearBtn, usernameInput, emailInput, passwordInput, usersDBKey, registeredUsers, hashString, } from "./common.js";
+// Collezione di funzioni per autorizzazioni di modifica database e login
+
+import { hashString, } from "./common.js";
 
 // Controlla se username o email sono già presenti nell'array utenti (restituisce true se non ci sono duplicati)
-function validateUserEntry(chosenUsername, chosenEmail, usersArray){
+export function validateUserEntry(chosenUsername, chosenEmail, usersArray){
     
     if(usersArray.some(item => (item.username === chosenUsername))){
         return "username";
@@ -15,7 +15,7 @@ function validateUserEntry(chosenUsername, chosenEmail, usersArray){
 }
 
 // Crea un oggetto utente con i dati forniti e la password hashata
-async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
+export async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
     const hashPassword = await hashString(chosenPassword);
     const timestamp = Date.now();
     const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); 
@@ -30,52 +30,21 @@ async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
     return userObject;
 }
 
-// Aggiunge un nuovo utente all'array e aggiorna il localStorage
-function addNewUser(userObject, usersArray, localStorageKey){
-    
-    try{
-        usersArray.push(userObject);
-        localStorage.setItem(localStorageKey, JSON.stringify(usersArray));
-    }catch(err){
-        alert("Errore di scrittura nel database: "+err.message);
-        console.error(err);
-    }
+export function searchUserbyName(providedUsername, usersArray) {
+
+    const index = usersArray.findIndex(item => item.username === providedUsername);
+
+    if(index < 0) return null;
+    return usersArray[index].id;
 }
 
+export async function admitUser(userId, providedPassword, usersArray){
 
-//Eventi
+    const index = usersArray.findIndex(item => item.id === userId);
+    const userHash = usersArray[index].password;
 
-// Gestisce il click sul bottone di submit: disabilita i campi, valida i dati, crea l’utente, aggiorna il database e mostra messaggi di feedback
-subBtn.addEventListener("click", async () => {
-    
-    subBtn.disabled = true;
-    clearBtn.disabled = true;
-    requiredInputFields.forEach(item => item.DOMelement.disabled = true);
+    const providedHash = await hashString(providedPassword);
 
-    try{
-        const currentUsername = usernameInput.DOMelement.value;
-        const currentEmail = emailInput.DOMelement.value;
-        const currentPassword = passwordInput.DOMelement.value;
-        const duplicateUser = validateUserEntry(currentUsername, currentEmail, registeredUsers);
-    
-        if(!duplicateUser){
-            const newUser = await createUserObject(currentUsername, currentEmail, currentPassword);
-            addNewUser(newUser, registeredUsers, usersDBKey);
-            alert("Utente registrato con successo");
-        }else{
-            if(duplicateUser === "username"){
-                alert("Nome utente non disponibile");
-            }
-            if(duplicateUser === "email"){
-                alert("Errore: email già registrata. Utilizzare un'altra email o effettuare il login");
-            }
-        }
-    }catch(err){
-        alert("Errore: "+err.message+"\nCodice errore: "+(err.code || "N/A"));
-        console.error(err);
-    }finally{
-        clearBtn.disabled = false;
-        requiredInputFields.forEach(item => item.DOMelement.disabled = false);
-        clearBtn.click();
-    }
-});
+    return userHash === providedHash;
+}
+
