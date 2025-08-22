@@ -32,9 +32,14 @@ async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
 
 // Aggiunge un nuovo utente all'array e aggiorna il localStorage
 function addNewUser(userObject, usersArray, localStorageKey){
-    usersArray.push(userObject);
-    localStorage.setItem(localStorageKey, JSON.stringify(usersArray));
-    return usersArray;
+    
+    try{
+        usersArray.push(userObject);
+        localStorage.setItem(localStorageKey, JSON.stringify(usersArray));
+    }catch(err){
+        alert("Errore di scrittura nel database: "+err.message);
+        console.error(err);
+    }
 }
 
 
@@ -55,13 +60,7 @@ subBtn.addEventListener("click", async () => {
     
         if(!duplicateUser){
             const newUser = await createUserObject(currentUsername, currentEmail, currentPassword);
-            registeredUsers = addNewUser(newUser, registeredUsers, usersDBKey);
-            try{
-                localStorage.setItem(usersDBKey, JSON.stringify(registeredUsers));
-            }catch(err){
-                alert("Errore di scrittura nel database: "+err.message);
-                console.error(err);
-            }
+            addNewUser(newUser, registeredUsers, usersDBKey);
             alert("Utente registrato con successo");
         }else{
             if(duplicateUser === "username"){
@@ -74,5 +73,9 @@ subBtn.addEventListener("click", async () => {
     }catch(err){
         alert("Errore: "+err.message+"\nCodice errore: "+(err.code || "N/A"));
         console.error(err);
+    }finally{
+        clearBtn.disabled = false;
+        requiredInputFields.forEach(item => item.DOMelement.disabled = false);
+        clearBtn.click();
     }
 });
