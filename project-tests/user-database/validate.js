@@ -1,29 +1,30 @@
+import { clearBtn, usernameInput, emailInput, passwordInput, validateSub } from "./common.js";
 
 // Script per la validazione e gestione del form di registrazione utente
 
 // Dichiarazione variabili
-export const usernameInput = {
-        DOMelement: document.getElementById("username"),
-        inputStatus: 0,
-}
+// export const usernameInput = {
+//         DOMelement: document.getElementById("username"),
+//         inputStatus: 0,
+// }
 
-export const emailInput = {
-        DOMelement: document.getElementById("email"),
-        inputStatus: 0,
-} 
+// export const emailInput = {
+//         DOMelement: document.getElementById("email"),
+//         inputStatus: 0,
+// } 
 
-export const passwordInput = {
-        DOMelement: document.getElementById("password"),
-        inputStatus: 0,
-}
+// export const passwordInput = {
+//         DOMelement: document.getElementById("password"),
+//         inputStatus: 0,
+// }
 
 const confirmPassInput = {
         DOMelement: document.getElementById("confirmPassword"),
         inputStatus: 0,
 } 
 
-export const clearBtn = document.getElementById("clear");
-export const subBtn = document.getElementById("submit");
+// export const clearBtn = document.getElementById("clear");
+// export const subBtn = document.getElementById("submit");
 
 export const requiredInputFields = [usernameInput, emailInput, passwordInput, confirmPassInput];
 
@@ -100,7 +101,7 @@ function validatePassword(inputObject) {
         if(inputString.length >= 8 && inputString.match(lowCase) && inputString.match(upCase) && inputString.match(num)){
                 inputObject.inputStatus = 1;
         }else{
-                if(inputObject.length < 1){
+                if(inputString.length < 1){
                         inputObject.inputStatus = 0;
                 }else{
                         inputObject.inputStatus = -1;
@@ -136,16 +137,16 @@ function validatePassConfirm(inputObject, referObject) {
 
 
 // Abilita/disabilita il submit in base alla validità di tutti i campi
-function validateSub(inputFieldsArray){
+// function validateSub(inputFieldsArray){
 
-    let ready = !inputFieldsArray.some(item => item.inputStatus != 1);
+//     let ready = !inputFieldsArray.some(item => item.inputStatus != 1);
 
-    if(ready) {
-            subBtn.disabled = false;
-    }else{
-            subBtn.disabled = true;
-    }
-}
+//     if(ready) {
+//             subBtn.disabled = false;
+//     }else{
+//             subBtn.disabled = true;
+//     }
+// }
 
  
 // Aggiorna le classi visive del campo in base allo stato di validità -> positiveNum: valid, negativeNum: invalid, else: not provided 

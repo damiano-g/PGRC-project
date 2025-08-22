@@ -1,6 +1,6 @@
 // Importa riferimenti agli elementi del form e oggetti di input dal modulo validate.js
-import { subBtn, clearBtn, requiredInputFields, usernameInput, emailInput, passwordInput } from "./validate.js";
-import { usersDBKey, registeredUsers, hashString, } from "./common.js";
+import { requiredInputFields, } from "./validate.js";
+import { subBtn, clearBtn, usernameInput, emailInput, passwordInput, usersDBKey, registeredUsers, hashString, } from "./common.js";
 
 // Controlla se username o email sono già presenti nell'array utenti (restituisce true se non ci sono duplicati)
 function validateUserEntry(chosenUsername, chosenEmail, usersArray){

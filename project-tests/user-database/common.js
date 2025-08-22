@@ -1,7 +1,31 @@
 //Dichiarazioni variabili
 
+// DOM objects
+export const usernameInput = {
+        DOMelement: document.getElementById("username"),
+        inputStatus: 0,
+}
+
+export const emailInput = {
+        DOMelement: document.getElementById("email"),
+        inputStatus: 0,
+}
+
+export const passwordInput = {
+        DOMelement: document.getElementById("password"),
+        inputStatus: 0,
+}
+
+export const clearBtn = document.getElementById("clear");
+export const subBtn = document.getElementById("submit");
+
+
 // Chiave usata per salvare l'array utenti in localStorage
 export const usersDBKey = "users";
+
+// Registro utenti registrati aggiornato ad ogni caricamento di pagina -> vedi window.onload
+// L'aggiornamento costante permette un'eventuale ricerca in tempo reale di username e/o mail già utilizzate
+// Da valutare l'implementazione - potrebbe essere superfluo
 export let registeredUsers = [];
 
 
@@ -44,6 +68,18 @@ export async function hashString(originalString) {
 
     // 5. Restituisce la stringa hash finale
     return hashPassword;
+}
+
+// Abilita/disabilita il submit in base alla validità di tutti i campi
+export function validateSub(inputFieldsArray){
+
+    let ready = !inputFieldsArray.some(item => item.inputStatus != 1);
+
+    if(ready) {
+            subBtn.disabled = false;
+    }else{
+            subBtn.disabled = true;
+    }
 }
 
 
