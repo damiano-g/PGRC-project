@@ -50,6 +50,7 @@ function retrieveList(localStorageKey) {
     return array;
 }
 
+
 // Funzione asincrona che riceve una stringa e restituisce il suo hash SHA-256 in formato esadecimale
 export async function hashString(originalString) {
     // 1. Converte la stringa in un array di byte (Uint8Array) usando TextEncoder
