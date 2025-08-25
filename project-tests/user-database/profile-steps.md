@@ -247,3 +247,11 @@ Registro (iniziale):
 - Prossimi passi:
     - Proseguire con la gestione della UI e delle funzionalità di modifica profilo.
     - Aggiornare la documentazione e i commenti nei moduli JS.
+
+---
+
+## Note per implementazioni future
+
+### Sicurezza e controlli utente
+- **Controllo password per eliminazione account**: Attualmente l'eliminazione dell'account non richiede la conferma della password. Valutare l'implementazione di un controllo che richieda la password corrente prima di procedere con l'eliminazione definitiva.
+- **Controlli più robusti sull'utente loggato**: Implementare verifiche aggiuntive per validare che l'utente sia effettivamente autorizzato ad accedere alle funzionalità riservate (es. controllo scadenza sessione, validazione ID utente, gestione logout automatico in caso di dati corrotti).
