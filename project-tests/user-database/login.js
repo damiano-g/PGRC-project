@@ -54,7 +54,7 @@ loginSubBtn.addEventListener("click", async () => {
     try{
         const currentUsername = loginUsernameInput.DOMelement.value;
         const currentPassword = loginPasswordInput.DOMelement.value;
-        const foundId = searchUserbyName(currentUsername);
+        const foundId = searchUserbyName(currentUsername).id;
         loginRequiredInputs.forEach(item => item.DOMelement.disabled = false);
         loginPasswordInput.DOMelement.value = "";
         loginPasswordInput.inputStatus = 0;

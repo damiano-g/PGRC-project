@@ -110,7 +110,7 @@ export function validatePassConfirm(inputObject, referObject) {
 // Abilita/disabilita il submit in base alla validità di tutti i campi
 export function validateBtn(inputFieldsArray, button){
 
-    let ready = !inputFieldsArray.some(item => item.inputStatus != 1);
+    let ready = !inputFieldsArray.some(item => (item.inputStatus != 1 && item.DOMelement.required === true));
 
     if(ready) {
             button.disabled = false;

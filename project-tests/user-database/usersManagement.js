@@ -29,7 +29,7 @@ let loggedUserId = "";
 // Possibile evitare il caricamento da localstorage gestendo l'aggiornamento della variabile al caricamento di ogni pagina
 export function getRegisteredUsers() {
     registeredUsers = retrieveRegisteredUsers() || [];
-    return [...registeredUsers];
+    return structuredClone(registeredUsers); // Ritorna una copia profonda dell'oggetto (copia tutti i livelli di annidamento)
 }
 
 // Recupera l'ID dell'utente attualmente loggato dal sessionStorage
@@ -115,23 +115,79 @@ export function deleteUser(userId){
     updateUsersDB(actualRegUsersArray);
 }
 
+
+export function updateUserUsername(newUsername){
+
+    const actualRegUsersArray = retrieveRegisteredUsers() || [];
+    const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
+    
+    if(index > -1){
+        actualRegUsersArray[index].username = newUsername;
+    }
+
+    updateUsersDB(actualRegUsersArray);
+}
+
+export function updateUserEmail(newUserEmail){
+
+    const actualRegUsersArray = retrieveRegisteredUsers() || [];
+    const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
+    
+    if(index > -1){
+        actualRegUsersArray[index].email = newUserEmail;
+    }
+
+    updateUsersDB(actualRegUsersArray);
+}
+
+export async function updateUserPassword(newUserPassword){
+
+    const actualRegUsersArray = retrieveRegisteredUsers() || [];
+    const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
+    
+    if(index > -1){
+        actualRegUsersArray[index].password = await hashString(newUserPassword);
+    }
+
+    updateUsersDB(actualRegUsersArray);
+}
 // ============================================================================
 // FUNZIONI DI VALIDAZIONE
 // ============================================================================
 
 // Verifica la disponibilità di username ed email nel database utenti
 // Restituisce "username" o "email" se duplicati, null se disponibili
-export function validateUserEntry(chosenUsername, chosenEmail){
+export function authUserEntries(chosenUsername, chosenEmail){
+
+    if(!authUsername(chosenUsername)){
+        return "username";
+    }
+    if(!authEmail(chosenEmail)){
+        return "email";
+    }
+    return null;
+}
+
+export function authUsername(chosenUsername){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
     
     if(actualRegUsersArray.some(item => (item.username === chosenUsername))){
-        return "username";
+        return false;
     }
+    
+    return true;
+}
+
+export function authEmail(chosenEmail){
+
+    const actualRegUsersArray = retrieveRegisteredUsers() || []; 
+
     if(actualRegUsersArray.some(item => (item.email === chosenEmail))){
-        return "email";
+        return false;
     }
-    return null;
+
+    return true;
 }
 
 // ============================================================================
@@ -161,7 +217,18 @@ export function searchUserbyName(providedUsername) {
     const index = actualRegUsersArray.findIndex(item => item.username === providedUsername);
 
     if(index < 0) return null;
-    return actualRegUsersArray[index].id;
+
+    return structuredClone(actualRegUsersArray[index]); // Ritorna una copia profonda dell'oggetto (copia tutti i livelli di annidamento)
+}
+
+export function searchUserById(userId){
+
+    const actualRegUsersArray = retrieveRegisteredUsers() || [];
+    const index = actualRegUsersArray.findIndex(item => item.id === userId);
+
+    if(index < 0) return null;
+
+    return structuredClone(actualRegUsersArray[index]); // Ritorna una copia profonda dell'oggetto (copia tutti i livelli di annidamento)
 }
 
 // ============================================================================
