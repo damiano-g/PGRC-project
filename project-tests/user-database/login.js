@@ -1,4 +1,4 @@
-import { getRegisteredUsers, updateLoggedUser, searchUserbyName, admitUser, } from "./usersManagement.js"; 
+import { updateLoggedUser, searchUserbyName, admitUser, } from "./usersManagement.js"; 
 import { validateBtn, } from "./validate.js";
 
 // Oggetti DOM per gli input del form di login con stato di validazione
@@ -54,14 +54,14 @@ loginSubBtn.addEventListener("click", async () => {
     try{
         const currentUsername = loginUsernameInput.DOMelement.value;
         const currentPassword = loginPasswordInput.DOMelement.value;
-        const foundId = searchUserbyName(currentUsername, getRegisteredUsers());
+        const foundId = searchUserbyName(currentUsername);
         loginRequiredInputs.forEach(item => item.DOMelement.disabled = false);
         loginPasswordInput.DOMelement.value = "";
         loginPasswordInput.inputStatus = 0;
         if(!foundId){
             alert("Nome utente non trovato");
         }else{
-            const admitted = await admitUser(foundId, currentPassword, getRegisteredUsers());
+            const admitted = await admitUser(foundId, currentPassword);
             if(admitted){
                 updateLoggedUser(foundId);
                 alert("Login effettuato");

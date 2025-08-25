@@ -1,6 +1,6 @@
 //Gestione eventi per pagina di registrazione
 
-import { addNewUser, getRegisteredUsers, validateUserEntry, createUserObject, } from "./usersManagement.js";
+import { addNewUser, validateUserEntry, createUserObject, } from "./usersManagement.js";
 import { validateUsername, validateEmail, validatePassword, validatePassConfirm, formatInputField, validateBtn } from "./validate.js";
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione
@@ -76,7 +76,7 @@ signinSubBtn.addEventListener("click", async () => {
         const currentUsername = signinUsernameInput.DOMelement.value;
         const currentEmail = signinEmailInput.DOMelement.value;
         const currentPassword = signinPasswordInput.DOMelement.value;
-        const duplicateUser = validateUserEntry(currentUsername, currentEmail, getRegisteredUsers());
+        const duplicateUser = validateUserEntry(currentUsername, currentEmail);
     
         if(!duplicateUser){
             const newUser = await createUserObject(currentUsername, currentEmail, currentPassword);

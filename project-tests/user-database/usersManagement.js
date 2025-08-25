@@ -25,14 +25,14 @@ let loggedUserId = "";
 // ============================================================================
 
 // Recupera l'array degli utenti registrati aggiornato dal localStorage
+// Restituisce una copia dell'array originale impedendo modifiche in funzioni esterne al modulo
 export function getRegisteredUsers() {
-    registeredUsers = retrieveRegisteredUsers() || [];
-    return registeredUsers;
+    return [...registeredUsers];
 }
 
 // Recupera l'ID dell'utente attualmente loggato dal sessionStorage
+// La stringa è immutabile -> non possibili modifiche esterne
 export function getLoggedUserId() {
-    loggedUserId = retreiveLoggedUser() || "";
     return loggedUserId;
 }
 
@@ -45,14 +45,12 @@ function retrieveRegisteredUsers() {
     
     let array = [];
 
-    // Gestione errori di lettura da localStorage (es. storage pieno, permessi negati, modalità privata)
     try{
         const JSONFile = localStorage.getItem(usersDBKey);
         if(JSONFile){
             array = JSON.parse(JSONFile);
         }
     }catch(err){
-    // Mostra un alert all'utente in caso di errore di lettura e non blocca l'applicazione
         alert("Errore di lettura nel database: "+err.message);
     }
     return array;
@@ -105,7 +103,7 @@ export function addNewUser(newUserObject){
     actualRegUsersArray.push(newUserObject);
     try {
         updateUsersDB(actualRegUsersArray);
-        registeredUsers = actualRegUsersArray; // NOTA: Aggiornamento superfluo - getter rilegge sempre dal storage
+        registeredUsers = actualRegUsersArray;
     } catch (err) {
         alert("impossibile effettuare le modifiche: "+err.message);
         console.error(err);
@@ -120,7 +118,7 @@ export function deleteUser(userId){
     actualRegUsersArray.splice(index, 1);
     try {
         updateUsersDB(actualRegUsersArray);
-        registeredUsers = actualRegUsersArray; // NOTA: Aggiornamento superfluo - getter rilegge sempre dal storage
+        registeredUsers = actualRegUsersArray;
     } catch (err) {
         alert("impossibile effettuare le modifiche: "+err.message);
         console.error(err);
@@ -133,12 +131,12 @@ export function deleteUser(userId){
 
 // Verifica la disponibilità di username ed email nel database utenti
 // Restituisce "username" o "email" se duplicati, null se disponibili
-export function validateUserEntry(chosenUsername, chosenEmail, usersArray){
+export function validateUserEntry(chosenUsername, chosenEmail){
     
-    if(usersArray.some(item => (item.username === chosenUsername))){
+    if(registeredUsers.some(item => (item.username === chosenUsername))){
         return "username";
     }
-    if(usersArray.some(item => (item.email === chosenEmail))){
+    if(registeredUsers.some(item => (item.email === chosenEmail))){
         return "email";
     }
     return null;
@@ -165,12 +163,12 @@ export async function createUserObject(chosenUsername, chosenEmail, chosenPasswo
 }
 
 // Ricerca un utente nel database tramite username e restituisce il suo ID
-export function searchUserbyName(providedUsername, usersArray) {
+export function searchUserbyName(providedUsername) {
 
-    const index = usersArray.findIndex(item => item.username === providedUsername);
+    const index = registeredUsers.findIndex(item => item.username === providedUsername);
 
     if(index < 0) return null;
-    return usersArray[index].id;
+    return registeredUsers[index].id;
 }
 
 // ============================================================================
@@ -178,10 +176,10 @@ export function searchUserbyName(providedUsername, usersArray) {
 // ============================================================================
 
 // Verifica le credenziali di accesso confrontando la password hashata
-export async function admitUser(userId, providedPassword, usersArray){
+export async function admitUser(userId, providedPassword){
 
-    const index = usersArray.findIndex(item => item.id === userId);
-    const userHash = usersArray[index].password;
+    const index = registeredUsers.findIndex(item => item.id === userId);
+    const userHash = registeredUsers[index].password;
 
     const providedHash = await hashString(providedPassword);
 
