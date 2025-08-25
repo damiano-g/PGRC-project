@@ -1,3 +1,8 @@
+// ===================================================================
+// ATTENZIONE!! Modulo temporaneo -> consolidato in usersManagement.js
+// ===================================================================
+
+
 // Collezione di funzioni per autorizzazioni di modifica database e login
 
 import { hashString, } from "./common.js";

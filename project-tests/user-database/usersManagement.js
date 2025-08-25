@@ -1,21 +1,28 @@
-// ===================================================================
-// ATTENZIONE!! Modulo temporaneo -> consolidato in usersManagement.js
-// ===================================================================
+// Gestione completa degli utenti: storage, validazione, autenticazione e operazioni CRUD
 
-
-// Oggetti e funzioni di utilità comune e gestione database locali
+// ============================================================================
+// CONFIGURAZIONE E COSTANTI
+// ============================================================================
 
 // Chiavi per dati web storage
 const usersDBKey = "users";
 const loggedUserKey = "loggedUser";
 
+// ============================================================================
+// VARIABILI DI STATO
+// ============================================================================
 
 // Registro utenti registrati aggiornato ad ogni caricamento di pagina -> vedi window.onload
 // L'aggiornamento costante permette un'eventuale ricerca in tempo reale di username e/o mail già utilizzate
 // NOTA: Attualmente la variabile è sovrascritta ad ogni chiamata del getter, quindi non mantiene vera cache
 // Da valutare l'implementazione - potrebbe essere superfluo e potrebbe essere rimossa per semplificare il codice
-
 let registeredUsers = [];
+
+let loggedUserId = "";
+
+// ============================================================================
+// FUNZIONI GETTER PER ACCESSO AI DATI
+// ============================================================================
 
 // Recupera l'array degli utenti registrati aggiornato dal localStorage
 export function getRegisteredUsers() {
@@ -23,17 +30,15 @@ export function getRegisteredUsers() {
     return registeredUsers;
 }
 
-let loggedUserId = "";
-
 // Recupera l'ID dell'utente attualmente loggato dal sessionStorage
 export function getLoggedUserId() {
     loggedUserId = retreiveLoggedUser() || "";
     return loggedUserId;
 }
 
-
-
-//Dichiarazioni funzioni
+// ============================================================================
+// FUNZIONI DI STORAGE INTERNO
+// ============================================================================
 
 // Recupera e restituisce l'array di utenti dal localStorage (se non esiste, restituisce array vuoto)
 function retrieveRegisteredUsers() {
@@ -66,6 +71,33 @@ function retreiveLoggedUser(){
     return userId;
 }
 
+// Salva l'array utenti nel localStorage con gestione errori
+function updateUsersDB(usersArray){
+    
+    try{
+        localStorage.setItem(usersDBKey, JSON.stringify(usersArray));
+    }catch(err){
+        alert("Errore di scrittura nel database: "+err.message);
+        console.error(err);
+        throw err;
+    }
+}
+
+// Aggiorna l'ID dell'utente loggato nel sessionStorage
+export function updateLoggedUser(userId){
+
+    try{
+        sessionStorage.setItem(loggedUserKey, userId);
+    }catch(err){
+        alert("Errore di scrittura nel database: "+err.message);
+        console.error(err);
+    }
+}
+
+// ============================================================================
+// OPERAZIONI CRUD ATOMICHE
+// ============================================================================
+
 // Aggiunge un nuovo utente all'array e aggiorna il localStorage
 // Implementazione atomica: legge dati freschi, modifica e salva in un'unica operazione
 export function addNewUser(newUserObject){
@@ -95,28 +127,70 @@ export function deleteUser(userId){
     }
 }
 
-// Salva l'array utenti nel localStorage con gestione errori
-function updateUsersDB(usersArray){
+// ============================================================================
+// FUNZIONI DI VALIDAZIONE
+// ============================================================================
+
+// Verifica la disponibilità di username ed email nel database utenti
+// Restituisce "username" o "email" se duplicati, null se disponibili
+export function validateUserEntry(chosenUsername, chosenEmail, usersArray){
     
-    try{
-        localStorage.setItem(usersDBKey, JSON.stringify(usersArray));
-    }catch(err){
-        alert("Errore di scrittura nel database: "+err.message);
-        console.error(err);
-        throw err;
+    if(usersArray.some(item => (item.username === chosenUsername))){
+        return "username";
     }
+    if(usersArray.some(item => (item.email === chosenEmail))){
+        return "email";
+    }
+    return null;
 }
 
-// Aggiorna l'ID dell'utente loggato nel sessionStorage
-export function updateLoggedUser(userId){
+// ============================================================================
+// FUNZIONI DI CREAZIONE E GESTIONE UTENTI
+// ============================================================================
 
-    try{
-        sessionStorage.setItem(loggedUserKey, userId);
-    }catch(err){
-        alert("Errore di scrittura nel database: "+err.message);
-        console.error(err);
+// Genera un nuovo oggetto utente completo con password hashata e ID univoco
+export async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
+    const hashPassword = await hashString(chosenPassword);
+    const timestamp = Date.now();
+    const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); 
+    const userObject = {
+        id: `user_${timestamp}_${rnd}`,
+        username: chosenUsername,
+        email: chosenEmail,
+        password: hashPassword,
+        favorites: [],
+        creationDate: new Date().toISOString(),
     }
+    return userObject;
 }
+
+// Ricerca un utente nel database tramite username e restituisce il suo ID
+export function searchUserbyName(providedUsername, usersArray) {
+
+    const index = usersArray.findIndex(item => item.username === providedUsername);
+
+    if(index < 0) return null;
+    return usersArray[index].id;
+}
+
+// ============================================================================
+// FUNZIONI DI AUTENTICAZIONE
+// ============================================================================
+
+// Verifica le credenziali di accesso confrontando la password hashata
+export async function admitUser(userId, providedPassword, usersArray){
+
+    const index = usersArray.findIndex(item => item.id === userId);
+    const userHash = usersArray[index].password;
+
+    const providedHash = await hashString(providedPassword);
+
+    return userHash === providedHash;
+}
+
+// ============================================================================
+// FUNZIONI CRITTOGRAFICHE
+// ============================================================================
 
 // Funzione asincrona che riceve una stringa e restituisce il suo hash SHA-256 in formato esadecimale
 export async function hashString(originalString) {
@@ -137,4 +211,3 @@ export async function hashString(originalString) {
     // 5. Restituisce la stringa hash finale
     return hashPassword;
 }
-
