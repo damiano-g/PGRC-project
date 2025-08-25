@@ -26,13 +26,15 @@ let loggedUserId = "";
 
 // Recupera l'array degli utenti registrati aggiornato dal localStorage
 // Restituisce una copia dell'array originale impedendo modifiche in funzioni esterne al modulo
+// Possibile evitare il caricamento da localstorage gestendo l'aggiornamento della variabile al caricamento di ogni pagina
 export function getRegisteredUsers() {
+    registeredUsers = retrieveRegisteredUsers() || [];
     return [...registeredUsers];
 }
 
 // Recupera l'ID dell'utente attualmente loggato dal sessionStorage
-// La stringa è immutabile -> non possibili modifiche esterne
 export function getLoggedUserId() {
+    loggedUserId = retreiveLoggedUser() || "";
     return loggedUserId;
 }
 
@@ -103,7 +105,7 @@ export function addNewUser(newUserObject){
     actualRegUsersArray.push(newUserObject);
     try {
         updateUsersDB(actualRegUsersArray);
-        registeredUsers = actualRegUsersArray;
+        registeredUsers = actualRegUsersArray; // NOTA: Aggiornamento superfluo - getter rilegge sempre dal storage
     } catch (err) {
         alert("impossibile effettuare le modifiche: "+err.message);
         console.error(err);
@@ -118,7 +120,7 @@ export function deleteUser(userId){
     actualRegUsersArray.splice(index, 1);
     try {
         updateUsersDB(actualRegUsersArray);
-        registeredUsers = actualRegUsersArray;
+        registeredUsers = actualRegUsersArray; // NOTA: Aggiornamento superfluo - getter rilegge sempre dal storage
     } catch (err) {
         alert("impossibile effettuare le modifiche: "+err.message);
         console.error(err);
