@@ -61,16 +61,20 @@ function retreiveLoggedUser(){
 }
 
 // Aggiunge un nuovo utente all'array e aggiorna il localStorage
+// Implementazione atomica: legge dati freschi, modifica e salva in un'unica operazione
 export function addNewUser(newUserObject){
-    registeredUsers.push(newUserObject);
-    updateUsersDB(registeredUsers);
+    const actualRegUsersArray = retrieveRegisteredUsers() || [];
+    actualRegUsersArray.push(newUserObject);
+    updateUsersDB(actualRegUsersArray);
 }
 
 // Rimuove un utente dall'array tramite ID e aggiorna il localStorage
+// Implementazione atomica: legge dati freschi, modifica e salva in un'unica operazione
 export function deleteUser(userId){
-    const index = registeredUsers.findIndex(item => item.id === userId);
-    registeredUsers.splice(index, 1);
-    updateUsersDB(registeredUsers);
+    const actualRegUsersArray = retrieveRegisteredUsers() || [];
+    const index = actualRegUsersArray.findIndex(item => item.id === userId);
+    actualRegUsersArray.splice(index, 1);
+    updateUsersDB(actualRegUsersArray);
 }
 
 // Salva l'array utenti nel localStorage con gestione errori
