@@ -2,7 +2,7 @@ import { getRegisteredUsers, updateLoggedUser, } from "./common.js";
 import { searchUserbyName, admitUser, } from "./auth.js";
 import { validateBtn, } from "./validate.js";
 
-// DOM objects
+// Oggetti DOM per gli input del form di login con stato di validazione
 const loginUsernameInput = {
         DOMelement: document.getElementById("username"),
         inputStatus: 0,
@@ -13,15 +13,18 @@ const loginPasswordInput = {
         inputStatus: 0,
 }
 
+// Array degli input richiesti per la validazione del form
 const loginRequiredInputs = [loginUsernameInput, loginPasswordInput];
 
+// Riferimenti ai pulsanti del form di login
 const loginCLearBtn = document.getElementById("clear");
 const loginSubBtn = document.getElementById("submit");
 
 
 
-// Events management
+// Gestione eventi degli input e validazione form
 
+// Aggiorna lo stato dell'input username in base al contenuto
 loginUsernameInput.DOMelement.addEventListener("input", () => {
     if(loginUsernameInput.DOMelement.value.length > 0){
         loginUsernameInput.inputStatus = 1;
@@ -30,6 +33,7 @@ loginUsernameInput.DOMelement.addEventListener("input", () => {
     }
 });
 
+// Aggiorna lo stato dell'input password in base al contenuto
 loginPasswordInput.DOMelement.addEventListener("input", () => {
     if(loginPasswordInput.DOMelement.value.length > 0){
         loginPasswordInput.inputStatus = 1;
@@ -38,8 +42,10 @@ loginPasswordInput.DOMelement.addEventListener("input", () => {
     }
 });
 
+// Valida il form ad ogni input per abilitare/disabilitare il pulsante submit
 loginRequiredInputs.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => validateBtn(loginRequiredInputs, loginSubBtn)));
 
+// Gestisce il processo di login completo con autenticazione
 loginSubBtn.addEventListener("click", async () => {
 
     loginSubBtn.disabled = true;

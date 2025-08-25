@@ -1,7 +1,5 @@
 // Oggetti e funzioni di utilità comune e gestione database locali
 
-
-
 // Chiavi per dati web storage
 const usersDBKey = "users";
 const loggedUserKey = "loggedUser";
@@ -13,6 +11,7 @@ const loggedUserKey = "loggedUser";
 
 let registeredUsers = [];
 
+// Recupera l'array degli utenti registrati aggiornato dal localStorage
 export function getRegisteredUsers() {
     registeredUsers = retrieveRegisteredUsers() || [];
     return registeredUsers;
@@ -20,6 +19,7 @@ export function getRegisteredUsers() {
 
 let loggedUserId = "";
 
+// Recupera l'ID dell'utente attualmente loggato dal sessionStorage
 export function getLoggedUserId() {
     loggedUserId = retreiveLoggedUser() || "";
     return loggedUserId;
@@ -47,6 +47,7 @@ function retrieveRegisteredUsers() {
     return array;
 }
 
+// Recupera l'ID dell'utente loggato dal sessionStorage con gestione errori
 function retreiveLoggedUser(){
     
     let userId = "";
@@ -59,17 +60,20 @@ function retreiveLoggedUser(){
     return userId;
 }
 
+// Aggiunge un nuovo utente all'array e aggiorna il localStorage
 export function addNewUser(newUserObject){
     registeredUsers.push(newUserObject);
     updateUsersDB(registeredUsers);
 }
 
+// Rimuove un utente dall'array tramite ID e aggiorna il localStorage
 export function deleteUser(userId){
     const index = registeredUsers.findIndex(item => item.id === userId);
     registeredUsers.splice(index, 1);
     updateUsersDB(registeredUsers);
 }
 
+// Salva l'array utenti nel localStorage con gestione errori
 function updateUsersDB(usersArray){
     
     try{
@@ -80,6 +84,7 @@ function updateUsersDB(usersArray){
     }
 }
 
+// Aggiorna l'ID dell'utente loggato nel sessionStorage
 export function updateLoggedUser(userId){
 
     try{

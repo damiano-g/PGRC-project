@@ -216,3 +216,34 @@ Registro (iniziale):
 	- Codice più robusto, leggibile e pronto per estensioni future.
 - Prossimi passi:
 	- Proseguire con la UI e la gestione login/modifica profilo.
+
+
+- Data: 2025-08-22
+- Autore: damia
+- Area interessata: sincronizzazione moduli, gestione dati condivisi, refactor architetturale
+- Sommario delle modifiche / esperimento:
+    - Refactor della gestione dati condivisi: introdotte funzioni getter in `common.js` per recuperare sempre dati aggiornati da localStorage.
+    - Eliminata la dipendenza da variabili condivise statiche tra moduli; ora tutti i moduli lavorano su dati “freschi”.
+    - Spostata la gestione delle chiavi di storage e delle operazioni di aggiornamento database utenti esclusivamente in `common.js`.
+    - Dichiarazione degli oggetti DOM localmente negli script di pagina, evitando riferimenti obsoleti o nulli.
+    - Testata la robustezza della sincronizzazione tra moduli e la corretta gestione dello stato utente loggato.
+- Scelte effettuate (breve):
+    - Centralizzare la gestione delle chiavi di storage e delle operazioni su utenti in `common.js`.
+    - Usare getter per dati condivisi tra moduli.
+    - Dichiarare oggetti DOM solo dove necessari.
+- Problemi riscontrati:
+    - Difficoltà di sincronizzazione tra dati in memoria e storage con variabili condivise.
+    - Rischio di riferimenti DOM non validi se centralizzati.
+- Soluzioni adottate / workaround:
+    - Refactor verso funzioni getter e dichiarazione locale degli oggetti DOM.
+    - Test manuale su tutte le pagine per verificare la sincronizzazione.
+- File/Artifacts prodotti (path nel repo):
+    - `project-tests/user-database/common.js` (getter, gestione storage)
+    - `project-tests/user-database/landing.js`, `login.js`, `singin.js` (dichiarazione locale DOM)
+- Impatto sulla progettazione generale (note):
+    - Codice più robusto, modulare e facilmente estendibile.
+    - Sincronizzazione tra moduli garantita; ridotto rischio di refactor futuri forzati.
+    - **Nota:** Ricordare di mantenere la gestione delle chiavi di storage esclusivamente in `common.js` per coerenza.
+- Prossimi passi:
+    - Proseguire con la gestione della UI e delle funzionalità di modifica profilo.
+    - Aggiornare la documentazione e i commenti nei moduli JS.

@@ -4,6 +4,7 @@ import { addNewUser, getRegisteredUsers, } from "./common.js"
 import { validateUsername, validateEmail, validatePassword, validatePassConfirm, formatInputField, validateBtn } from "./validate.js";
 import { validateUserEntry, createUserObject, } from "./auth.js";
 
+// Oggetti DOM per gli input del form di registrazione con stato di validazione
 const signinUsernameInput = {
         DOMelement: document.getElementById("username"),
         inputStatus: 0,
@@ -24,12 +25,14 @@ const signinConfPassInput = {
         inputStatus: 0,
 } 
 
+// Riferimenti ai pulsanti del form di registrazione
 const signinClearBtn = document.getElementById("clear");
 const signinSubBtn = document.getElementById("submit");
 
+// Array di tutti gli input richiesti per la validazione del form
 const requiredInputFields = [signinUsernameInput, signinEmailInput, signinPasswordInput, signinConfPassInput];
 
-//Eventi
+// Gestione eventi di validazione per tutti gli input del form
 
 // Attiva la validazione del campo username ad ogni input
 signinUsernameInput.DOMelement.addEventListener("input", () => validateUsername(signinUsernameInput));
@@ -53,7 +56,7 @@ requiredInputFields.forEach(inputObject => inputObject.DOMelement.addEventListen
     formatInputField(inputObject);       
 }));
 
-//Resetta tutto alla condizione iniziale
+// Gestisce il reset completo del form alla condizione iniziale
 signinClearBtn.addEventListener("click", () => {
         requiredInputFields.forEach(item => {
                 item.inputStatus = 0;

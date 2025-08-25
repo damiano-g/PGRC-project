@@ -1,10 +1,12 @@
 import { updateLoggedUser, deleteUser, getLoggedUserId, getRegisteredUsers, } from "./common.js";
 
+// Riferimenti agli elementi DOM della pagina landing
 const logoutBtn = document.getElementById("logoutBtn");
 const confirmBtn = document.getElementById("confirmBtn");
 
 
 
+// Gestisce l'eliminazione definitiva dell'account utente
 // Cancella l'utente corrente dal database - da valutare controllo password
 confirmBtn.addEventListener("click", () => {
     deleteUser(getLoggedUserId());
@@ -13,11 +15,13 @@ confirmBtn.addEventListener("click", () => {
     logoutBtn.click();
 })
 
+// Gestisce il logout dell'utente e reindirizza alla pagina principale
 logoutBtn.addEventListener("click", () => {
     updateLoggedUser("");
     window.location.href = "../index.html";
 });
 
+// Verifica l'autenticazione dell'utente al caricamento della pagina
 window.addEventListener("load", () => {
     
     if(!getRegisteredUsers().some(item => item.id === getLoggedUserId())){

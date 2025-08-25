@@ -2,7 +2,8 @@
 
 import { hashString, } from "./common.js";
 
-// Controlla se username o email sono già presenti nell'array utenti (restituisce true se non ci sono duplicati)
+// Verifica la disponibilità di username ed email nel database utenti
+// Restituisce "username" o "email" se duplicati, null se disponibili
 export function validateUserEntry(chosenUsername, chosenEmail, usersArray){
     
     if(usersArray.some(item => (item.username === chosenUsername))){
@@ -14,7 +15,7 @@ export function validateUserEntry(chosenUsername, chosenEmail, usersArray){
     return null;
 }
 
-// Crea un oggetto utente con i dati forniti e la password hashata
+// Genera un nuovo oggetto utente completo con password hashata e ID univoco
 export async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
     const hashPassword = await hashString(chosenPassword);
     const timestamp = Date.now();
@@ -30,6 +31,7 @@ export async function createUserObject(chosenUsername, chosenEmail, chosenPasswo
     return userObject;
 }
 
+// Ricerca un utente nel database tramite username e restituisce il suo ID
 export function searchUserbyName(providedUsername, usersArray) {
 
     const index = usersArray.findIndex(item => item.username === providedUsername);
@@ -38,6 +40,7 @@ export function searchUserbyName(providedUsername, usersArray) {
     return usersArray[index].id;
 }
 
+// Verifica le credenziali di accesso confrontando la password hashata
 export async function admitUser(userId, providedPassword, usersArray){
 
     const index = usersArray.findIndex(item => item.id === userId);
