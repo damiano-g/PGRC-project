@@ -1,5 +1,4 @@
-import { getRegisteredUsers, updateLoggedUser, } from "./common.js";
-import { searchUserbyName, admitUser, } from "./auth.js";
+import { getRegisteredUsers, updateLoggedUser, searchUserbyName, admitUser, } from "./usersManagement.js"; 
 import { validateBtn, } from "./validate.js";
 
 // Oggetti DOM per gli input del form di login con stato di validazione

@@ -1,8 +1,7 @@
 //Gestione eventi per pagina di registrazione
 
-import { addNewUser, getRegisteredUsers, } from "./common.js"
+import { addNewUser, getRegisteredUsers, validateUserEntry, createUserObject, } from "./usersManagement.js";
 import { validateUsername, validateEmail, validatePassword, validatePassConfirm, formatInputField, validateBtn } from "./validate.js";
-import { validateUserEntry, createUserObject, } from "./auth.js";
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione
 const signinUsernameInput = {

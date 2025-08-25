@@ -1,4 +1,4 @@
-import { updateLoggedUser, deleteUser, getLoggedUserId, getRegisteredUsers, } from "./common.js";
+import { updateLoggedUser, deleteUser, getLoggedUserId, getRegisteredUsers, } from "./usersManagement.js";
 
 // Riferimenti agli elementi DOM della pagina landing
 const logoutBtn = document.getElementById("logoutBtn");
