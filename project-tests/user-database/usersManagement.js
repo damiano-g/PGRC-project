@@ -103,13 +103,7 @@ export function updateLoggedUser(userId){
 export function addNewUser(newUserObject){
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
     actualRegUsersArray.push(newUserObject);
-    try {
-        updateUsersDB(actualRegUsersArray);
-        registeredUsers = actualRegUsersArray; // NOTA: Aggiornamento superfluo - getter rilegge sempre dal storage
-    } catch (err) {
-        alert("impossibile effettuare le modifiche: "+err.message);
-        console.error(err);
-    }
+    updateUsersDB(actualRegUsersArray);
 }
 
 // Rimuove un utente dall'array tramite ID e aggiorna il localStorage
@@ -118,13 +112,7 @@ export function deleteUser(userId){
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
     const index = actualRegUsersArray.findIndex(item => item.id === userId);
     actualRegUsersArray.splice(index, 1);
-    try {
-        updateUsersDB(actualRegUsersArray);
-        registeredUsers = actualRegUsersArray; // NOTA: Aggiornamento superfluo - getter rilegge sempre dal storage
-    } catch (err) {
-        alert("impossibile effettuare le modifiche: "+err.message);
-        console.error(err);
-    }
+    updateUsersDB(actualRegUsersArray);
 }
 
 // ============================================================================
@@ -134,11 +122,13 @@ export function deleteUser(userId){
 // Verifica la disponibilità di username ed email nel database utenti
 // Restituisce "username" o "email" se duplicati, null se disponibili
 export function validateUserEntry(chosenUsername, chosenEmail){
+
+    const actualRegUsersArray = retrieveRegisteredUsers() || [];
     
-    if(registeredUsers.some(item => (item.username === chosenUsername))){
+    if(actualRegUsersArray.some(item => (item.username === chosenUsername))){
         return "username";
     }
-    if(registeredUsers.some(item => (item.email === chosenEmail))){
+    if(actualRegUsersArray.some(item => (item.email === chosenEmail))){
         return "email";
     }
     return null;
@@ -167,10 +157,11 @@ export async function createUserObject(chosenUsername, chosenEmail, chosenPasswo
 // Ricerca un utente nel database tramite username e restituisce il suo ID
 export function searchUserbyName(providedUsername) {
 
-    const index = registeredUsers.findIndex(item => item.username === providedUsername);
+    const actualRegUsersArray = retrieveRegisteredUsers() || [];
+    const index = actualRegUsersArray.findIndex(item => item.username === providedUsername);
 
     if(index < 0) return null;
-    return registeredUsers[index].id;
+    return actualRegUsersArray[index].id;
 }
 
 // ============================================================================
@@ -180,8 +171,10 @@ export function searchUserbyName(providedUsername) {
 // Verifica le credenziali di accesso confrontando la password hashata
 export async function admitUser(userId, providedPassword){
 
-    const index = registeredUsers.findIndex(item => item.id === userId);
-    const userHash = registeredUsers[index].password;
+    const actualRegUsersArray = retrieveRegisteredUsers() || [];
+
+    const index = actualRegUsersArray.findIndex(item => item.id === userId);
+    const userHash = actualRegUsersArray[index].password;
 
     const providedHash = await hashString(providedPassword);
 

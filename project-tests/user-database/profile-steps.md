@@ -255,3 +255,9 @@ Registro (iniziale):
 ### Sicurezza e controlli utente
 - **Controllo password per eliminazione account**: Attualmente l'eliminazione dell'account non richiede la conferma della password. Valutare l'implementazione di un controllo che richieda la password corrente prima di procedere con l'eliminazione definitiva.
 - **Controlli più robusti sull'utente loggato**: Implementare verifiche aggiuntive per validare che l'utente sia effettivamente autorizzato ad accedere alle funzionalità riservate (es. controllo scadenza sessione, validazione ID utente, gestione logout automatico in caso di dati corrotti).
+
+### Ottimizzazioni architetturali
+- **Strategia di accesso ai dati**: Attualmente tutte le operazioni di ricerca (`validateUserEntry`, `searchUserbyName`, `admitUser`) sono implementate come atomiche, leggendo direttamente dal localStorage tramite `retrieveRegisteredUsers()`. Questo garantisce massima consistenza dei dati ma con potenziale impatto sulle performance.
+- **Valutazione cache vs atomicità**: La variabile locale `registeredUsers` non viene utilizzata dalle funzioni di ricerca, che preferiscono la lettura atomica. Da valutare in futuro se implementare un aggiornamento della cache ad ogni caricamento dello script per migliorare le performance, ma attualmente l'approccio atomico è preferibile per la semplicità e la consistenza.
+- **Trade-off architetturale**: La scelta attuale favorisce la correttezza dei dati a discapito delle performance, approccio appropriato per un'applicazione di dimensioni limitate. Per progetti più grandi, considerare strategie di caching più sofisticate.
+
