@@ -261,3 +261,57 @@ Registro (iniziale):
 - **Valutazione cache vs atomicità**: La variabile locale `registeredUsers` non viene utilizzata dalle funzioni di ricerca, che preferiscono la lettura atomica. Da valutare in futuro se implementare un aggiornamento della cache ad ogni caricamento dello script per migliorare le performance, ma attualmente l'approccio atomico è preferibile per la semplicità e la consistenza.
 - **Trade-off architetturale**: La scelta attuale favorisce la correttezza dei dati a discapito delle performance, approccio appropriato per un'applicazione di dimensioni limitate. Per progetti più grandi, considerare strategie di caching più sofisticate.
 
+---
+
+- Data: 2025-08-25
+- Autore: damia
+- Area interessata: consolidamento architetturale, API refinement, sistema modifica profilo
+- Sommario delle modifiche / esperimento:
+    - Consolidamento moduli `auth.js` e `common.js` in `usersManagement.js` per eliminare dipendenze circolari e centralizzare la gestione utenti
+    - Implementazione completa sistema di modifica profilo con autorizzazione password e validazione in tempo reale
+    - Refactor funzioni di ricerca: `searchUserbyName` e `searchUserById` ora restituiscono oggetti completi con deep copy per sicurezza
+    - Aggiunta funzioni atomiche di update: `updateUserUsername`, `updateUserEmail`, `updateUserPassword` con hashing automatico
+    - Implementazione pattern OOP-style: eliminazione parametro `usersArray` da tutte le funzioni per API più pulita
+    - Adozione `structuredClone()` per deep copy completa su tutti i livelli di annidamento degli oggetti utente
+- Scelte effettuate (breve):
+    - Modularità "a classe": `usersManagement.js` gestisce autonomamente la strategia di accesso dati
+    - Operazioni atomiche per tutte le funzioni di lettura/scrittura garantendo consistenza
+    - Deep copy defensiva per prevenire modifiche accidentali ai dati originali
+    - API senza parametri array per semplificare l'uso e ridurre errori
+- Problemi riscontrati:
+    - **Breaking changes nell'API**: `searchUserbyName` ora restituisce oggetto invece di ID, richiedendo aggiornamenti nei file esistenti
+    - **Duplicazione codice boilerplate** nelle funzioni di update (pattern ripetuto di retrieve→find→modify→save)
+    - **Inconsistenza gestione errori**: alcune funzioni lanciano eccezioni, altre utilizzano alert() direttamente
+    - **Tight coupling con UI**: modulo business dipende da `alert()` invece di propagare errori
+- Soluzioni adottate / workaround:
+    - Aggiornamento manuale degli import e chiamate nei file esistenti per adattarsi alle nuove API
+    - Commentazione completa del codice per migliorare manutenibilità e presentazione
+    - Approccio pragmatico: accettare duplicazione temporanea per completare le funzionalità core
+- File/Artifacts prodotti (path nel repo):
+    - `project-tests/user-database/usersManagement.js` (modulo consolidato)
+    - `project-tests/user-database/modif.js` (gestione completa modifica profilo)
+    - `project-tests/user-database/pages/modifUser.html` (interfaccia modifica dati utente)
+    - Aggiornamenti: `login.js`, `singin.js`, `landing.js` (adattamento nuove API)
+- Impatto sulla progettazione generale (note):
+    - **Architettura più matura** con responsabilità ben definite e API coerente
+    - **Sistema production-ready** per scope frontend-only con robustezza enterprise-level
+    - **Fondamenta solide** per estensioni future (ricette, note, recensioni)
+    - **Necessario refactoring futuro** per eliminare duplicazioni e migliorare error handling
+- Prossimi passi:
+    - Implementare sistema centralizzato di gestione errori con custom exceptions
+    - Refactor funzioni di update con pattern builder o funzione generica
+    - Validare e testare tutti i flussi utente end-to-end
+    - Documentare limitazioni di sicurezza per presentazione accademica
+
+---
+
+## ⚠️ **Criticità Architetturali da Rivedere**
+
+### **Priorità Alta - Refactoring Necessario**
+
+#### **1. Error Handling Inconsistente**
+```javascript
+// PROBLEMA: Mix di strategie di gestione errori
+updateUsersDB(array);          // Lancia eccezioni
+updateUserUsername(username);  // Non gestisce errori di validazione  
+retrieveRegisteredUsers();     // Usa alert() direttamente

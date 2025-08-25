@@ -115,7 +115,7 @@ export function deleteUser(userId){
     updateUsersDB(actualRegUsersArray);
 }
 
-
+// Aggiorna l'username dell'utente attualmente loggato
 export function updateUserUsername(newUsername){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
@@ -128,6 +128,7 @@ export function updateUserUsername(newUsername){
     updateUsersDB(actualRegUsersArray);
 }
 
+// Aggiorna l'email dell'utente attualmente loggato 
 export function updateUserEmail(newUserEmail){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
@@ -140,6 +141,7 @@ export function updateUserEmail(newUserEmail){
     updateUsersDB(actualRegUsersArray);
 }
 
+// Aggiorna la password dell'utente attualmente loggato con hashing
 export async function updateUserPassword(newUserPassword){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
@@ -151,6 +153,8 @@ export async function updateUserPassword(newUserPassword){
 
     updateUsersDB(actualRegUsersArray);
 }
+
+
 // ============================================================================
 // FUNZIONI DI VALIDAZIONE
 // ============================================================================
@@ -168,6 +172,8 @@ export function authUserEntries(chosenUsername, chosenEmail){
     return null;
 }
 
+// Verifica se un username è disponibile nel database
+// Restituisce true se disponibile, false se già in uso
 export function authUsername(chosenUsername){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
@@ -179,6 +185,8 @@ export function authUsername(chosenUsername){
     return true;
 }
 
+// Verifica se un'email è disponibile nel database  
+// Restituisce true se disponibile, false se già in uso
 export function authEmail(chosenEmail){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || []; 
