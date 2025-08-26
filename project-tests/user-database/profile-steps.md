@@ -428,3 +428,8 @@ try {
 } catch (error) {
     handleUserError(error);           // Gestione centralizzata UI
 }
+
+
+## ⚠️ **ATTENZIONE!!!!**
+Oltre alla UI rimane da implementare un sistema per il mantenimento della sessione utente e redirect automatico alla pagina di
+login in caso di utente non loggato!!
