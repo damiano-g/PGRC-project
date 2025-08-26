@@ -1,5 +1,5 @@
-import { updateLoggedUser, deleteUser, getLoggedUserId, getRegisteredUsers, } from "./usersManagement.js";
-import { handleUserError, } from "./errorsManagement.js";
+import { updateLoggedUser, deleteUser, getLoggedUserId, getRegisteredUsers, } from "../usersManagement.js";
+import { handleUserError, } from "../errorsManagement.js";
 
 // Riferimenti agli elementi DOM della pagina landing
 const logoutBtn = document.getElementById("logoutBtn");

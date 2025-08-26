@@ -1,6 +1,6 @@
-import { updateLoggedUser, searchUserbyName, admitUser, } from "./usersManagement.js"; 
-import { validateBtn, } from "./validate.js";
-import { handleUserError, } from "./errorsManagement.js";
+import { updateLoggedUser, searchUserbyName, admitUser, } from "../usersManagement.js"; 
+import { validateBtn, } from "../validate.js";
+import { handleUserError, } from "../errorsManagement.js";
 
 // Oggetti DOM per gli input del form di login con stato di validazione
 const loginUsernameInput = {

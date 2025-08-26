@@ -1,8 +1,8 @@
 // Gestione eventi per pagina di modifica profilo utente
 
-import { handleUserError } from "./errorsManagement.js";
-import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, authUsername, updateUserUsername, authEmail, updateUserEmail, } from "./usersManagement.js";
-import * as validate from "./validate.js";
+import { handleUserError } from "../errorsManagement.js";
+import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, authUsername, updateUserUsername, authEmail, updateUserEmail, } from "../usersManagement.js";
+import * as validate from "../validate.js";
 
 // Oggetti DOM per gli input del form di modifica con valori di default e stato di validazione
 const modifUsernameInput = {
