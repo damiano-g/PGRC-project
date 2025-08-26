@@ -1,7 +1,26 @@
+// ============================================================================
+// LIBRERIA DI VALIDAZIONE INPUT UTENTE
+// ============================================================================
 // Collezione di funzioni per la validazione di input utente e formattazione form
+// Gestisce la validazione lato client con feedback visivo in tempo reale
 
-
-// Controlla che lo username abbia almeno 2 caratteri
+/**
+ * Valida un campo username verificando la lunghezza minima
+ * Aggiorna lo stato dell'oggetto input in base alla validità del contenuto
+ * 
+ * @param {Object} inputObject - Oggetto che rappresenta il campo di input username
+ * @param {HTMLElement} inputObject.DOMelement - Elemento DOM del campo input
+ * @param {number} inputObject.inputStatus - Stato di validazione (0: vuoto, 1: valido, -1: invalido)
+ * 
+ * @example
+ * // Valida un campo username
+ * const usernameInput = {
+ *   DOMelement: document.getElementById("username"),
+ *   inputStatus: 0
+ * };
+ * validateUsername(usernameInput);
+ * // inputObject.inputStatus sarà 1 se valido, -1 se invalido, 0 se vuoto
+ */
 export function validateUsername(inputObject) {
 
         const inputString = String(inputObject.DOMelement.value);
@@ -17,11 +36,31 @@ export function validateUsername(inputObject) {
         }
 }
 
-// Valida il campo email: controlla che sia nel formato corretto
+/**
+ * Valida un campo email verificando il formato tramite regex
+ * Controlla la presenza di @ e dominio valido, previene doppi punti consecutivi
+ * 
+ * @param {Object} inputObject - Oggetto che rappresenta il campo di input email
+ * @param {HTMLElement} inputObject.DOMelement - Elemento DOM del campo input
+ * @param {number} inputObject.inputStatus - Stato di validazione (0: vuoto, 1: valido, -1: invalido)
+ * 
+ * @example
+ * // Valida un campo email
+ * const emailInput = {
+ *   DOMelement: document.getElementById("email"),
+ *   inputStatus: 0
+ * };
+ * validateEmail(emailInput);
+ * // inputObject.inputStatus sarà 1 per "user@domain.com", -1 per "invalid-email"
+ */
 export function validateEmail(inputObject){
 
         const inputString = String(inputObject.DOMelement.value);
 
+        // Pattern regex per validazione email:
+        // ^(?!.*\.\.) - Non doppi punti consecutivi
+        // (?!.*\.\@) - Non punto prima di @
+        // [\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$ - Formato standard email
         const pattern = /^(?!.*\.\.)(?!.*\.\@)[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/
 
         if(pattern.test(inputString)){
@@ -35,7 +74,25 @@ export function validateEmail(inputObject){
         }
 }
 
-// Valida il campo password: verifica lunghezza, presenza di maiuscole, minuscole e numeri
+/**
+ * Valida un campo password verificando requisiti di sicurezza e aggiorna indicatori visivi
+ * Controlla lunghezza minima, presenza di maiuscole, minuscole e numeri
+ * Aggiorna dinamicamente le classi CSS degli indicatori di requisiti
+ * 
+ * @param {Object} inputObject - Oggetto che rappresenta il campo di input password
+ * @param {HTMLElement} inputObject.DOMelement - Elemento DOM del campo input
+ * @param {number} inputObject.inputStatus - Stato di validazione (0: vuoto, 1: valido, -1: invalido)
+ * 
+ * @example
+ * // Valida un campo password con indicatori visivi
+ * const passwordInput = {
+ *   DOMelement: document.getElementById("password"),
+ *   inputStatus: 0
+ * };
+ * validatePassword(passwordInput);
+ * // Aggiorna gli elementi #upCase, #lowCase, #num, #passLen con classe "valid-text"
+ * // inputObject.inputStatus sarà 1 solo se tutti i requisiti sono soddisfatti
+ */
 export function validatePassword(inputObject) {
 
         const inputString = String(inputObject.DOMelement.value);
@@ -80,7 +137,25 @@ export function validatePassword(inputObject) {
 }
 
 
-// Valida il campo di conferma password: deve coincidere con la password e la password deve essere valida
+/**
+ * Valida un campo di conferma password confrontandolo con la password principale
+ * Abilita/disabilita il campo in base alla validità della password di riferimento
+ * 
+ * @param {Object} inputObject - Oggetto che rappresenta il campo di conferma password
+ * @param {HTMLElement} inputObject.DOMelement - Elemento DOM del campo input
+ * @param {number} inputObject.inputStatus - Stato di validazione (0: vuoto, 1: valido, -1: invalido)
+ * @param {Object} referObject - Oggetto della password principale da confrontare
+ * @param {HTMLElement} referObject.DOMelement - Elemento DOM della password principale
+ * @param {number} referObject.inputStatus - Stato di validazione della password principale
+ * 
+ * @example
+ * // Valida conferma password rispetto alla password principale
+ * const passwordInput = { DOMelement: document.getElementById("password"), inputStatus: 1 };
+ * const confirmInput = { DOMelement: document.getElementById("confirmPassword"), inputStatus: 0 };
+ * 
+ * validatePassConfirm(confirmInput, passwordInput);
+ * // confirmInput.inputStatus sarà 1 solo se le password coincidono E la password principale è valida
+ */
 export function validatePassConfirm(inputObject, referObject) {
 
         const inputString = String(inputObject.DOMelement.value);
@@ -107,7 +182,21 @@ export function validatePassConfirm(inputObject, referObject) {
 }
 
 
-// Abilita/disabilita il submit in base alla validità di tutti i campi
+/**
+ * Controlla la validità di tutti i campi richiesti e abilita/disabilita il pulsante submit
+ * Implementa la logica di abilitazione condizionale basata sullo stato di tutti i campi
+ * 
+ * @param {Array<Object>} inputFieldsArray - Array di oggetti input da controllare
+ * @param {HTMLElement} button - Elemento DOM del pulsante submit da abilitare/disabilitare
+ * 
+ * @example
+ * // Controlla validità di tutti i campi e aggiorna pulsante submit
+ * const allFields = [usernameInput, emailInput, passwordInput, confirmInput];
+ * const submitButton = document.getElementById("submitBtn");
+ * 
+ * validateBtn(allFields, submitButton);
+ * // submitButton.disabled sarà false solo se tutti i campi richiesti hanno inputStatus = 1
+ */
 export function validateBtn(inputFieldsArray, button){
 
     let ready = !inputFieldsArray.some(item => (item.inputStatus != 1 && item.DOMelement.required === true));
@@ -120,7 +209,30 @@ export function validateBtn(inputFieldsArray, button){
 }
 
  
-// Aggiorna le classi visive del campo in base allo stato di validità -> positiveNum: valid, negativeNum: invalid, else: not provided 
+/**
+ * Aggiorna le classi CSS di un campo input per fornire feedback visivo dello stato di validazione
+ * Applica le classi Bootstrap "is-valid" e "is-invalid" in base allo stato del campo
+ * 
+ * @param {Object} inputObject - Oggetto che rappresenta il campo di input da formattare
+ * @param {HTMLElement} inputObject.DOMelement - Elemento DOM del campo input
+ * @param {number} inputObject.inputStatus - Stato di validazione (0: neutro, >0: valido, <0: invalido)
+ * 
+ * @example
+ * // Aggiorna aspetto visivo del campo in base alla validazione
+ * const inputField = {
+ *   DOMelement: document.getElementById("username"),
+ *   inputStatus: 1  // Campo valido
+ * };
+ * 
+ * formatInputField(inputField);
+ * // Aggiunge classe "is-valid" e rimuove "is-invalid"
+ * 
+ * @example
+ * // Diversi stati di validazione
+ * inputField.inputStatus = 1;   // Aggiunge "is-valid"
+ * inputField.inputStatus = -1;  // Aggiunge "is-invalid" 
+ * inputField.inputStatus = 0;   // Rimuove entrambe le classi (stato neutro)
+ */
 export function formatInputField(inputObject) {
 
         const validity = Number(inputObject.inputStatus);

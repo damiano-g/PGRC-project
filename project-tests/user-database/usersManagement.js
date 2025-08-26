@@ -84,7 +84,21 @@ function retrieveRegisteredUsers() {
     }
 }
 
-// Recupera l'ID dell'utente loggato dal sessionStorage con gestione errori
+/**
+ * Funzione interna per recuperare l'array degli utenti registrati dal localStorage
+ * Gestisce il parsing JSON e restituisce un array vuoto se non esistono dati
+ * 
+ * @private
+ * @returns {Array} Array degli utenti registrati dal localStorage o array vuoto se non presente
+ * 
+ * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
+ * @throws {UserManagementError} Se si verificano errori di parsing JSON (tipo "STORAGE")
+ * 
+ * @example
+ * // Uso interno - recupera dati dal storage
+ * const users = retrieveRegisteredUsers();
+ * console.log("Utenti trovati:", users.length);
+ */
 function retreiveLoggedUser(){
     try{
         const userId = sessionStorage.getItem(loggedUserKey) || "";
@@ -95,7 +109,20 @@ function retreiveLoggedUser(){
 }
 
 
-// Salva l'array utenti nel localStorage con gestione errori
+/**
+ * Funzione interna per salvare l'array degli utenti nel localStorage
+ * Gestisce la serializzazione JSON e la scrittura con gestione errori
+ * 
+ * @private
+ * @param {Array} usersArray - Array degli utenti da salvare nel localStorage
+ * 
+ * @throws {UserManagementError} Se si verificano errori di scrittura nel localStorage (tipo "STORAGE")
+ * @throws {UserManagementError} Se si verificano errori di serializzazione JSON (tipo "STORAGE")
+ * 
+ * @example
+ * // Uso interno - salva array utenti aggiornato
+ * updateUsersDB(modifiedUsersArray);
+ */
 function updateUsersDB(usersArray){
     
     try{
@@ -105,7 +132,32 @@ function updateUsersDB(usersArray){
     }
 }
 
-// Aggiorna l'ID dell'utente loggato nel sessionStorage
+
+/**
+ * Aggiorna l'ID dell'utente attualmente loggato nel sessionStorage
+ * Gestisce la sessione di login dell'utente corrente con persistenza tra le pagine
+ * 
+ * @param {string} userId - ID univoco dell'utente da impostare come loggato
+ * 
+ * @throws {UserManagementError} Se si verificano errori di scrittura nel sessionStorage (tipo "STORAGE")
+ * 
+ * @example
+ * // Imposta un utente come loggato dopo autenticazione
+ * try {
+ *   updateLoggedUser("user_1703123456789_1234");
+ *   console.log("Utente impostato come loggato");
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ * 
+ * @example
+ * // Uso tipico nel flusso di login
+ * const admitted = await admitUser(foundUserId, password);
+ * if (admitted) {
+ *   updateLoggedUser(foundUserId);
+ *   window.location.href = "./pages/landing.html";
+ * }
+ * */
 export function updateLoggedUser(userId){
 
     try{
@@ -361,16 +413,59 @@ export function authEmail(chosenEmail){
 // FUNZIONI DI CREAZIONE E GESTIONE UTENTI
 // ============================================================================
 
-// Genera un nuovo oggetto utente completo con password hashata e ID univoco
+/**
+ * Genera un nuovo oggetto utente completo con password hashata e ID univoco
+ * Crea la struttura dati completa necessaria per la registrazione di un nuovo utente
+ * Include generazione automatica di ID timestamp-based e hashing sicuro della password
+ * 
+ * @async
+ * @param {string} chosenUsername - Username scelto dall'utente per la registrazione
+ * @param {string} chosenEmail - Indirizzo email dell'utente per la registrazione
+ * @param {string} chosenPassword - Password in chiaro che verrà automaticamente hashata
+ * 
+ * @returns {Promise<Object>} Promise che risolve nell'oggetto utente completo pronto per il salvataggio
+ * @returns {Promise<Object>} return.id - ID univoco generato (formato: "user_timestamp_randomNumber")
+ * @returns {Promise<Object>} return.username - Username fornito dall'utente
+ * @returns {Promise<Object>} return.email - Email fornita dall'utente
+ * @returns {Promise<Object>} return.password - Password hashata con SHA-256
+ * @returns {Promise<Object>} return.favorites - Array vuoto inizializzato per i preferiti futuri
+ * @returns {Promise<Object>} return.creationDate - Timestamp ISO della creazione account
+ * 
+ * @throws {Error} Se si verificano errori durante l'hashing della password
+ * 
+ * @example
+ * // Crea un nuovo oggetto utente con password hashata
+ * try {
+ *   const newUser = await createUserObject("mario", "mario@email.com", "password123");
+ *   console.log("Nuovo utente creato:", newUser.id);
+ *   addNewUser(newUser);
+ * } catch (error) {
+ *   console.error("Errore nella creazione utente:", error);
+ * }
+ * 
+ * @example
+ * // Uso tipico nel flusso di registrazione
+ * async function registerUser(username, email, password) {
+ *   try {
+ *     authUsername(username);           // Verifica disponibilità username
+ *     authEmail(email);                 // Verifica disponibilità email
+ *     const user = await createUserObject(username, email, password);
+ *     addNewUser(user);                 // Salva nel database
+ *     return user;
+ *   } catch (error) {
+ *     handleUserError(error);
+ *   }
+ * }
+ */
 export async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
     const hashPassword = await hashString(chosenPassword);
-    const timestamp = Date.now();
-    const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); 
+    const timestamp = Date.now(); // Timestamp Unix in millisecondi
+    const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); // Numero casuale 0000-9999
     const userObject = {
-        id: `user_${timestamp}_${rnd}`,
-        username: chosenUsername,
-        email: chosenEmail,
-        password: hashPassword,
+        id: `user_${timestamp}_${rnd}`, // ID formato: "user_1703123456789_1234"
+        username: chosenUsername, // Username fornito (già validato)
+        email: chosenEmail, // Email fornita (già validata)
+        password: hashPassword, // Password hashata
         favorites: [],
         creationDate: new Date().toISOString(),
     }
@@ -472,7 +567,54 @@ export function searchUserById(userId){
 // FUNZIONI DI AUTENTICAZIONE
 // ============================================================================
 
-// Verifica le credenziali di accesso confrontando la password hashata
+/**
+ * Verifica le credenziali di autenticazione di un utente confrontando password hashate
+ * Implementa l'autenticazione sicura hashando la password fornita e confrontandola con quella salvata
+ * Utilizzata durante il processo di login per validare le credenziali utente
+ * 
+ * @async
+ * @param {string} userId - ID univoco dell'utente da autenticare
+ * @param {string} providedPassword - Password in chiaro fornita dall'utente per l'autenticazione
+ * 
+ * @returns {Promise<boolean>} Promise che risolve a true se le credenziali sono corrette, false altrimenti
+ * 
+ * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
+ * @throws {Error} Se si verificano errori durante l'hashing della password fornita
+ * 
+ * @example
+ * // Autentica un utente durante il login
+ * try {
+ *   const user = searchUserbyName("mario");
+ *   const isAuthenticated = await admitUser(user.id, "password123");
+ *   
+ *   if (isAuthenticated) {
+ *     updateLoggedUser(user.id);
+ *     console.log("Login riuscito");
+ *   } else {
+ *     console.log("Password errata");
+ *   }
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ * 
+ * @example
+ * // Uso tipico nel flusso completo di login
+ * async function loginUser(username, password) {
+ *   try {
+ *     const user = searchUserbyName(username);        // Cerca utente
+ *     const admitted = await admitUser(user.id, password); // Verifica password
+ *     
+ *     if (admitted) {
+ *       updateLoggedUser(user.id);                    // Imposta come loggato
+ *       window.location.href = "./pages/landing.html"; // Redirect
+ *     } else {
+ *       alert("Password errata");
+ *     }
+ *   } catch (error) {
+ *     handleUserError(error);                         // Gestisce errori (es. utente non trovato)
+ *   }
+ * }
+ */
 export async function admitUser(userId, providedPassword){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
@@ -489,22 +631,83 @@ export async function admitUser(userId, providedPassword){
 // FUNZIONI CRITTOGRAFICHE
 // ============================================================================
 
-// Funzione asincrona che riceve una stringa e restituisce il suo hash SHA-256 in formato esadecimale
+/**
+ * Genera l'hash SHA-256 di una stringa utilizzando la Web Crypto API
+ * Converte la stringa in formato esadecimale sicuro per storage e confronti
+ * Utilizzata per hashing delle password e verifica credenziali
+ * 
+ * @async
+ * @param {string} originalString - Stringa originale da hashare (es. password in chiaro)
+ * 
+ * @returns {Promise<string>} Promise che risolve nella stringa hash SHA-256 in formato esadecimale
+ * 
+ * @throws {Error} Se si verificano errori durante il processo di hashing (es. Web Crypto API non disponibile)
+ * 
+ * @example
+ * // Hashing di una password per registrazione
+ * try {
+ *   const hashedPassword = await hashString("password123");
+ *   console.log("Password hashata:", hashedPassword);
+ *   // Output: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f"
+ * } catch (error) {
+ *   console.error("Errore nell'hashing:", error);
+ * }
+ * 
+ * @example
+ * // Uso nel processo di autenticazione
+ * async function verifyPassword(inputPassword, storedHash) {
+ *   try {
+ *     const inputHash = await hashString(inputPassword);
+ *     return inputHash === storedHash;
+ *   } catch (error) {
+ *     throw new Error("Errore durante la verifica password");
+ *   }
+ * }
+ * 
+ * @example
+ * // Integrazione nel flusso di creazione utente
+ * const userObject = {
+ *   username: "mario",
+ *   email: "mario@email.com",
+ *   password: await hashString("mySecretPassword"),
+ *   // ...altri campi
+ * };
+ */
 export async function hashString(originalString) {
-    // 1. Converte la stringa in un array di byte (Uint8Array) usando TextEncoder
+    // ========================================
+    // FASE 1: ENCODING DELLA STRINGA
+    // ========================================
+    // Converte la stringa in un array di byte (Uint8Array) usando TextEncoder
+    // Necessario perché la Web Crypto API lavora con dati binari, non stringhe
     const data = new TextEncoder().encode(originalString);
 
-    // 2. Calcola l'hash SHA-256 dell'array di byte tramite la Web Crypto API
-    //    crypto.subtle.digest restituisce una Promise che risolve in un ArrayBuffer
+    // ========================================
+    // FASE 2: CALCOLO HASH SHA-256
+    // ========================================
+    // Calcola l'hash SHA-256 dell'array di byte tramite la Web Crypto API
+    // crypto.subtle.digest restituisce una Promise che risolve in un ArrayBuffer
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
 
-    // 3. Converte l'ArrayBuffer in un array di numeri (byte) per poterlo manipolare
+    // ========================================
+    // FASE 3: CONVERSIONE IN ARRAY MANIPOLABILE
+    // ========================================
+    // Converte l'ArrayBuffer in un array di numeri (byte) per poterlo manipolare
+    // Ogni elemento rappresenta un byte del hash (valore 0-255)
     const hashArray = Array.from(new Uint8Array(hashBuffer));
 
-    // 4. Trasforma ogni byte in una stringa esadecimale di due cifre e le concatena tutte
-    //    Questo produce una stringa hash leggibile e pronta per essere salvata/confrontata
-    const hashPassword = hashArray.map(hashArrayItem => hashArrayItem.toString(16).padStart(2, "0")).join("");
+    // ========================================
+    // FASE 4: FORMATTAZIONE ESADECIMALE
+    // ========================================
+    // Trasforma ogni byte in una stringa esadecimale di due cifre e le concatena tutte
+    // padStart(2, "0") garantisce sempre 2 cifre (es. "0f" invece di "f")
+    // Questo produce una stringa hash leggibile e pronta per essere salvata/confrontata
+    const hashPassword = hashArray
+        .map(hashArrayItem => hashArrayItem.toString(16).padStart(2, "0"))
+        .join("");
 
-    // 5. Restituisce la stringa hash finale
+    // ========================================
+    // FASE 5: RETURN HASH FINALE
+    // ========================================
+    // Restituisce la stringa hash finale (64 caratteri esadecimali per SHA-256)
     return hashPassword;
 }
