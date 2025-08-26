@@ -41,3 +41,50 @@ UserManagementError.prototype = Object.create(Error.prototype);
 // Quando si verifica il tipo di oggetto (ad esempio con instanceof), il costruttore risulta corretto.
 // Utile per introspezione, serializzazione e per evitare ambiguità se si creano istanze con new.
 UserManagementError.prototype.constructor = UserManagementError;
+
+
+
+/**
+ * Gestore centralizzato degli errori per la gestione utenti.
+ *
+ * Riceve un oggetto errore (idealmente istanza di UserManagementError o Error)
+ * e mostra un messaggio di alert specifico in base alla categoria dell'errore (type).
+ *
+ * - Se l'errore è di tipo 'VALIDATION', mostra un alert con il messaggio di validazione.
+ * - Se l'errore è di tipo 'STORAGE', mostra un alert relativo a problemi di storage.
+ * - Se l'errore è di tipo 'AUTH', mostra un alert per errori di autenticazione.
+ * - Per altri tipi o errori generici, mostra un alert con il messaggio generico.
+ *
+ * Parametri:
+ *   @param {Error|UserManagementError} error - Oggetto errore da gestire. Deve avere almeno le proprietà 'type' e 'message'.
+ *
+ * Comportamento:
+ *   - Verifica che l'oggetto sia un'istanza di Error.
+ *   - In base alla proprietà 'type', seleziona il messaggio di alert più appropriato.
+ *   - Permette di centralizzare la gestione degli errori UI, evitando duplicazione di codice nei vari moduli.
+ *
+ * Esempio d'uso:
+ *   try {
+ *     // ...logica che può generare errori...
+ *   } catch (err) {
+ *     handleUserError(err);
+ *   }
+ */
+export function handleUserError(error) {
+
+    if(error instanceof Error){
+        switch(error.type){
+            case 'VALIDATION':
+            alert(`Errore di validazione: ${error.message}`);
+            break;
+        case 'STORAGE':
+            alert(`Errore di storage: ${error.message}`);
+            break;
+        case 'AUTH':
+            alert(`Errore di autenticazione: ${error.message}`);
+            break;
+        default:
+            alert(`Errore: ${error.message}`);
+        }
+    }
+}
