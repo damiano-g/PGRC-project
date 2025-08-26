@@ -1,7 +1,7 @@
 //Gestione eventi per pagina di registrazione
 
 import { handleUserError } from "./errorsManagement.js";
-import { addNewUser, authUserEntries, createUserObject, } from "./usersManagement.js";
+import { addNewUser, authEmail, authUsername, createUserObject, } from "./usersManagement.js";
 import { validateUsername, validateEmail, validatePassword, validatePassConfirm, formatInputField, validateBtn } from "./validate.js";
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione
@@ -66,36 +66,75 @@ signinClearBtn.addEventListener("click", () => {
         validateBtn(requiredInputFields, signinSubBtn);       
 });
 
-// Gestisce il click sul bottone di submit: disabilita i campi, valida i dati, crea l’utente, aggiorna il database e mostra messaggi di feedback
+// ============================================================================
+// GESTIONE SUBMIT DEL FORM DI REGISTRAZIONE
+// ============================================================================
+
+// Gestisce il processo completo di registrazione di un nuovo utente
+// Implementa il pattern di disabilitazione temporanea degli input durante l'elaborazione
+// per prevenire doppi submit e garantire l'integrità dei dati
 signinSubBtn.addEventListener("click", async () => {
     
+    // ========================================
+    // FASE 1: DISABILITAZIONE INTERFACCIA
+    // ========================================
+    // Disabilita tutti i controlli del form durante l'elaborazione
+    // Questo previene modifiche accidentali ai dati e doppi submit
     signinSubBtn.disabled = true;
     signinClearBtn.disabled = true;
     requiredInputFields.forEach(item => item.DOMelement.disabled = true);
 
     try{
+
+        // ========================================
+        // FASE 2: RACCOLTA DATI DAL FORM
+        // ========================================
+        // Estrae i valori correnti dai campi di input validati
         const currentUsername = signinUsernameInput.DOMelement.value;
         const currentEmail = signinEmailInput.DOMelement.value;
         const currentPassword = signinPasswordInput.DOMelement.value;
-        const duplicateUser = authUserEntries(currentUsername, currentEmail);
+
+        // ========================================
+        // FASE 3: VALIDAZIONE UNICITÀ DATI
+        // ========================================
+        // Verifica che username ed email non siano già presenti nel database
+        // Queste funzioni lanciano UserManagementError se trovano duplicati
+        authUsername(currentUsername); // Lancia errore se username già in uso
+        authEmail(currentEmail); // Lancia errore se email già in uso
     
-        if(!duplicateUser){
-            const newUser = await createUserObject(currentUsername, currentEmail, currentPassword);
-            addNewUser(newUser);
-            alert("Utente registrato con successo");
-        }else{
-            if(duplicateUser === "username"){
-                alert("Nome utente non disponibile");
-            }
-            if(duplicateUser === "email"){
-                alert("Errore: email già registrata. Utilizzare un'altra email o effettuare il login");
-            }
-        }
+        // ========================================
+        // FASE 4: CREAZIONE E SALVATAGGIO UTENTE
+        // ========================================
+        // Se la validazione passa, procede con la creazione dell'oggetto utente
+        // createUserObject() include l'hashing della password e la generazione dell'ID
+        const newUser = await createUserObject(currentUsername, currentEmail, currentPassword);
+        
+        // Aggiunge il nuovo utente al database (localStorage)
+        // Può lanciare UserManagementError in caso di errori di storage
+        addNewUser(newUser);
+        
+        alert("Utente registrato con successo");
+        window.location.href = "../index.html";
+
     }catch(error){
+        // ========================================
+        // GESTIONE ERRORI CENTRALIZZATA
+        // ========================================
+        // Gestisce tutti i tipi di errore in modo uniforme:
+        // - VALIDATION: Username o email già in uso
+        // - STORAGE: Problemi di accesso a localStorage
+        // - CRYPTO: Errori durante l'hashing della password
         handleUserError(error);
     }finally{
+        // ========================================
+        // FASE 6: RIPRISTINO INTERFACCIA
+        // ========================================
+        // Garantisce sempre il ripristino dello stato dell'interfaccia
+        // indipendentemente dal successo o fallimento dell'operazione
         signinClearBtn.disabled = false;
         requiredInputFields.forEach(item => item.DOMelement.disabled = false);
+        
+        // Reset automatico del form per preparare una nuova registrazione
         signinClearBtn.click();
     }
 });

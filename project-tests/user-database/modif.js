@@ -137,10 +137,21 @@ modifCurrentPassInput.DOMelement.addEventListener("input", () => {
     }
 });
 
-// Gestisce il submit finale: applica le modifiche richieste e aggiorna il database
+// ============================================================================
+// GESTIONE SUBMIT DEL FORM DI MODIFICA
+// ============================================================================
+
+// Gestisce il submit finale del form di modifica profilo utente
+// Applica selettivamente le modifiche in base ai campi attivati dall'utente
+// Ogni operazione di aggiornamento è gestita separatamente con try/catch individuali
+// per garantire che un errore su un campo non impedisca l'aggiornamento degli altri
 modifSubBtn.addEventListener("click", async () => {
 
-    // Aggiorna password se il campo è attivo
+    // ========================================
+    // AGGIORNAMENTO PASSWORD
+    // ========================================
+    // Aggiorna la password se la sezione password è stata abilitata
+    // Prerequisito: l'utente deve aver superato l'autenticazione con password corrente
     if(modifNewPassInput.DOMelement.required){
         try {
             await updateUserPassword(modifNewPassInput.DOMelement.value);
@@ -150,34 +161,48 @@ modifSubBtn.addEventListener("click", async () => {
         }
     }
 
-    // Aggiorna username se il campo è attivo e il nome è disponibile
+    // ========================================
+    // AGGIORNAMENTO USERNAME
+    // ========================================
+    // Aggiorna l'username se la sezione username è stata abilitata
+    // Sequenza: 1) Verifica disponibilità username, 2) Applica modifica al database
     if(modifUsernameInput.DOMelement.required){
         try {
-            if(authUsername(modifUsernameInput.DOMelement.value)){
-                updateUserUsername(modifUsernameInput.DOMelement.value);
-                alert("Nome utente aggiornato");
-            }else{
-                alert("Nome utente già in uso");
-            }
+            // Verifica che il nuovo username non sia già in uso
+            authUsername(modifUsernameInput.DOMelement.value);
+            // Se la validazione passa, procede con l'aggiornamento
+            updateUserUsername(modifUsernameInput.DOMelement.value);
+            alert("Nome utente aggiornato");
         } catch (error) {
+            // Gestisce errori di validazione (username già in uso) o storage
             handleUserError(error);
         }
     }
 
-    // Aggiorna email se il campo è attivo e l'email è disponibile
+    // ========================================
+    // AGGIORNAMENTO EMAIL
+    // ========================================
+    // Aggiorna l'email se la sezione email è stata abilitata
+    // Sequenza: 1) Verifica disponibilità email, 2) Applica modifica al database
     if(modifEmailInput.DOMelement.required){
         try {
-            if(authEmail(modifEmailInput.DOMelement.value)){
-                updateUserEmail(modifEmailInput.DOMelement.value);
-                alert("Email aggiornata");
-            }else{
-                alert("Email già in uso");
-            }
+            // Verifica che la nuova email non sia già in uso
+            authEmail(modifEmailInput.DOMelement.value)
+            // Se la validazione passa, procede con l'aggiornamento
+            updateUserEmail(modifEmailInput.DOMelement.value);
+            alert("Email aggiornata");
         } catch (error) {
+            // Gestisce errori di validazione (email già in uso) o storage
             handleUserError(error);
         }
     }
 
+    // ========================================
+    // RICARICA PAGINA
+    // ========================================
+    // Ricarica la pagina per resettare lo stato del form e mostrare i dati aggiornati
+    // Questo garantisce che tutti i campi tornino ai valori di default (ora aggiornati)
+    // e che tutte le sezioni vengano disabilitate per sicurezza
     location.reload();
 });
 

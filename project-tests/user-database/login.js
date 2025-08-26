@@ -45,35 +45,57 @@ loginPasswordInput.DOMelement.addEventListener("input", () => {
 // Valida il form ad ogni input per abilitare/disabilitare il pulsante submit
 loginRequiredInputs.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => validateBtn(loginRequiredInputs, loginSubBtn)));
 
-// Gestisce il processo di login completo con autenticazione
+// ============================================================================
+// GESTIONE SUBMIT DEL FORM DI LOGIN
+// ============================================================================
+
+// Gestisce il processo completo di autenticazione utente
+// Implementa il pattern di disabilitazione temporanea degli input durante l'elaborazione
 loginSubBtn.addEventListener("click", async () => {
 
+    // ========================================
+    // FASE 1: DISABILITAZIONE INTERFACCIA
+    // ========================================
+    // Disabilita tutti i controlli del form durante l'elaborazione
+    // per prevenire modifiche accidentali ai dati e doppi submit
     loginSubBtn.disabled = true;
     loginCLearBtn.disabled = true;
     loginRequiredInputs.forEach(item => item.DOMelement.disabled = true);
 
     try{
+        // ========================================
+        // FASE 2: RACCOLTA E BACKUP CREDENZIALI
+        // ========================================
+        // Estrae e memorizza le credenziali PRIMA di modificare l'interfaccia
         const currentUsername = loginUsernameInput.DOMelement.value;
         const currentPassword = loginPasswordInput.DOMelement.value;
+
+        // ========================================
+        // FASE 3: RICERCA UTENTE NEL DATABASE
+        // ========================================
+        // Cerca l'utente tramite username nel database
+        // searchUserbyName() lancia UserManagementError se utente non trovato
         const foundId = searchUserbyName(currentUsername).id;
-        loginRequiredInputs.forEach(item => item.DOMelement.disabled = false);
-        loginPasswordInput.DOMelement.value = "";
-        loginPasswordInput.inputStatus = 0;
-        if(!foundId){
-            alert("Nome utente non trovato");
+        
+        // ========================================
+        // FASE 6: VERIFICA PASSWORD
+        // ========================================
+        // Autentica l'utente usando i valori memorizzati
+        const admitted = await admitUser(foundId, currentPassword);
+        
+        if(admitted){
+            updateLoggedUser(foundId);
+            alert("Login effettuato");
+            window.location.href = "./pages/landing.html";
         }else{
-            const admitted = await admitUser(foundId, currentPassword);
-            if(admitted){
-                updateLoggedUser(foundId);
-                alert("Login effettuato");
-                window.location.href = "./pages/landing.html";
-            }else{
-                alert("Password errata");
-            }
+            alert("Password errata");
         }
     }catch(error){
         handleUserError(error);
     }finally{
+        loginRequiredInputs.forEach(item => item.DOMelement.disabled = false);
+        loginPasswordInput.DOMelement.value = "";
+        loginPasswordInput.inputStatus = 0;
         loginCLearBtn.disabled = false;
     }
 });

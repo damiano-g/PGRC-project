@@ -173,43 +173,122 @@ export function deleteUser(userId){
     updateUsersDB(actualRegUsersArray);
 }
 
-// Aggiorna l'username dell'utente attualmente loggato
+/**
+ * Funzione utility interna per aggiornare un campo specifico dell'utente corrente
+ * Gestisce il pattern atomico di lettura-modifica-scrittura per tutti i tipi di aggiornamento utente
+ * Supporta preprocessing opzionale (es. hashing password) tramite parametro booleano
+ * 
+ * @private
+ * @async
+ * @param {string} field - Nome del campo da aggiornare nell'oggetto utente (es. "username", "email", "password")
+ * @param {string} newValue - Nuovo valore da assegnare al campo (in chiaro per password)
+ * @param {boolean|null} [needsPreprocessing=null] - Se true, applica hashing SHA-256 al valore prima del salvataggio
+ * 
+ * @returns {Promise<void>} Promise che risolve quando l'operazione è completata
+ * 
+ * @throws {UserManagementError} Se l'utente corrente non è trovato nel database (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se si verificano errori di lettura o scrittura nel localStorage (tipo "STORAGE")
+ * @throws {Error} Se si verificano errori durante l'hashing della password (solo se needsPreprocessing=true)
+ * 
+ * @example
+ * // Aggiorna username (sincrono)
+ * await updateUserData("username", "nuovoUsername");
+ * 
+ * @example  
+ * // Aggiorna password con hashing (asincrono)
+ * await updateUserData("password", "nuovaPassword123", true);
+ * 
+ * @example
+ *  * // Aggiorna email (sincrono)
+ * await updateUserData("email", "nuova@email.com");
+ */
+async function updateUserData(field, newValue, needsPreprocessing = null) {
+    try {
+        const processedValue = (needsPreprocessing ? await hashString(newValue) : newValue);
+        const actualRegUsersArray = retrieveRegisteredUsers() || [];
+        const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
+        if(index < 0){
+            throw new UserManagementError("NOT_FOUND", "Utente non trovato");
+        }
+        actualRegUsersArray[index][field] = processedValue;
+        updateUsersDB(actualRegUsersArray);
+    } catch (error) {
+        throw error;
+    }
+}
+
+/**
+ * Aggiorna l'username dell'utente attualmente loggato
+ * Implementazione atomica: legge dati freschi dal localStorage, modifica e salva
+ * 
+ * @param {string} newUsername - Nuovo username da assegnare all'utente corrente
+ * @returns {boolean} true se l'operazione è completata con successo
+ * 
+ * @throws {UserManagementError} Se l'utente corrente non è trovato nel database (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se si verificano errori di lettura o scrittura nel localStorage (tipo "STORAGE")
+ * 
+ * @example
+ * // Aggiorna l'username dell'utente loggato
+ * try {
+ *   updateUserUsername("nuovoUsername");
+ *   console.log("Username aggiornato con successo");
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */
 export function updateUserUsername(newUsername){
-
-    const actualRegUsersArray = retrieveRegisteredUsers() || [];
-    const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
-    
-    if(index > -1){
-        actualRegUsersArray[index].username = newUsername;
-    }
-
-    updateUsersDB(actualRegUsersArray);
+    updateUserData("username", newUsername);
+    return true;
 }
 
-// Aggiorna l'email dell'utente attualmente loggato 
+/**
+ * Aggiorna l'email dell'utente attualmente loggato
+ * Implementazione atomica: legge dati freschi dal localStorage, modifica e salva
+ * 
+ * @param {string} newUserEmail - Nuova email da assegnare all'utente corrente
+ * @returns {boolean} true se l'operazione è completata con successo
+ * 
+ * @throws {UserManagementError} Se l'utente corrente non è trovato nel database (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se si verificano errori di lettura o scrittura nel localStorage (tipo "STORAGE")
+ * 
+ * @example
+ * // Aggiorna l'email dell'utente loggato
+ * try {
+ *   updateUserEmail("nuova@email.com");
+ *   console.log("Email aggiornata con successo");
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */ 
 export function updateUserEmail(newUserEmail){
-
-    const actualRegUsersArray = retrieveRegisteredUsers() || [];
-    const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
-    
-    if(index > -1){
-        actualRegUsersArray[index].email = newUserEmail;
-    }
-
-    updateUsersDB(actualRegUsersArray);
+    updateUserData("email", newUserEmail);
+    return true;
 }
 
-// Aggiorna la password dell'utente attualmente loggato con hashing
+/**
+ * Aggiorna la password dell'utente attualmente loggato con hashing automatico
+ * Implementazione atomica: legge dati freschi dal localStorage, applica hash SHA-256 e salva
+ * 
+ * @async
+ * @param {string} newUserPassword - Nuova password in chiaro da hashare e assegnare
+ * @returns {Promise<boolean>} Promise che risolve a true se l'operazione è completata con successo
+ * 
+ * @throws {UserManagementError} Se l'utente corrente non è trovato nel database (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se si verificano errori di lettura o scrittura nel localStorage (tipo "STORAGE")
+ * @throws {Error} Se si verificano errori durante l'hashing della password
+ * 
+ * @example
+ * // Aggiorna la password dell'utente loggato
+ * try {
+ *   await updateUserPassword("nuovaPassword123");
+ *   console.log("Password aggiornata con successo");
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */
 export async function updateUserPassword(newUserPassword){
-
-    const actualRegUsersArray = retrieveRegisteredUsers() || [];
-    const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
-    
-    if(index > -1){
-        actualRegUsersArray[index].password = await hashString(newUserPassword);
-    }
-
-    updateUsersDB(actualRegUsersArray);
+    updateUserData("password", newUserPassword, true);
+    return true;
 }
 
 
@@ -217,40 +296,62 @@ export async function updateUserPassword(newUserPassword){
 // FUNZIONI DI VALIDAZIONE
 // ============================================================================
 
-// Verifica la disponibilità di username ed email nel database utenti
-// Restituisce "username" o "email" se duplicati, null se disponibili
-export function authUserEntries(chosenUsername, chosenEmail){
 
-    if(!authUsername(chosenUsername)){
-        return "username";
-    }
-    if(!authEmail(chosenEmail)){
-        return "email";
-    }
-    return null;
-}
-
-// Verifica se un username è disponibile nel database
-// Restituisce true se disponibile, false se già in uso
+/**
+ * Verifica se un username è disponibile nel database
+ * Implementazione atomica: legge dati freschi dal localStorage
+ * 
+ * @param {string} chosenUsername - Username da verificare per duplicati
+ * @returns {boolean} true se l'username è disponibile
+ * 
+ * @throws {UserManagementError} Se username già in uso (tipo "VALIDATION")
+ * @throws {UserManagementError} Se errori di lettura dal localStorage (tipo "STORAGE")
+ * 
+ * @example
+ * // Verifica disponibilità username
+ * try {
+ *   authUsername("mario");
+ *   console.log("Username disponibile");
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */
 export function authUsername(chosenUsername){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
     
     if(actualRegUsersArray.some(item => (item.username === chosenUsername))){
-        return false;
+        throw new UserManagementError("VALIDATION", "Username già in uso");
     }
     
     return true;
 }
 
-// Verifica se un'email è disponibile nel database  
-// Restituisce true se disponibile, false se già in uso
+/**
+ * Verifica se un'email è disponibile nel database
+ * Implementazione atomica: legge dati freschi dal localStorage
+ * 
+ * @param {string} chosenEmail - Email da verificare per duplicati
+ * @returns {boolean} true se l'email è disponibile
+ * 
+ * @throws {UserManagementError} Se email già in uso (tipo "VALIDATION")
+ * @throws {UserManagementError} Se errori di lettura dal localStorage (tipo "STORAGE")
+ * 
+ * @example
+ * // Verifica disponibilità email
+ * try {
+ *   authEmail("mario@email.com");
+ *   console.log("Email disponibile");
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */
 export function authEmail(chosenEmail){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || []; 
 
     if(actualRegUsersArray.some(item => (item.email === chosenEmail))){
-        return false;
+        throw new UserManagementError("VALIDATION", "Email già in uso");
     }
 
     return true;
@@ -276,45 +377,95 @@ export async function createUserObject(chosenUsername, chosenEmail, chosenPasswo
     return userObject;
 }
 
+
+/**
+ * Funzione utility interna per ricercare un utente nel database tramite parametro generico
+ * Supporta ricerca per qualsiasi campo dell'oggetto utente (username, email, id, ecc.)
+ * Restituisce una deep copy per impedire modifiche esterne ai dati originali
+ * 
+ * @private
+ * @param {string} searchParameter - Nome del campo da utilizzare per la ricerca -> "username", "id", "email"
+ * @param {string} searchValue - Valore da cercare nel campo specificato
+ * @returns {Object} Oggetto utente completo (deep copy) se trovato
+ * 
+ * @throws {UserManagementError} Se l'utente non è trovato nel database (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
+ * 
+ * @example
+ * // Cerca utente per username (uso interno)
+ * const user = searchUser("username", "mario");
+ * 
+ * @example
+ * // Cerca utente per ID (uso interno)
+ * const user = searchUser("id", "user_1703123456789_1234");
+ */
+function searchUser(searchParameter, searchValue){
+    try {
+        const actualRegUsersArray = retrieveRegisteredUsers() || [];
+        const index = actualRegUsersArray.findIndex(item => item[searchParameter] === searchValue);
+     
+        if(index < 0){
+            throw new UserManagementError("NOT_FOUND", "Utente non trovato");
+        }
+
+        return structuredClone(actualRegUsersArray[index]);
+    } catch (error) {
+        throw error;
+    }
+}
+
 /**
  * Ricerca un utente nel database tramite username e restituisce l'oggetto utente completo
  * Restituisce una deep copy per impedire modifiche esterne ai dati originali
  * 
  * @param {string} providedUsername - Username dell'utente da cercare
- * @returns {Object|null} Oggetto utente completo (deep copy) o null se non trovato
+ * @returns {Object} Oggetto utente completo (deep copy) se trovato
  * 
- * @throws {UserManagementError} In caso di errori di lettura dal localStorage
+ * @throws {UserManagementError} Se l'utente non è trovato nel database (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
  * 
  * @example
  * // Cerca un utente per username
  * try {
  *   const user = searchUserbyName("mario");
- *   if (user) {
- *     console.log("Utente trovato:", user.email);
- *   } else {
- *     console.log("Utente non trovato");
- *   }
+ *   console.log("Utente trovato:", user.email);
  * } catch (error) {
- *   handleUserError(error);
+ *   if (error.type === "NOT_FOUND") {
+ *     console.log("Utente non trovato");
+ *   } else {
+ *     handleUserError(error);
+ *   }
  * }
  */
 export function searchUserbyName(providedUsername) {
-    const actualRegUsersArray = retrieveRegisteredUsers() || [];
-    const index = actualRegUsersArray.findIndex(item => item.username === providedUsername);
-
-    if(index < 0) return null;
-
-    return structuredClone(actualRegUsersArray[index]); // Ritorna una copia profonda dell'oggetto (copia tutti i livelli di annidamento)
+    return searchUser("username", providedUsername);
 }
 
+/**
+ * Ricerca un utente nel database tramite ID e restituisce l'oggetto utente completo
+ * Restituisce una deep copy per impedire modifiche esterne ai dati originali
+ * 
+ * @param {string} userId - ID univoco dell'utente da cercare
+ * @returns {Object} Oggetto utente completo (deep copy) se trovato
+ * 
+ * @throws {UserManagementError} Se l'utente non è trovato nel database (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
+ * 
+ * @example
+ * // Cerca un utente per ID
+ * try {
+ *   const user = searchUserById("user_1703123456789_1234");
+ *   console.log("Utente trovato:", user.username);
+ * } catch (error) {
+ *   if (error.type === "NOT_FOUND") {
+ *     console.log("Utente non trovato");
+ *   } else {
+ *     handleUserError(error);
+ *   }
+ * }
+ */
 export function searchUserById(userId){
-
-    const actualRegUsersArray = retrieveRegisteredUsers() || [];
-    const index = actualRegUsersArray.findIndex(item => item.id === userId);
-
-    if(index < 0) return null;
-
-    return structuredClone(actualRegUsersArray[index]); // Ritorna una copia profonda dell'oggetto (copia tutti i livelli di annidamento)
+    return searchUser("id", userId);
 }
 
 // ============================================================================
