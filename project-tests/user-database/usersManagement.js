@@ -1,5 +1,7 @@
 // Gestione completa degli utenti: storage, validazione, autenticazione e operazioni CRUD
 
+import { UserManagementError, } from "./errorsManagement";
+
 // ============================================================================
 // CONFIGURAZIONE E COSTANTI
 // ============================================================================
@@ -28,8 +30,17 @@ let loggedUserId = "";
 // Restituisce una copia dell'array originale impedendo modifiche in funzioni esterne al modulo
 // Possibile evitare il caricamento da localstorage gestendo l'aggiornamento della variabile al caricamento di ogni pagina
 export function getRegisteredUsers() {
-    registeredUsers = retrieveRegisteredUsers() || [];
-    return structuredClone(registeredUsers); // Ritorna una copia profonda dell'oggetto (copia tutti i livelli di annidamento)
+    try{
+        const operationResult = retrieveRegisteredUsers();
+        registeredUsers = operationResult.data || [];
+        if(!operationResult.success){
+            throw operationResult.error;
+        }
+        return { success: true, data: structuredClone(registeredUsers) };
+    }catch(err){
+        console.error("Error", err);
+        return { success: false, error: err, data: structuredClone(registeredUsers) };
+    }
 }
 
 // Recupera l'ID dell'utente attualmente loggato dal sessionStorage
@@ -44,18 +55,13 @@ export function getLoggedUserId() {
 
 // Recupera e restituisce l'array di utenti dal localStorage (se non esiste, restituisce array vuoto)
 function retrieveRegisteredUsers() {
-    
-    let array = [];
-
     try{
         const JSONFile = localStorage.getItem(usersDBKey);
-        if(JSONFile){
-            array = JSON.parse(JSONFile);
-        }
+        const array = (JSONFile ? JSON.parse(JSONFile) : []);
+        return { success: true, data: array };
     }catch(err){
-        alert("Errore di lettura nel database: "+err.message);
+        return { success: false, error: new UserManagementError("STORAGE", "Errore di lettura nel database", err), data: []};
     }
-    return array;
 }
 
 // Recupera l'ID dell'utente loggato dal sessionStorage con gestione errori
