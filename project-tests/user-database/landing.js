@@ -10,10 +10,15 @@ const confirmBtn = document.getElementById("confirmBtn");
 // Gestisce l'eliminazione definitiva dell'account utente
 // Cancella l'utente corrente dal database - da valutare controllo password
 confirmBtn.addEventListener("click", () => {
-    deleteUser(getLoggedUserId());
-    document.querySelector("body").classList.add("d-none");
-    alert("Account eliminato");
-    logoutBtn.click();
+    try {
+        deleteUser(getLoggedUserId());
+        document.querySelector("body").classList.add("d-none");
+        alert("Account eliminato");
+        logoutBtn.click();
+    } catch (error) {
+        handleUserError(error);
+    }
+    
 })
 
 // Gestisce il logout dell'utente e reindirizza alla pagina principale
@@ -24,16 +29,9 @@ logoutBtn.addEventListener("click", () => {
 
 // Verifica l'autenticazione dell'utente al caricamento della pagina
 window.addEventListener("load", () => {
-    
-    try {
-        if(!getRegisteredUsers().data.some(item => item.id === getLoggedUserId())){
-            window.location.href = "../index.html"
-        }else{
-            document.querySelector("body").classList.remove("d-none");
-        }
-    } catch (error) {
-        handleUserError(error);
+    if(!getRegisteredUsers().some(item => item.id === getLoggedUserId())){
         window.location.href = "../index.html"
+    }else{
+        document.querySelector("body").classList.remove("d-none");
     }
-
 });

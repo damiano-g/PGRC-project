@@ -1,5 +1,6 @@
 //Gestione eventi per pagina di registrazione
 
+import { handleUserError } from "./errorsManagement.js";
 import { addNewUser, authUserEntries, createUserObject, } from "./usersManagement.js";
 import { validateUsername, validateEmail, validatePassword, validatePassConfirm, formatInputField, validateBtn } from "./validate.js";
 
@@ -90,9 +91,8 @@ signinSubBtn.addEventListener("click", async () => {
                 alert("Errore: email già registrata. Utilizzare un'altra email o effettuare il login");
             }
         }
-    }catch(err){
-        alert("Errore: "+err.message+"\nCodice errore: "+(err.code || "N/A"));
-        console.error(err);
+    }catch(error){
+        handleUserError(error);
     }finally{
         signinClearBtn.disabled = false;
         requiredInputFields.forEach(item => item.DOMelement.disabled = false);

@@ -1,5 +1,6 @@
 import { updateLoggedUser, searchUserbyName, admitUser, } from "./usersManagement.js"; 
 import { validateBtn, } from "./validate.js";
+import { handleUserError, } from "./errorsManagement.js";
 
 // Oggetti DOM per gli input del form di login con stato di validazione
 const loginUsernameInput = {
@@ -70,6 +71,8 @@ loginSubBtn.addEventListener("click", async () => {
                 alert("Password errata");
             }
         }
+    }catch(error){
+        handleUserError(error);
     }finally{
         loginCLearBtn.disabled = false;
     }

@@ -24,7 +24,7 @@
  * compatibilità con la gestione nativa degli errori JavaScript.
  */
 
-function UserManagementError(type, message, details = null){
+export function UserManagementError(type, message, details = null){
         this.name = "UserManagementError";
         this.type = type;
         this.message = message;

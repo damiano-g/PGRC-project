@@ -1,6 +1,6 @@
 // Gestione completa degli utenti: storage, validazione, autenticazione e operazioni CRUD
 
-import { UserManagementError, } from "./errorsManagement";
+import { UserManagementError, } from "./errorsManagement.js";
 
 // ============================================================================
 // CONFIGURAZIONE E COSTANTI
@@ -44,7 +44,20 @@ export function getRegisteredUsers() {
     }
 }
 
-// Recupera l'ID dell'utente attualmente loggato dal sessionStorage
+/**
+ * Recupera l'ID dell'utente attualmente loggato dal sessionStorage
+ * Gestisce automaticamente gli errori di lettura restituendo una stringa vuota come fallback
+ * 
+ * @returns {string} ID dell'utente loggato o stringa vuota se non presente o in caso di errore
+ * @example
+ * // Recupera l'ID dell'utente corrente
+ * const currentUserId = getLoggedUserId();
+ * if (currentUserId) {
+ *   console.log("Utente loggato:", currentUserId);
+ * } else {
+ *   console.log("Nessun utente loggato");
+ * }
+ */
 export function getLoggedUserId() {
     try {
         loggedUserId = retreiveLoggedUser() || "";
@@ -53,9 +66,7 @@ export function getLoggedUserId() {
         console.error("Error", error);
         loggedUserId = "";
         return loggedUserId;
-    }
-    
-    
+    } 
 }
 
 // ============================================================================
@@ -89,10 +100,8 @@ function updateUsersDB(usersArray){
     
     try{
         localStorage.setItem(usersDBKey, JSON.stringify(usersArray));
-    }catch(err){
-        alert("Errore di scrittura nel database: "+err.message);
-        console.error(err);
-        throw err;
+    }catch(error){
+        throw new UserManagementError("STORAGE", "Errore di scrittura nel database", error) ;
     }
 }
 
@@ -101,9 +110,8 @@ export function updateLoggedUser(userId){
 
     try{
         sessionStorage.setItem(loggedUserKey, userId);
-    }catch(err){
-        alert("Errore di scrittura nel database: "+err.message);
-        console.error(err);
+    }catch(error){
+        throw new UserManagementError("STORAGE", "Errore di scrittura nel database", error)
     }
 }
 
@@ -111,16 +119,53 @@ export function updateLoggedUser(userId){
 // OPERAZIONI CRUD ATOMICHE
 // ============================================================================
 
-// Aggiunge un nuovo utente all'array e aggiorna il localStorage
-// Implementazione atomica: legge dati freschi, modifica e salva in un'unica operazione
+/**
+ * Aggiunge un nuovo utente all'array e aggiorna il localStorage
+ * Implementazione atomica: legge dati freschi, modifica e salva in un'unica operazione
+ * 
+ * @param {Object} newUserObject - Oggetto utente completo da aggiungere al database
+ * @param {string} newUserObject.id - ID univoco dell'utente
+ * @param {string} newUserObject.username - Nome utente
+ * @param {string} newUserObject.email - Email dell'utente
+ * @param {string} newUserObject.password - Password hashata dell'utente
+ * @param {Array} newUserObject.favorites - Array dei preferiti dell'utente
+ * @param {string} newUserObject.creationDate - Data di creazione in formato ISO
+ * 
+ * @throws {UserManagementError} In caso di errori di lettura o scrittura nel localStorage
+ * 
+ * @example
+ * // Aggiunge un nuovo utente al database
+ * try {
+ *   const newUser = await createUserObject("mario", "mario@email.com", "password123");
+ *   addNewUser(newUser);
+ *   console.log("Utente aggiunto con successo");
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */
 export function addNewUser(newUserObject){
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
     actualRegUsersArray.push(newUserObject);
     updateUsersDB(actualRegUsersArray);
 }
 
-// Rimuove un utente dall'array tramite ID e aggiorna il localStorage
-// Implementazione atomica: legge dati freschi, modifica e salva in un'unica operazione
+/**
+ * Rimuove un utente dall'array tramite ID e aggiorna il localStorage
+ * Implementazione atomica: legge dati freschi, modifica e salva in un'unica operazione
+ * 
+ * @param {string} userId - ID univoco dell'utente da rimuovere dal database
+ * 
+ * @throws {UserManagementError} In caso di errori di lettura o scrittura nel localStorage
+ * 
+ * @example
+ * // Rimuove un utente dal database
+ * try {
+ *   deleteUser("user_1703123456789_1234");
+ *   console.log("Utente rimosso con successo");
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */
 export function deleteUser(userId){
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
     const index = actualRegUsersArray.findIndex(item => item.id === userId);
@@ -231,9 +276,29 @@ export async function createUserObject(chosenUsername, chosenEmail, chosenPasswo
     return userObject;
 }
 
-// Ricerca un utente nel database tramite username e restituisce il suo ID
+/**
+ * Ricerca un utente nel database tramite username e restituisce l'oggetto utente completo
+ * Restituisce una deep copy per impedire modifiche esterne ai dati originali
+ * 
+ * @param {string} providedUsername - Username dell'utente da cercare
+ * @returns {Object|null} Oggetto utente completo (deep copy) o null se non trovato
+ * 
+ * @throws {UserManagementError} In caso di errori di lettura dal localStorage
+ * 
+ * @example
+ * // Cerca un utente per username
+ * try {
+ *   const user = searchUserbyName("mario");
+ *   if (user) {
+ *     console.log("Utente trovato:", user.email);
+ *   } else {
+ *     console.log("Utente non trovato");
+ *   }
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */
 export function searchUserbyName(providedUsername) {
-
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
     const index = actualRegUsersArray.findIndex(item => item.username === providedUsername);
 

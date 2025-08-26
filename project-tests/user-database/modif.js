@@ -1,5 +1,6 @@
 // Gestione eventi per pagina di modifica profilo utente
 
+import { handleUserError } from "./errorsManagement.js";
 import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, authUsername, updateUserUsername, authEmail, updateUserEmail, } from "./usersManagement.js";
 import * as validate from "./validate.js";
 
@@ -84,14 +85,18 @@ authModifBtn.addEventListener("click", async () => {
     modifCurrentPassInput.DOMelement.value = "*********";
 
     // Verifica la password tramite autenticazione
-    if(await admitUser(getLoggedUserId(), providedPassword)){
-        modifCurrentPassInput.inputStatus = 1;
-        modifNewPassInput.DOMelement.disabled = false;
-        modifNewPassInput.DOMelement.required = true;
-        modifConfPassInput.DOMelement.required = true;
-    }else{
-        modifCurrentPassInput.DOMelement.value = ""
-        alert("Password errata");
+    try {
+        if(await admitUser(getLoggedUserId(), providedPassword)){
+            modifCurrentPassInput.inputStatus = 1;
+            modifNewPassInput.DOMelement.disabled = false;
+            modifNewPassInput.DOMelement.required = true;
+            modifConfPassInput.DOMelement.required = true;
+        }else{
+            modifCurrentPassInput.DOMelement.value = ""
+            alert("Password errata");
+        }
+    } catch (error) {
+        handleUserError(error);
     }
 });
 
@@ -137,27 +142,39 @@ modifSubBtn.addEventListener("click", async () => {
 
     // Aggiorna password se il campo è attivo
     if(modifNewPassInput.DOMelement.required){
-        await updateUserPassword(modifNewPassInput.DOMelement.value);
-        alert("Password aggiornata");
+        try {
+            await updateUserPassword(modifNewPassInput.DOMelement.value);
+            alert("Password aggiornata");
+        } catch (error) {
+            handleUserError(error);
+        }
     }
 
     // Aggiorna username se il campo è attivo e il nome è disponibile
     if(modifUsernameInput.DOMelement.required){
-        if(authUsername(modifUsernameInput.DOMelement.value)){
-            updateUserUsername(modifUsernameInput.DOMelement.value);
-            alert("Nome utente aggiornato");
-        }else{
-            alert("Nome utente già in uso");
+        try {
+            if(authUsername(modifUsernameInput.DOMelement.value)){
+                updateUserUsername(modifUsernameInput.DOMelement.value);
+                alert("Nome utente aggiornato");
+            }else{
+                alert("Nome utente già in uso");
+            }
+        } catch (error) {
+            handleUserError(error);
         }
     }
 
     // Aggiorna email se il campo è attivo e l'email è disponibile
     if(modifEmailInput.DOMelement.required){
-        if(authEmail(modifEmailInput.DOMelement.value)){
-            updateUserEmail(modifEmailInput.DOMelement.value);
-            alert("Email aggiornata");
-        }else{
-            alert("Email già in uso");
+        try {
+            if(authEmail(modifEmailInput.DOMelement.value)){
+                updateUserEmail(modifEmailInput.DOMelement.value);
+                alert("Email aggiornata");
+            }else{
+                alert("Email già in uso");
+            }
+        } catch (error) {
+            handleUserError(error);
         }
     }
 
@@ -166,9 +183,13 @@ modifSubBtn.addEventListener("click", async () => {
 
 // Carica i dati dell'utente corrente nei campi al caricamento della pagina
 window.addEventListener("load", () => {
-    const currentUser = searchUserById(getLoggedUserId());
-    modifUsernameInput.defaultValue = currentUser.username;
-    modifUsernameInput.DOMelement.value = modifUsernameInput.defaultValue
-    modifEmailInput.defaultValue = currentUser.email;
-    modifEmailInput.DOMelement.value = modifEmailInput.defaultValue;
+    try {
+        const currentUser = searchUserById(getLoggedUserId());
+        modifUsernameInput.defaultValue = currentUser.username;
+        modifUsernameInput.DOMelement.value = modifUsernameInput.defaultValue
+        modifEmailInput.defaultValue = currentUser.email;
+        modifEmailInput.DOMelement.value = modifEmailInput.defaultValue;
+    } catch (error) {
+        handleUserError(error)
+    }
 });
