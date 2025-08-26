@@ -26,27 +26,36 @@ let loggedUserId = "";
 // FUNZIONI GETTER PER ACCESSO AI DATI
 // ============================================================================
 
-// Recupera l'array degli utenti registrati aggiornato dal localStorage
-// Restituisce una copia dell'array originale impedendo modifiche in funzioni esterne al modulo
-// Possibile evitare il caricamento da localstorage gestendo l'aggiornamento della variabile al caricamento di ogni pagina
+/**
+ * Recupera l'array degli utenti registrati aggiornato dal localStorage
+ * Restituisce una copia dell'array originale impedendo modifiche esterne
+ * 
+ * @returns {Array} Array degli utenti registrati (deep copy)
+ * @throws {UserManagementError} In caso di errori di lettura dal localStorage
+ */
 export function getRegisteredUsers() {
     try{
-        const operationResult = retrieveRegisteredUsers();
-        registeredUsers = operationResult.data || [];
-        if(!operationResult.success){
-            throw operationResult.error;
-        }
-        return { success: true, data: structuredClone(registeredUsers) };
-    }catch(err){
-        console.error("Error", err);
-        return { success: false, error: err, data: structuredClone(registeredUsers) };
+        registeredUsers = retrieveRegisteredUsers() || [];
+        return structuredClone(registeredUsers);
+    }catch(error){
+        console.error("Error", error);
+        registeredUsers = [];
+        return [];
     }
 }
 
 // Recupera l'ID dell'utente attualmente loggato dal sessionStorage
 export function getLoggedUserId() {
-    loggedUserId = retreiveLoggedUser() || "";
-    return loggedUserId;
+    try {
+        loggedUserId = retreiveLoggedUser() || "";
+        return loggedUserId;
+    } catch (error) {
+        console.error("Error", error);
+        loggedUserId = "";
+        return loggedUserId;
+    }
+    
+    
 }
 
 // ============================================================================
@@ -58,24 +67,22 @@ function retrieveRegisteredUsers() {
     try{
         const JSONFile = localStorage.getItem(usersDBKey);
         const array = (JSONFile ? JSON.parse(JSONFile) : []);
-        return { success: true, data: array };
+        return array;
     }catch(err){
-        return { success: false, error: new UserManagementError("STORAGE", "Errore di lettura nel database", err), data: []};
+        throw new UserManagementError("STORAGE", "Errore di lettura nel database", err);
     }
 }
 
 // Recupera l'ID dell'utente loggato dal sessionStorage con gestione errori
 function retreiveLoggedUser(){
-    
-    let userId = "";
-    
     try{
-        userId = sessionStorage.getItem(loggedUserKey) || "";
+        const userId = sessionStorage.getItem(loggedUserKey) || "";
+        return userId;
     }catch(err){
-        alert("Errore di lettura nel database: "+err.message);
+        throw new UserManagementError("STORAGE", "Errore di lettura nel database", err);
     }
-    return userId;
 }
+
 
 // Salva l'array utenti nel localStorage con gestione errori
 function updateUsersDB(usersArray){
