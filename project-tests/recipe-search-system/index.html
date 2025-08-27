@@ -7,9 +7,13 @@
     <link rel="stylesheet" href="./style.css">
     <title>TMDB test</title>
 </head>
-<body>
+<body id="index-page">
     <div class="fluid-container">
         <h2 class="mx-auto text-center px-4 py-2">Homepage</h2>
+        <div class="input-group">
+            <input type="text" class="form-control" id="searchBar" placeholder="Cerca la tua prossima ricetta">
+            <button class="btn btn-outline-secondary" type="button" id="searchBtn">Cerca</button>
+        </div>
         <div id="carousel" class="carousel slide mb-5 mt-5" data-bs-ride="carousel">
             <div class="carousel-inner"></div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev">

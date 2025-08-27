@@ -47,8 +47,12 @@ export async function fetchByName(recipeName){
     return fetchRecipes(fetchByNameURL, fetchOptions, recipeName);
 }
 
-export async function fetchByCategory(category){
-    return fetchRecipes(fetchByCategoryURL, fetchOptions, category);
+export async function fetchById(recipeId){
+    return fetchRecipes(fetchByIdURL, fetchOptions, recipeId);
+}
+
+export async function fetchByCategory(categoryId){
+    return fetchRecipes(fetchByCategoryURL, fetchOptions, categoryId);
 }
 
 export async function fetchAllCategories(){
@@ -60,17 +64,17 @@ export async function fetchAllIngredients(){
 }
 
 
-window.addEventListener("load", async () => {
+// window.addEventListener("load", async () => {
     
-    // const fullObject = await rndFetch();
-    // const recipe = fullObject.meals[0];
+//     // const fullObject = await rndFetch();
+//     // const recipe = fullObject.meals[0];
 
-    // const prev = new RecipePreview(recipe);
-    // const full = new FullRecipe(recipe);
+//     // const prev = new RecipePreview(recipe);
+//     // const full = new FullRecipe(recipe);
 
-    // console.log(fetchByName("pa"));
+//     // console.log(fetchByName("pa"));
     
-    // console.log("Random:", await rndFetch());
-    // console.log("Name:", await fetchByName("Pasta"));
-    // console.log("Category:", await fetchByCategory("Beef"));
-});
+//     // console.log("Random:", await rndFetch());
+//     // console.log("Name:", await fetchByName("Pasta"));
+//     // console.log("Category:", await fetchByCategory("Beef"));
+// });

@@ -19,8 +19,26 @@
     display: inline-block;
 }
 
-.img-fluid{
-    height: 150px;
+.card .img-fluid{
     object-fit: cover;
     width: 100%;
+}
+
+#search-page .img-fluid{
+    height: 150px;
+}
+
+#index-page .img-fluid{
+    height: 75px;
+}
+
+.card {
+    cursor: pointer;
+    transition: transform 0.5s ease;
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: scale(1.002);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
