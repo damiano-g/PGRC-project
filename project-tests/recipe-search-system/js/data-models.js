@@ -54,7 +54,7 @@
 export function ItemPreview(rawObj){
     this.id = rawObj.idMeal || rawObj.idCategory || "",
     this.name = rawObj.strMeal || rawObj.strCategory || "",
-    this.image = rawObj.strMealThumb || rawObj.strCategoryThumb || ""
+    this.image = rawObj.strMealThumb || rawObj.strCategoryThumb || "../assets/images/no_image.jpg"
 }
 
 // ===============================

@@ -142,7 +142,7 @@ Registro (iniziale):
 
 #### **Long-term (1 settimana)**
 1. **Advanced search**: Filtri multipli, ordinamento
-2. **UI polish**: Loading states, animations, empty states
+2. **UI polish**: Loading states, animations, empty states, integrare logica di display sequenziale degli elementi
 3. **Performance optimization**: Lazy loading, image optimization
 
 **Sistema attuale rappresenta una foundation solida e production-ready per tutte le features pianificate nel documento originale.**

@@ -11,6 +11,7 @@ function createCarouselItem(recipe){
 
     const carouselItem = document.createElement("div");
     carouselItem.classList.add("carousel-item");
+    carouselItem.dataset.recipeId = String(recipe.id);
 
     carouselItem.innerHTML = `
         <img src=${recipe.image} class="d-block w-100" alt=${recipe.name}> <!-- d-block and w-100 prevent browser default image alignement -->
@@ -73,6 +74,14 @@ catContainer.addEventListener("click", (click) => {
         window.location.href = `./pages/search.html?cat=${card.dataset.categoryName}`;
     }
 });
+
+slideshow.addEventListener("click", (click) => {
+    const slide = click.target.closest(".carousel-item");
+    if(slide){
+        window.location.href = `./pages/recipe-details.html?id=${slide.dataset.recipeId}`;
+    }
+});
+
 
 homeSearchBtn.addEventListener("click", () => {
     window.location.href = `./pages/search.html?q=${String(homeSearchBar.value)}`
