@@ -499,3 +499,4 @@ recipeCard = {
 
 *Documento di implementazione per Sistema di Ricerca Ricette Culinarie*  
 *Timeline: 8-10 giorni lavorativi - Target: Fine Settembre 2024*
+
