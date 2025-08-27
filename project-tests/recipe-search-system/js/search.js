@@ -1,5 +1,5 @@
 import { fetchByCategory, fetchByName, } from "./recipesAPI.js";
-import { RecipePreview } from "./temp.js";
+import { ItemPreview } from "./data-models.js";
 
 const searchBtn = document.getElementById("searchBtn");
 const searchBar = document.getElementById("searchBar");
@@ -10,7 +10,7 @@ function recipesPreviewArray(recipesObj){
     const resultsArray = [];
 
     recipesObj.meals.forEach(element => {
-        const recipe = new RecipePreview(element);
+        const recipe = new ItemPreview(element);
         resultsArray.push(recipe);
     });
 

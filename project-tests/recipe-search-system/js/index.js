@@ -1,4 +1,4 @@
-import { RecipePreview, FullRecipe, } from "./temp.js";
+import { ItemPreview, FullRecipe, } from "./data-models.js";
 import { fetchAllCategories, rndFetch, } from "./recipesAPI.js";
 
 const slideshow = document.querySelector(".carousel-inner");
@@ -27,7 +27,7 @@ window.addEventListener("load", async () => {
 
     for(let i=1; i<=5; i++){
         const recipes = await rndFetch();
-        recipesArray.push(new RecipePreview(recipes.meals[0]));
+        recipesArray.push(new ItemPreview(recipes.meals[0]));
     }
 
     recipesArray.forEach(item => {
@@ -45,7 +45,6 @@ window.addEventListener("load", async () => {
     categoriesArray.forEach(item => {
         const catCol = document.createElement("div");
         catCol.classList.add("col-md-4");
-        // catCol.classList.add("text-center");
         catCol.innerHTML = `
             <div class="card" data-category-name="${item.strCategory}">
                 <div class="row g-0">

@@ -1,5 +1,5 @@
 import { fetchById } from "./recipesAPI.js";
-import { FullRecipe } from "./temp.js";
+import { FullRecipe } from "./data-models.js";
 
 const recipeTitle = document.getElementById("recipe-title");
 const imageBox = document.getElementById("image-box");
