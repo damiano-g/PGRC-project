@@ -18,12 +18,13 @@
  * @function ItemPreview
  * @param {Object} rawObj - Oggetto raw da API TheMealDB (ricetta o categoria)
  * @param {string} [rawObj.idMeal] - ID ricetta (se oggetto ricetta)
- * @param {string} [rawObj.idCategory] - ID categoria (se oggetto categoria)
+ * @param {string} [rawObj.strCategory] - ID categoria (se oggetto categoria): NB-> TMDB usa nome categoria com ID per ricerche
  * @param {string} [rawObj.strMeal] - Nome ricetta (se oggetto ricetta)
  * @param {string} [rawObj.strCategory] - Nome categoria (se oggetto categoria)
  * @param {string} [rawObj.strMealThumb] - URL immagine ricetta (se oggetto ricetta)
  * @param {string} [rawObj.strCategoryThumb] - URL immagine categoria (se oggetto categoria)
  * 
+ * @typedef {Object} ItemPreview
  * @property {string} id - ID univoco dell'elemento (ricetta o categoria)
  * @property {string} name - Nome display dell'elemento
  * @property {string} image - URL immagine thumbnail dell'elemento
@@ -52,7 +53,7 @@
  * });
  */
 export function ItemPreview(rawObj){
-    this.id = rawObj.idMeal || rawObj.idCategory || "",
+    this.id = rawObj.idMeal || rawObj.strCategory || "",
     this.name = rawObj.strMeal || rawObj.strCategory || "",
     this.image = rawObj.strMealThumb || rawObj.strCategoryThumb || "../assets/images/no_image.jpg"
 }

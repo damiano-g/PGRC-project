@@ -1,5 +1,6 @@
 import { ItemPreview, FullRecipe, } from "./data-models.js";
 import { fetchAllCategories, rndFetch, } from "./recipesAPI.js";
+import { createPreviewCard } from "./UI.js";
 
 const slideshow = document.querySelector(".carousel-inner");
 const catContainer = document.getElementById("categories");
@@ -11,7 +12,7 @@ function createCarouselItem(recipe){
 
     const carouselItem = document.createElement("div");
     carouselItem.classList.add("carousel-item");
-    carouselItem.dataset.recipeId = String(recipe.id);
+    carouselItem.dataset.itemId = String(recipe.id);
 
     carouselItem.innerHTML = `
         <img src=${recipe.image} class="d-block w-100" alt=${recipe.name}> <!-- d-block and w-100 prevent browser default image alignement -->
@@ -39,27 +40,19 @@ window.addEventListener("load", async () => {
     document.querySelector(".carousel-inner .carousel-item").classList.add("active");
 
     const catObj = await fetchAllCategories();
-    const categoriesArray = catObj.categories;
+    
+    // Uniforma la struttura dell'oggetto di preview e prepara per implementazione cache
+    const categoriesArray = [];
+    catObj.categories.forEach(element => {
+        categoriesArray.push(new ItemPreview(element));
+    });
 
     console.log(categoriesArray);
-    
-    categoriesArray.forEach(item => {
+
+    categoriesArray.forEach(element => {
         const catCol = document.createElement("div");
         catCol.classList.add("col-md-4");
-        catCol.innerHTML = `
-            <div class="card" data-category-name="${item.strCategory}">
-                <div class="row g-0">
-                    <div class="col-4">
-                        <img src="${item.strCategoryThumb}" alt="${item.strCategory}" class="img-fluid">
-                    </div>
-                    <div class="col-8">
-                        <div class="card-body d-flex align-items-center">
-                            <h5 class="card-title mb-0">${item.strCategory}</h5>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        catCol.appendChild(createPreviewCard(element));
         catContainer.appendChild(catCol);
     });
 
@@ -71,14 +64,14 @@ catContainer.addEventListener("click", (click) => {
     const card = click.target.closest(".card");
 
     if(card){
-        window.location.href = `./pages/search.html?cat=${card.dataset.categoryName}`;
+        window.location.href = `./pages/search.html?cat=${card.dataset.itemId}`;
     }
 });
 
 slideshow.addEventListener("click", (click) => {
     const slide = click.target.closest(".carousel-item");
     if(slide){
-        window.location.href = `./pages/recipe-details.html?id=${slide.dataset.recipeId}`;
+        window.location.href = `./pages/recipe-details.html?id=${slide.dataset.itemId}`;
     }
 });
 
