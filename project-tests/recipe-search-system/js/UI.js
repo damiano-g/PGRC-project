@@ -6,6 +6,8 @@
 export function createPreviewCard(itemPreviewObj){
     const card = document.createElement("div");
     card.classList.add("card");
+    card.classList.add("mb-1");
+    card.classList.add("mt-1");
     card.dataset.itemId = itemPreviewObj.id;
     card.innerHTML = `
         <div class="row g-0">
@@ -21,4 +23,12 @@ export function createPreviewCard(itemPreviewObj){
     `;
 
     return card;
-}
+};
+
+
+export function populateContainer(previewItemsArray, container){
+    container.innerHTML = "";
+    previewItemsArray.forEach(element => {
+        container.appendChild(createPreviewCard(element));
+    });
+};
