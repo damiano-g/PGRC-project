@@ -1,21 +1,10 @@
 import { fetchByCategory, fetchByName, } from "./recipesAPI.js";
-import { ItemPreview } from "./data-models.js";
+import { ItemPreview, createPreviewArray } from "./data-models.js";
 
 const searchBtn = document.getElementById("searchBtn");
 const searchBar = document.getElementById("searchBar");
 const resultsContainer = document.getElementById("results-container");
 
-function recipesPreviewArray(recipesObj){
-    
-    const resultsArray = [];
-
-    recipesObj.meals.forEach(element => {
-        const recipe = new ItemPreview(element);
-        resultsArray.push(recipe);
-    });
-
-    return resultsArray;
-}
 
 function populateResults(recipesPreviewArray){
 
@@ -48,13 +37,13 @@ function populateResults(recipesPreviewArray){
 async function searchByName(string){
     const resposnseObj = await fetchByName(string);
     history.pushState(null, "", `./search.html?q=${string}`);
-    const array = recipesPreviewArray(resposnseObj);
+    const array = createPreviewArray(resposnseObj);
     populateResults(array);
 }
 
 async function searchByCategory(category){
     const resposnseObj = await fetchByCategory(category);
-    const array = recipesPreviewArray(resposnseObj);
+    const array = createPreviewArray(resposnseObj);
     populateResults(array);
 }
 

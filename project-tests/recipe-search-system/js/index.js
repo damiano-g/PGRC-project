@@ -1,4 +1,4 @@
-import { ItemPreview, FullRecipe, } from "./data-models.js";
+import { ItemPreview, FullRecipe, createPreviewArray, } from "./data-models.js";
 import { fetchAllCategories, rndFetch, } from "./recipesAPI.js";
 import { createPreviewCard } from "./UI.js";
 
@@ -28,9 +28,10 @@ window.addEventListener("load", async () => {
     const recipesArray = [];
 
     for(let i=1; i<=5; i++){
-        const recipes = await rndFetch();
-        recipesArray.push(new ItemPreview(recipes.meals[0]));
+        recipesArray.push(createPreviewArray(await rndFetch())[0]);
     }
+
+    console.log(recipesArray);
 
     recipesArray.forEach(item => {
         const newItem = createCarouselItem(item);
@@ -39,13 +40,7 @@ window.addEventListener("load", async () => {
 
     document.querySelector(".carousel-inner .carousel-item").classList.add("active");
 
-    const catObj = await fetchAllCategories();
-    
-    // Uniforma la struttura dell'oggetto di preview e prepara per implementazione cache
-    const categoriesArray = [];
-    catObj.categories.forEach(element => {
-        categoriesArray.push(new ItemPreview(element));
-    });
+    const categoriesArray = createPreviewArray(await fetchAllCategories());
 
     console.log(categoriesArray);
 

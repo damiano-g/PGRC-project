@@ -55,7 +55,7 @@
 export function ItemPreview(rawObj){
     this.id = rawObj.idMeal || rawObj.strCategory || "",
     this.name = rawObj.strMeal || rawObj.strCategory || "",
-    this.image = rawObj.strMealThumb || rawObj.strCategoryThumb || "../assets/images/no_image.jpg"
+    this.image = rawObj.strMealThumb || rawObj.strCategoryThumb || "./assets/images/no_image.jpg"
 }
 
 // ===============================
@@ -176,4 +176,69 @@ FullRecipe.prototype.getIngredients = function (rawRecipeObj){
         }
     }
     return array;
+}
+
+/**
+ * Crea un array di oggetti ItemPreview a partire da una risposta API TheMealDB
+ * Estrae automaticamente l'array contenuto nell'oggetto response, indipendentemente dal nome della chiave
+ * 
+ * @function createPreviewArray
+ * @param {Object} itemsObj - Oggetto risposta da API TheMealDB
+ * @param {Array} [itemsObj.meals] - Array ricette (se risposta search/lookup)
+ * @param {Array} [itemsObj.categories] - Array categorie (se risposta categories)
+ * @param {Array} [itemsObj.drinks] - Array drink (se API cocktail)
+ * @returns {Array<ItemPreview>} Array di oggetti ItemPreview normalizzati
+ * 
+ * @description
+ * Funzione utility per convertire qualsiasi risposta API TheMealDB in array standardizzato.
+ * Estrae automaticamente il primo array trovato nell'oggetto response, permettendo
+ * di gestire uniformemente risposte con strutture diverse:
+ * - {meals: [...]} da ricerche per nome/ID
+ * - {categories: [...]} da lista categorie  
+ * - Altri formati futuri senza modifiche al codice
+ * 
+ * @example
+ * // Con risposta ricerca ricette
+ * const searchResponse = {meals: [{idMeal: "123", strMeal: "Pasta"}, ...]};
+ * const previews = createPreviewArray(searchResponse);
+ * // → [ItemPreview{id: "123", name: "Pasta", image: "..."}, ...]
+ * 
+ * @example
+ * // Con risposta lista categorie
+ * const categoriesResponse = {categories: [{idCategory: "1", strCategory: "Beef"}, ...]};
+ * const previews = createPreviewArray(categoriesResponse);
+ * // → [ItemPreview{id: "Beef", name: "Beef", image: "..."}, ...]
+ * 
+ * @example
+ * // Con oggetto vuoto o malformato
+ * const emptyResponse = {};
+ * const previews = createPreviewArray(emptyResponse);
+ * // → [] (array vuoto, nessun crash)
+ * 
+ * @throws {TypeError} Se itemsObj non è un oggetto o è null
+ * @throws {Error} Se l'array estratto contiene elementi non processabili da ItemPreview
+ * 
+ * @see {@link ItemPreview} Per dettagli sul costruttore degli oggetti preview
+
+ * @note
+ * La funzione assume che ci sia un solo array nell'oggetto response.
+ * Se ci sono multiple chiavi array, viene processata solo la prima
+ * secondo l'ordine restituito da Object.keys() (non garantito per oggetti).
+ */
+export function createPreviewArray(itemsObj){
+    
+    /** @type {Array<ItemPreview>} Array accumulator per oggetti preview */
+    const previewArray = [];
+    
+    /** @type {string} Nome della prima chiave nell'oggetto response (es. "meals", "categories") */
+    const arrayName = Object.keys(itemsObj)[0];
+
+    // Itera sull'array contenuto nella risposta API
+    itemsObj[arrayName].forEach(element => {
+        /** @type {ItemPreview} Oggetto preview normalizzato dall'elemento raw */
+        const recipe = new ItemPreview(element);
+        previewArray.push(recipe);
+    });
+
+    return previewArray;
 }
