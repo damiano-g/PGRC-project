@@ -13,7 +13,7 @@
 
 import { fetchByCategory, fetchByName, } from "../recipesAPI.js";        // Funzioni API per ricerca ricette
 import { ItemPreview, createPreviewArray } from "../data-models.js";     // Modelli dati e normalizzazione
-import { populateContainer } from "./UI.js";         // Componenti UI per rendering
+import { populateContainer } from "../UI.js";         // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
