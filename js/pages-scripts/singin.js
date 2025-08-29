@@ -1,7 +1,7 @@
 //Gestione eventi per pagina di registrazione
 
 import { handleUserError } from "../errorsManagement.js";
-import { addNewUser, authEmail, authUsername, createUserObject, } from "../usersManagement.js";
+import { addNewUser, } from "../usersManagement.js";
 import { validateUsername, validateEmail, validatePassword, validatePassConfirm, formatInputField, validateBtn } from "../validate.js";
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione
@@ -87,31 +87,19 @@ signinSubBtn.addEventListener("click", async () => {
     try{
 
         // ========================================
-        // FASE 2: RACCOLTA DATI DAL FORM
+        // RACCOLTA DATI DAL FORM
         // ========================================
         // Estrae i valori correnti dai campi di input validati
         const currentUsername = signinUsernameInput.DOMelement.value;
         const currentEmail = signinEmailInput.DOMelement.value;
         const currentPassword = signinPasswordInput.DOMelement.value;
-
-        // ========================================
-        // FASE 3: VALIDAZIONE UNICITÀ DATI
-        // ========================================
-        // Verifica che username ed email non siano già presenti nel database
-        // Queste funzioni lanciano UserManagementError se trovano duplicati
-        authUsername(currentUsername); // Lancia errore se username già in uso
-        authEmail(currentEmail); // Lancia errore se email già in uso
     
         // ========================================
-        // FASE 4: CREAZIONE E SALVATAGGIO UTENTE
-        // ========================================
-        // Se la validazione passa, procede con la creazione dell'oggetto utente
-        // createUserObject() include l'hashing della password e la generazione dell'ID
-        const newUser = await createUserObject(currentUsername, currentEmail, currentPassword);
-        
+        // CREAZIONE E SALVATAGGIO UTENTE
+        // ========================================        
         // Aggiunge il nuovo utente al database (localStorage)
-        // Può lanciare UserManagementError in caso di errori di storage
-        addNewUser(newUser);
+        // Può lanciare UserManagementError in caso di errori di storage, validazione username e email, passwordhashing
+        await addNewUser(currentUsername, currentEmail, currentPassword);
         
         alert("Utente registrato con successo");
         window.location.href = "../../index.html";

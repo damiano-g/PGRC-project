@@ -196,9 +196,12 @@ export function updateLoggedUser(userId){
  *   handleUserError(error);
  * }
  */
-export function addNewUser(newUserObject){
+export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
+    authUsername(chosenUsername);
+    authEmail(chosenEmail);
+    const newUser = await createUserObject(chosenUsername, chosenEmail, chosenPassword);
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
-    actualRegUsersArray.push(newUserObject);
+    actualRegUsersArray.push(newUser);
     updateUsersDB(actualRegUsersArray);
 }
 
@@ -374,7 +377,7 @@ export function upddateUserFavourites(newUserFavouritesArray){
  *   handleUserError(error);
  * }
  */
-export function authUsername(chosenUsername){
+function authUsername(chosenUsername){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
     
@@ -404,7 +407,7 @@ export function authUsername(chosenUsername){
  *   handleUserError(error);
  * }
  */
-export function authEmail(chosenEmail){
+function authEmail(chosenEmail){
 
     const actualRegUsersArray = retrieveRegisteredUsers() || []; 
 
@@ -426,8 +429,8 @@ export function authEmail(chosenEmail){
  * 
  * @async
  * @param {string} chosenUsername - Username scelto dall'utente per la registrazione
- * @param {string} chosenEmail - Indirizzo email dell'utente per la registrazione
- * @param {string} chosenPassword - Password in chiaro che verrà automaticamente hashata
+ * @param {string} valideEmail - Indirizzo email dell'utente per la registrazione
+ * @param {string} validPassword - Password in chiaro che verrà automaticamente hashata
  * 
  * @returns {Promise<import('./data-models.js').User>} Promise che risolve nell'istanza User completa pronta per il salvataggio
  * 
@@ -457,9 +460,9 @@ export function authEmail(chosenEmail){
  *   }
  * }
  */
-export async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
-    const hashPassword = await hashString(chosenPassword);
-    return new User(chosenUsername, chosenEmail, chosenPassword);
+async function createUserObject(chosenUsername, valideEmail, validPassword){
+    const hashPassword = await hashString(validPassword);
+    return new User(chosenUsername, valideEmail, hashPassword);
 }
 
 
