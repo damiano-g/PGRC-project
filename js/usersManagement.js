@@ -1,6 +1,7 @@
 // Gestione completa degli utenti: storage, validazione, autenticazione e operazioni CRUD
 
 import { UserManagementError, } from "./errorsManagement.js";
+import { User } from "./data-models.js";
 
 // ============================================================================
 // CONFIGURAZIONE E COSTANTI
@@ -254,9 +255,9 @@ export function deleteUser(userId){
  *  * // Aggiorna email (sincrono)
  * await updateUserData("email", "nuova@email.com");
  */
-async function updateUserData(field, newValue, needsPreprocessing = null) {
+async function updateUserData(field, newValue, needsPreprocessing = null, isArray = null) {
     try {
-        const processedValue = (needsPreprocessing ? await hashString(newValue) : newValue);
+        const processedValue = (needsPreprocessing ? await hashString(newValue) : (isArray ? newValue.split(",") : newValue));
         const actualRegUsersArray = retrieveRegisteredUsers() || [];
         const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
         if(index < 0){
@@ -343,6 +344,11 @@ export async function updateUserPassword(newUserPassword){
     return true;
 }
 
+export function upddateUserFavourites(newUserFavouritesArray){
+    updateUserData("favourites", newUserFavouritesArray.toString(), null, true);
+    return true;
+}
+
 
 // ============================================================================
 // FUNZIONI DI VALIDAZIONE
@@ -423,13 +429,7 @@ export function authEmail(chosenEmail){
  * @param {string} chosenEmail - Indirizzo email dell'utente per la registrazione
  * @param {string} chosenPassword - Password in chiaro che verrà automaticamente hashata
  * 
- * @returns {Promise<Object>} Promise che risolve nell'oggetto utente completo pronto per il salvataggio
- * @returns {Promise<Object>} return.id - ID univoco generato (formato: "user_timestamp_randomNumber")
- * @returns {Promise<Object>} return.username - Username fornito dall'utente
- * @returns {Promise<Object>} return.email - Email fornita dall'utente
- * @returns {Promise<Object>} return.password - Password hashata con SHA-256
- * @returns {Promise<Object>} return.favorites - Array vuoto inizializzato per i preferiti futuri
- * @returns {Promise<Object>} return.creationDate - Timestamp ISO della creazione account
+ * @returns {Promise<import('./data-models.js').User>} Promise che risolve nell'istanza User completa pronta per il salvataggio
  * 
  * @throws {Error} Se si verificano errori durante l'hashing della password
  * 
@@ -459,17 +459,7 @@ export function authEmail(chosenEmail){
  */
 export async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
     const hashPassword = await hashString(chosenPassword);
-    const timestamp = Date.now(); // Timestamp Unix in millisecondi
-    const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); // Numero casuale 0000-9999
-    const userObject = {
-        id: `user_${timestamp}_${rnd}`, // ID formato: "user_1703123456789_1234"
-        username: chosenUsername, // Username fornito (già validato)
-        email: chosenEmail, // Email fornita (già validata)
-        password: hashPassword, // Password hashata
-        favorites: [],
-        creationDate: new Date().toISOString(),
-    }
-    return userObject;
+    return new User(chosenUsername, chosenEmail, chosenPassword);
 }
 
 

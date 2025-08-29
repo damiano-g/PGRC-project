@@ -6,6 +6,37 @@
  * @version 1.0.0
  */
 
+/**
+ * @typedef {Object} User
+ * @property {string} id - ID univoco generato automaticamente
+ * @property {string} username - Nome utente
+ * @property {string} email - Email utente
+ * @property {string} password - Password hashata
+ * @property {Array} favourites - Array ricette preferite
+ * @property {string} creationDate - Data creazione ISO
+ */
+
+/**
+ * Costruttore User per oggetti standardizzati
+ * @param {string} validUsername - Username già validato
+ * @param {string} validEmail - Email già validata
+ * @param {string} hashPassword - Password già hashata
+ */
+export function User(validUsername, validEmail, hashPassword){
+    this.id = generateUserId(),
+    this.username = validUsername, // Username fornito (già validato)
+    this.email = validEmail, // Email fornita (già validata)
+    this.password = hashPassword, // Password hashata
+    this.favourites = [],
+    this.creationDate = new Date().toISOString()
+}
+
+function generateUserId() {
+    const timestamp = Date.now(); // Timestamp Unix in millisecondi
+    const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); // Numero casuale 0000-9999
+    return `user_${timestamp}_${rnd}`;
+};
+
 // ===============================
 // MODELLO DATI UNIFICATO - PREVIEW
 // ===============================
