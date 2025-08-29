@@ -14,7 +14,7 @@
 import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
 import { FullRecipe, Note } from "../data-models.js";          // Modello dati completo ricetta
 import { getLoggedUserId, searchUserById, searchUserbyName, updateUserFavourites, updateUserNotes } from "../usersManagement.js";
-import { populateNotesContainer } from "../UI.js";
+import { favBtnDisplay, populateNotesContainer } from "../UI.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -32,8 +32,8 @@ const ingredientsList = document.getElementById("ingredients-list");
 /** @type {HTMLElement} Container per le istruzioni di preparazione */
 const instructionsSteps = document.getElementById("instructions-steps");
 
-const notesContainer = document.getElementById("notes");
-const userNotes = document.getElementById("user-notes");
+const notesSection = document.getElementById("notes");
+const userNotesContainer = document.getElementById("user-notes");
 const noteTextInput = document.getElementById("insert-note");
 const noteInsBtn = document.querySelector("form .btn");
 
@@ -42,16 +42,8 @@ let detailedRecipeId;
 const favBtn = document.getElementById("favBtn");
 
 favBtn.addEventListener("click", () => {
-   let currentUserFavArray = searchUserById(getLoggedUserId()).favourites;
-   const index = currentUserFavArray.findIndex(element => element === detailedRecipeId);
-   if(index < 0){
-      currentUserFavArray.push(detailedRecipeId);
-      favBtn.innerText = "Rimuovi dai preferiti";
-   }else{
-      currentUserFavArray.splice(index, 1);
-      favBtn.innerText = "Aggiungi ai preferiti";
-   }
-   updateUserFavourites(currentUserFavArray);
+   updateUserFavourites(detailedRecipeId);
+   favBtnDisplay(favBtn, detailedRecipeId);
 });
 
 noteTextInput.addEventListener("input", () => {
@@ -66,12 +58,10 @@ noteInsBtn.addEventListener("click", () => {
    try {
       noteInsBtn.disabled = true;
       const newNote = new Note(detailedRecipeId, String(noteTextInput.value));
-      const currentUserNotesArray = searchUserById(getLoggedUserId()).notes;
-      currentUserNotesArray.push(newNote);
-      updateUserNotes(currentUserNotesArray);
+      updateUserNotes(newNote);
       noteTextInput.value = "";
+      populateNotesContainer(searchUserById(getLoggedUserId()).notes, userNotesContainer);
       alert("Nota inserita");
-      populateNotesContainer(currentUserNotesArray, userNotes);
    } catch (error) {
       noteInsBtn.disabled = false;
       console.error(error);
@@ -79,17 +69,17 @@ noteInsBtn.addEventListener("click", () => {
    }
 });
 
-userNotes.addEventListener("click", click => {
+userNotesContainer.addEventListener("click", click => {
    const btn = click.target.closest("button");
    if(btn){
-      const currentUserNotesArray = searchUserById(getLoggedUserId()).notes;
-      const index = currentUserNotesArray.findIndex(element => element.id === btn.dataset.noteId );
-      console.log(currentUserNotesArray);
-      console.log(btn.dataset.noteId);
-      currentUserNotesArray.splice(index, 1);
-      updateUserNotes(currentUserNotesArray);
-      alert("Nota rimossa");
-      populateNotesContainer(currentUserNotesArray, userNotes);
+      try {
+         updateUserNotes(btn.dataset.noteId);
+         populateNotesContainer(searchUserById(getLoggedUserId()).notes, userNotesContainer);
+         alert("Nota rimossa");
+      } catch (error) {
+         console.error(error)
+         alert("Errore");
+      }
    }
 });
 
@@ -128,16 +118,11 @@ window.addEventListener("load", async () => {
     recipeTitle.innerText = recipeDetails.name;
 
     if(getLoggedUserId()){
-      const currentUser = searchUserById(getLoggedUserId());
-      if(currentUser.favourites.some(element => element === detailedRecipeId)){
-         favBtn.innerText = "Rimuovi dai preferiti";
-      }else{
-         favBtn.innerText = "Aggiungi ai preferiti";
-      }
+      favBtnDisplay(favBtn, detailedRecipeId);
       favBtn.classList.remove("d-none");
-      notesContainer.classList.remove("d-none");
-      const recipeNotes = currentUser.notes.filter(element => element.recipeId === detailedRecipeId);
-      populateNotesContainer(recipeNotes, userNotes);
+      notesSection.classList.remove("d-none");
+      const recipeNotes = searchUserById(getLoggedUserId()).notes.filter(element => element.recipeId === detailedRecipeId);
+      populateNotesContainer(recipeNotes, userNotesContainer);
     }
     
     // Inserisce l'immagine della ricetta nella pagina

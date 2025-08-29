@@ -8,7 +8,7 @@
  */
 
 import { UserManagementError, } from "./errorsManagement.js";
-import { User } from "./data-models.js";
+import { User, Note } from "./data-models.js";
 
 // ============================================================================
 // CONFIGURAZIONE E COSTANTI
@@ -523,13 +523,61 @@ export async function updateUserPassword(newPassword){
  * @returns {boolean} true se aggiornamento completato
  * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
  */
-export async function updateUserFavourites(newFavouritesArray){
-    await updateUserData("favourites", newFavouritesArray); 
+export async function updateUserFavourites(recipeId){
+    const userFavouritesArray = searchUserById(getLoggedUserId()).favourites;
+    const index = userFavouritesArray.findIndex(element => element === recipeId);
+    if(index < 0){
+        userFavouritesArray.push(recipeId);
+    }else{
+        userFavouritesArray.splice(index, 1);
+    }
+    await updateUserData("favourites", userFavouritesArray); 
     return true;
 }
 
-export async function updateUserNotes(newNotesArray){
-    await updateUserData("notes", newNotesArray);
+/**
+ * Gestisce note utente con operazione toggle automatica basata sul tipo di input
+ * Se riceve oggetto Note → aggiunge alla collezione utente
+ * Se riceve stringa ID → cerca e rimuove nota corrispondente
+ * 
+ * @async
+ * @param {import('./data-models.js').Note|string} userNote 
+ *   - Note object: Istanza Note completa da aggiungere alla collezione
+ *   - String: ID nota esistente da cercare e rimuovere
+ * @returns {Promise<boolean>} true se operazione completata con successo
+ * @throws {UserManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se errori di storage durante aggiornamento (tipo "STORAGE")
+ * @throws {UserManagementError} Se nota da rimuovere non trovata (tipo "NOT_FOUND")
+ * 
+ * @example
+ * // Aggiunta nuova nota
+ * const newNote = new Note("Ottima ricetta!", "recipe_123");
+ * await updateUserNotes(newNote);
+ * 
+ * @example
+ * // Rimozione nota esistente
+ * await updateUserNotes("note_456"); // Rimuove nota con ID specifico
+ * 
+ * @example
+ * // Uso tipico da UI - toggle basato su presenza
+ * const noteExists = currentUser.notes.some(note => note.recipeId === currentRecipeId);
+ * if (noteExists) {
+ *   const noteToRemove = currentUser.notes.find(note => note.recipeId === currentRecipeId);
+ *   await updateUserNotes(noteToRemove.id); // Rimuove per ID
+ * } else {
+ *   const newNote = new Note(userInput, currentRecipeId);
+ *   await updateUserNotes(newNote); // Aggiunge oggetto completo
+ * }
+ */
+export async function updateUserNotes(userNote){
+    const userNotesArray = searchUserById(getLoggedUserId()).notes;
+    if(userNote instanceof Note){
+        userNotesArray.push(userNote);
+    }else{
+        const index = userNotesArray.findIndex(element => element.id === userNote);
+        userNotesArray.splice(index ,1);
+    }
+    await updateUserData("notes", userNotesArray);
     return true;
 }
 

@@ -7,6 +7,9 @@
  * @since 2025-08-28
  */
 
+import { getLoggedUserId, searchUserById } from "./usersManagement.js";
+
+
 // ===============================
 // CREAZIONE COMPONENTI CARD
 // ===============================
@@ -215,7 +218,15 @@ export function populateNotesContainer(userNotesArray, container){
     }else{
         container.classList.add("d-none");
     }
+}
 
+export function favBtnDisplay(btn, currentRecipeId){
+    const currentUser = searchUserById(getLoggedUserId());
+    if(currentUser.favourites.some(element => element === currentRecipeId)){
+        btn.innerText = "Rimuovi dai preferiti";
+    }else{
+        btn.innerText = "Aggiungi ai preferiti";
+    }
 }
 
 
