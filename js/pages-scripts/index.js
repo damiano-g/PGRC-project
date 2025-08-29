@@ -78,7 +78,6 @@ catContainer.addEventListener("click", (click) => {
     // Trova elemento .card nell'albero DOM tramite event bubbling
     // Permette click su qualsiasi parte della card (immagine, testo, etc.)
     const card = click.target.closest(".card");
-    const card = click.target.closest(".card");
 
     if(card){
         // Naviga a search.html con parametro categoria per filtro automatico
