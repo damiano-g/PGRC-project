@@ -13,7 +13,7 @@
 
 import { ItemPreview, FullRecipe, createPreviewArray, } from "../data-models.js";     // Modelli dati e normalizzazione
 import { fetchAllCategories, rndFetch, } from "../recipesAPI.js";                     // API calls per dati iniziali
-import { populateCarousel, populateContainer } from "../UI.js";                       // Componenti UI per rendering
+import { populateCarousel, populatePreviewContainer } from "../UI.js";                       // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -61,7 +61,7 @@ window.addEventListener("load", async () => {
     // POPOLAZIONE GRIGLIA CATEGORIE
     // ===============================
     const categoriesArray = createPreviewArray(await fetchAllCategories());
-    populateContainer(categoriesArray, catContainer);
+    populatePreviewContainer(categoriesArray, catContainer);
 });
 
 

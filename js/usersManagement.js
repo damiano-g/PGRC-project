@@ -528,6 +528,11 @@ export async function updateUserFavourites(newFavouritesArray){
     return true;
 }
 
+export async function updateUserNotes(newNotesArray){
+    await updateUserData("notes", newNotesArray);
+    return true;
+}
+
 // ============================================================================
 // AUTENTICAZIONE - VERIFICA CREDENZIALI
 // ============================================================================

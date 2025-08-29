@@ -93,7 +93,7 @@ function createPreviewCard(itemPreviewObj){
  * La funzione assume che il container sia un elemento DOM valido.
  * Non esegue validazione dell'input per performance.
  */
-export function populateContainer(previewItemsArray, container){
+export function populatePreviewContainer(previewItemsArray, container){
     container.innerHTML = "";
     previewItemsArray.forEach(element => {
         container.appendChild(createPreviewCard(element));
@@ -187,6 +187,37 @@ export function populateCarousel(itemPreviewArray, carouselInner){
         carouselInner.appendChild(createCarouselItem(element));
     });
 };
+
+
+function createNoteCard(userNote){
+    const noteCard = document.createElement("div");
+    noteCard.classList.add("card");
+    noteCard.classList.add("mb-2");
+    noteCard.classList.add("mt-2");
+
+    noteCard.innerHTML = `
+        <div class="card-body">${userNote.text}</div>
+        <div class="card-footer"><button class="btn btn-secondary btn-sm" data-note-id="${userNote.id}">Rimuovi nota</button></div>
+    `
+
+    return noteCard;
+}
+
+
+// NB -> funzione boilerplate -> unificare la logica di popolamento dei container
+export function populateNotesContainer(userNotesArray, container){
+    container.innerHTML = "";
+    if(userNotesArray.length > 0){
+        userNotesArray.forEach(element => {
+            container.appendChild(createNoteCard(element));
+        });
+        container.classList.remove("d-none");
+    }else{
+        container.classList.add("d-none");
+    }
+
+}
+
 
 
 // ===============================

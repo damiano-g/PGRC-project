@@ -13,7 +13,7 @@
 
 import { fetchByCategory, fetchByName, } from "../recipesAPI.js";        // Funzioni API per ricerca ricette
 import { ItemPreview, createPreviewArray } from "../data-models.js";     // Modelli dati e normalizzazione
-import { populateContainer } from "../UI.js";         // Componenti UI per rendering
+import { populatePreviewContainer } from "../UI.js";         // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -39,7 +39,7 @@ const resultsContainer = document.getElementById("results-container");
 searchBtn.addEventListener("click", async () => {
     const array = createPreviewArray(await fetchByName(String(searchBar.value)));
     history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
-    populateContainer(array, resultsContainer);
+    populatePreviewContainer(array, resultsContainer);
 });
 
 // ===============================
@@ -84,7 +84,7 @@ window.addEventListener("load", async () => {
     
     if(query[0] === "cat"){
         const array = createPreviewArray(await fetchByCategory(query[1]));
-        populateContainer(array, resultsContainer);
+        populatePreviewContainer(array, resultsContainer);
     }
 });
 

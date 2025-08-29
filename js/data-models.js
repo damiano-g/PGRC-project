@@ -23,19 +23,27 @@
  * @param {string} hashPassword - Password già hashata
  */
 export function User(validUsername, validEmail, hashPassword){
-    this.id = generateUserId(),
+    this.id = generateItemId("user"),
     this.username = validUsername, // Username fornito (già validato)
     this.email = validEmail, // Email fornita (già validata)
     this.password = hashPassword, // Password hashata
     this.favourites = [],
+    this.notes = [],
     this.creationDate = new Date().toISOString()
 }
 
-function generateUserId() {
+function generateItemId(itemType) {
     const timestamp = Date.now(); // Timestamp Unix in millisecondi
     const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); // Numero casuale 0000-9999
-    return `user_${timestamp}_${rnd}`;
+    return `${itemType}_${timestamp}_${rnd}`;
 };
+
+export function Note(recipeId, text){
+    this.recipeId = recipeId,
+    this.text = text
+    this.date = new Date().toDateString(),
+    this.id = generateItemId("note");
+}
 
 // ===============================
 // MODELLO DATI UNIFICATO - PREVIEW

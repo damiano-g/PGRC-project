@@ -48,9 +48,15 @@
                 <p id="instructions-steps"></p>
             </div>
         </div>
-
-        
-
+        <div class="container mb-4 mt-4" id="notes">
+            <h4>Note</h4>
+            <form>
+                <textarea maxlength="200" name="insert-note" id="insert-note" class="form-control" placeholder="Inserisci una nota personale..."></textarea>
+                <button class="btn btn-secondary" type="button" disabled>Inserisci</button>
+            </form>
+            <div class="mb-3 mt-3 d-none" id="user-notes"></div>
+        </div>
+    </div>    
     <script type="module" src="../js/pages-scripts/recipe-details.js"></script>
     <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>

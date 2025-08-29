@@ -32,14 +32,16 @@
     height: 75px;
 }
 
-.card,
+#results-container .card,
+#categories .card,
 .carousel-item {
     cursor: pointer;
     transition: transform 0.5s ease;
     transition: box-shadow 0.2s ease;
 }
 
-.card:hover,
+#results-container .card:hover,
+#categories .card:hover,
 .carousel-item:hover {
     transform: scale(1.002);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);

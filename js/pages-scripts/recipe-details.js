@@ -12,8 +12,9 @@
 // ===============================
 
 import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
-import { FullRecipe } from "../data-models.js";          // Modello dati completo ricetta
-import { getLoggedUserId, searchUserById, searchUserbyName, updateUserFavourites } from "../usersManagement.js";
+import { FullRecipe, Note } from "../data-models.js";          // Modello dati completo ricetta
+import { getLoggedUserId, searchUserById, searchUserbyName, updateUserFavourites, updateUserNotes } from "../usersManagement.js";
+import { populateNotesContainer } from "../UI.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -31,21 +32,65 @@ const ingredientsList = document.getElementById("ingredients-list");
 /** @type {HTMLElement} Container per le istruzioni di preparazione */
 const instructionsSteps = document.getElementById("instructions-steps");
 
+const notesContainer = document.getElementById("notes");
+const userNotes = document.getElementById("user-notes");
+const noteTextInput = document.getElementById("insert-note");
+const noteInsBtn = document.querySelector("form .btn");
 
-let recipeId;
+
+let detailedRecipeId;
 const favBtn = document.getElementById("favBtn");
 
 favBtn.addEventListener("click", () => {
    let currentUserFavArray = searchUserById(getLoggedUserId()).favourites;
-   const index = currentUserFavArray.findIndex(element => element === recipeId);
+   const index = currentUserFavArray.findIndex(element => element === detailedRecipeId);
    if(index < 0){
-      currentUserFavArray.push(recipeId);
+      currentUserFavArray.push(detailedRecipeId);
       favBtn.innerText = "Rimuovi dai preferiti";
    }else{
       currentUserFavArray.splice(index, 1);
       favBtn.innerText = "Aggiungi ai preferiti";
    }
    updateUserFavourites(currentUserFavArray);
+});
+
+noteTextInput.addEventListener("input", () => {
+   if(noteTextInput.value.length > 0){
+      noteInsBtn.disabled = false;
+   }else{
+      noteInsBtn.disabled = true;
+   }
+});
+
+noteInsBtn.addEventListener("click", () => {
+   try {
+      noteInsBtn.disabled = true;
+      const newNote = new Note(detailedRecipeId, String(noteTextInput.value));
+      const currentUserNotesArray = searchUserById(getLoggedUserId()).notes;
+      currentUserNotesArray.push(newNote);
+      updateUserNotes(currentUserNotesArray);
+      noteTextInput.value = "";
+      alert("Nota inserita");
+      populateNotesContainer(currentUserNotesArray, userNotes);
+   } catch (error) {
+      noteInsBtn.disabled = false;
+      console.error(error);
+      alert("Errore nel salvataggio");
+   }
+});
+
+userNotes.addEventListener("click", click => {
+   const btn = click.target.closest("button");
+   if(btn){
+      const currentUserNotesArray = searchUserById(getLoggedUserId()).notes;
+      const index = currentUserNotesArray.findIndex(element => element.id === btn.dataset.noteId );
+      console.log(currentUserNotesArray);
+      console.log(btn.dataset.noteId);
+      currentUserNotesArray.splice(index, 1);
+      updateUserNotes(currentUserNotesArray);
+      alert("Nota rimossa");
+      populateNotesContainer(currentUserNotesArray, userNotes);
+   }
 });
 
 // ===============================
@@ -63,14 +108,14 @@ window.addEventListener("load", async () => {
     // ===============================
 
     // Estrae l'id della ricetta dalla query string dell'URL (?id=...)
-    recipeId = window.location.search.substring(4);
+    detailedRecipeId = window.location.search.substring(4);
 
     // ===============================
     // FETCH E NORMALIZZAZIONE DATI
     // ===============================
 
     // Effettua la fetch dei dettagli ricetta tramite l'ID
-    const APIresponse = await fetchById(recipeId);
+    const APIresponse = await fetchById(detailedRecipeId);
 
     // Crea un oggetto ricetta completo a partire dalla risposta API
     const recipeDetails = new FullRecipe(APIresponse.meals[0]);
@@ -83,12 +128,16 @@ window.addEventListener("load", async () => {
     recipeTitle.innerText = recipeDetails.name;
 
     if(getLoggedUserId()){
-      if(searchUserById(getLoggedUserId()).favourites.some(element => element === recipeId)){
+      const currentUser = searchUserById(getLoggedUserId());
+      if(currentUser.favourites.some(element => element === detailedRecipeId)){
          favBtn.innerText = "Rimuovi dai preferiti";
       }else{
          favBtn.innerText = "Aggiungi ai preferiti";
       }
       favBtn.classList.remove("d-none");
+      notesContainer.classList.remove("d-none");
+      const recipeNotes = currentUser.notes.filter(element => element.recipeId === detailedRecipeId);
+      populateNotesContainer(recipeNotes, userNotes);
     }
     
     // Inserisce l'immagine della ricetta nella pagina
