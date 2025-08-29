@@ -387,20 +387,11 @@ function searchUser(searchField, searchValue){
  * @param {string} field - Nome campo da aggiornare
  * @param {string|Array} newValue - Nuovo valore da assegnare
  * @param {boolean} [needsHashing=false] - Se true, applica hash SHA-256
- * @param {boolean} [isArray=false] - Se true, processa come array da stringa comma-separated
  * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
  */
-async function updateUserData(field, newValue, needsHashing = false, isArray = false) {
+async function updateUserData(field, newValue, needsHashing = null) {
     try {
-        // Preprocessing value based on type
-        let processedValue = newValue;
-        if (needsHashing) {
-            processedValue = await hashString(newValue);
-        } else if (isArray) {
-            processedValue = newValue.split(",");
-        }
-        
         // Atomic update operation
         const actualRegUsersArray = retrieveRegisteredUsers();
         const currentUserId = getLoggedUserId();
@@ -409,6 +400,8 @@ async function updateUserData(field, newValue, needsHashing = false, isArray = f
         if(index < 0){
             throw new UserManagementError("NOT_FOUND", "Utente loggato non trovato per aggiornamento");
         }
+
+        const processedValue = (needsHashing ? await hashString(newValue) : newValue);
         
         actualRegUsersArray[index][field] = processedValue;
         updateUsersDB(actualRegUsersArray);
@@ -526,12 +519,12 @@ export async function updateUserPassword(newPassword){
  * Aggiorna array favourites utente loggato
  * API pubblica per gestione ricette preferite
  * 
- * @param {Array<string>} newFavouritesArray - Array ID ricette preferite
+ * @param {Array} newFavouritesArray - Array ID ricette preferite
  * @returns {boolean} true se aggiornamento completato
  * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
  */
 export async function updateUserFavourites(newFavouritesArray){
-    await updateUserData("favourites", newFavouritesArray.toString(), false, true); // isArray = true
+    await updateUserData("favourites", newFavouritesArray); 
     return true;
 }
 

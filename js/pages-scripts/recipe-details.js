@@ -13,7 +13,7 @@
 
 import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
 import { FullRecipe } from "../data-models.js";          // Modello dati completo ricetta
-import { getLoggedUserId, searchUserById, searchUserbyName, upddateUserFavourites } from "../usersManagement.js";
+import { getLoggedUserId, searchUserById, searchUserbyName, updateUserFavourites } from "../usersManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -36,20 +36,16 @@ let recipeId;
 const favBtn = document.getElementById("favBtn");
 
 favBtn.addEventListener("click", () => {
-   const currentUserFavArray = searchUserById(getLoggedUserId()).favourites;
+   let currentUserFavArray = searchUserById(getLoggedUserId()).favourites;
    const index = currentUserFavArray.findIndex(element => element === recipeId);
    if(index < 0){
       currentUserFavArray.push(recipeId);
       favBtn.innerText = "Rimuovi dai preferiti";
    }else{
-      if(currentUserFavArray.length === 1){
-         currentUserFavArray = [];
-      }else{
-         currentUserFavArray.splice(index, 1);
-      }
+      currentUserFavArray.splice(index, 1);
       favBtn.innerText = "Aggiungi ai preferiti";
    }
-   upddateUserFavourites(currentUserFavArray);
+   updateUserFavourites(currentUserFavArray);
 });
 
 // ===============================
