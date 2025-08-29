@@ -11,9 +11,9 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { ItemPreview, FullRecipe, createPreviewArray, } from "./data-models.js";     // Modelli dati e normalizzazione
-import { fetchAllCategories, rndFetch, } from "./recipesAPI.js";                     // API calls per dati iniziali
-import { populateCarousel, populateContainer } from "./UI.js";                       // Componenti UI per rendering
+import { ItemPreview, FullRecipe, createPreviewArray, } from "../data-models.js";     // Modelli dati e normalizzazione
+import { fetchAllCategories, rndFetch, } from "../recipesAPI.js";                     // API calls per dati iniziali
+import { populateCarousel, populateContainer } from "../UI.js";                       // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -82,7 +82,7 @@ catContainer.addEventListener("click", (click) => {
 
     if(card){
         // Naviga a search.html con parametro categoria per filtro automatico
-        window.location.href = `./pages/search.html?cat=${card.dataset.itemId}`;
+        window.location.href = `../../pages/search.html?cat=${card.dataset.itemId}`;
     }
 });
 
@@ -97,7 +97,7 @@ catContainer.addEventListener("click", (click) => {
 slideshow.addEventListener("click", (click) => {
     const slide = click.target.closest(".carousel-item");
     if(slide){
-        window.location.href = `./pages/recipe-details.html?id=${slide.dataset.itemId}`;
+        window.location.href = `../../pages/recipe-details.html?id=${slide.dataset.itemId}`;
     }
 });
 
@@ -111,7 +111,7 @@ slideshow.addEventListener("click", (click) => {
  */
 homeSearchBtn.addEventListener("click", () => {
     // Naviga a search.html con parametro query per ricerca automatica
-    window.location.href = `./pages/search.html?q=${String(homeSearchBar.value)}`
+    window.location.href = `../../pages/search.html?q=${String(homeSearchBar.value)}`
 });
 
 

@@ -11,8 +11,8 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { fetchById } from "./recipesAPI.js";            // API call per dettagli ricetta singola
-import { FullRecipe } from "./data-models.js";          // Modello dati completo ricetta
+import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
+import { FullRecipe } from "../data-models.js";          // Modello dati completo ricetta
 
 // ===============================
 // SELEZIONE ELEMENTI DOM

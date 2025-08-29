@@ -26,5 +26,5 @@ const favSearchBar = document.getElementById("searchBar");
  */
 favSearchBtn.addEventListener("click", () => {
     // Naviga a search.html con parametro query per ricerca automatica
-    window.location.href = `../pages/search.html?q=${String(favSearchBar.value)}`
+    window.location.href = `../../pages/search.html?q=${String(favSearchBar.value)}`
 });

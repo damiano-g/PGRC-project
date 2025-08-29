@@ -114,7 +114,7 @@ signinSubBtn.addEventListener("click", async () => {
         addNewUser(newUser);
         
         alert("Utente registrato con successo");
-        window.location.href = "../index.html";
+        window.location.href = "../../index.html";
 
     }catch(error){
         // ========================================

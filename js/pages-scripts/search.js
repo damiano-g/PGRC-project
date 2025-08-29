@@ -11,8 +11,8 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { fetchByCategory, fetchByName, } from "./recipesAPI.js";        // Funzioni API per ricerca ricette
-import { ItemPreview, createPreviewArray } from "./data-models.js";     // Modelli dati e normalizzazione
+import { fetchByCategory, fetchByName, } from "../recipesAPI.js";        // Funzioni API per ricerca ricette
+import { ItemPreview, createPreviewArray } from "../data-models.js";     // Modelli dati e normalizzazione
 import { populateContainer } from "./UI.js";         // Componenti UI per rendering
 
 // ===============================
@@ -38,7 +38,7 @@ const resultsContainer = document.getElementById("results-container");
  */
 searchBtn.addEventListener("click", async () => {
     const array = createPreviewArray(await fetchByName(String(searchBar.value)));
-    history.pushState(null, "", `./search.html?q=${String(searchBar.value)}`);
+    history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
     populateContainer(array, resultsContainer);
 });
 
@@ -58,7 +58,7 @@ resultsContainer.addEventListener("click", (click) => {
 
     if(card){
         // Naviga alla pagina dettagli passando l'ID della ricetta come query parameter
-        window.location.href = `recipe-details.html?id=${card.dataset.itemId}`;
+        window.location.href = `../../pages/recipe-details.html?id=${card.dataset.itemId}`;
     }
 });
 
