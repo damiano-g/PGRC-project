@@ -1,7 +1,7 @@
 // Gestione eventi per pagina di modifica profilo utente
 
 import { handleUserError } from "../errorsManagement.js";
-import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, authUsername, updateUserUsername, authEmail, updateUserEmail, } from "../usersManagement.js";
+import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, authUsername, updateUserUsername, authEmail, updateUserEmail, getRegisteredUsers } from "../usersManagement.js";
 import * as validate from "../validate.js";
 
 // Oggetti DOM per gli input del form di modifica con valori di default e stato di validazione
@@ -208,13 +208,20 @@ modifSubBtn.addEventListener("click", async () => {
 
 // Carica i dati dell'utente corrente nei campi al caricamento della pagina
 window.addEventListener("load", () => {
-    try {
-        const currentUser = searchUserById(getLoggedUserId());
-        modifUsernameInput.defaultValue = currentUser.username;
-        modifUsernameInput.DOMelement.value = modifUsernameInput.defaultValue
-        modifEmailInput.defaultValue = currentUser.email;
-        modifEmailInput.DOMelement.value = modifEmailInput.defaultValue;
-    } catch (error) {
-        handleUserError(error)
+
+    if(!getRegisteredUsers().some(item => item.id === getLoggedUserId())){
+        window.location.href = "./login.html"
+    }else{
+        try {
+            const currentUser = searchUserById(getLoggedUserId());
+            modifUsernameInput.defaultValue = currentUser.username;
+            modifUsernameInput.DOMelement.value = modifUsernameInput.defaultValue
+            modifEmailInput.defaultValue = currentUser.email;
+            modifEmailInput.DOMelement.value = modifEmailInput.defaultValue;
+        } catch (error) {
+            handleUserError(error)
+        }
+        document.querySelector("body").classList.remove("d-none");
     }
+
 });

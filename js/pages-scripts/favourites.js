@@ -1,6 +1,4 @@
-
-
-
+import { getRegisteredUsers, getLoggedUserId } from "../usersManagement.js";
 
 /** @type {HTMLElement} Container griglia preferiti */
 const favContainer = document.getElementById("favourites");
@@ -15,16 +13,11 @@ const favSearchBar = document.getElementById("searchBar");
 
 
 
-
-// ===============================
-// RICERCA DALLA PAGINA PREFERITI
-// ===============================
-
-/**
- * Event listener per pulsante ricerca principale
- * Naviga alla pagina ricerca con termine di ricerca preimpostato
- */
-favSearchBtn.addEventListener("click", () => {
-    // Naviga a search.html con parametro query per ricerca automatica
-    window.location.href = `../../pages/search.html?q=${String(favSearchBar.value)}`
+// Verifica l'autenticazione dell'utente al caricamento della pagina
+window.addEventListener("load", () => {
+    if(!getRegisteredUsers().some(item => item.id === getLoggedUserId())){
+        window.location.href = "./login.html"
+    }else{
+        document.querySelector("body").classList.remove("d-none");
+    }
 });
