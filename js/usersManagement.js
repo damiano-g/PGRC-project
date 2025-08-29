@@ -222,9 +222,9 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
  *   handleUserError(error);
  * }
  */
-export function deleteUser(userId){
+export function deleteLoggedUser(){
     const actualRegUsersArray = retrieveRegisteredUsers() || [];
-    const index = actualRegUsersArray.findIndex(item => item.id === userId);
+    const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
     actualRegUsersArray.splice(index, 1);
     updateUsersDB(actualRegUsersArray);
 }
