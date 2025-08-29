@@ -86,7 +86,7 @@ loginSubBtn.addEventListener("click", async () => {
         if(admitted){
             updateLoggedUser(foundId);
             alert("Login effettuato");
-            window.location.href = "../../pages/landing.html";
+            window.location.href = "../../index.html";
         }else{
             alert("Password errata");
         }

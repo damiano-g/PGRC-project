@@ -13,6 +13,7 @@
 
 import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
 import { FullRecipe } from "../data-models.js";          // Modello dati completo ricetta
+import { getLoggedUserId, searchUserById, searchUserbyName, upddateUserFavourites } from "../usersManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -30,6 +31,27 @@ const ingredientsList = document.getElementById("ingredients-list");
 /** @type {HTMLElement} Container per le istruzioni di preparazione */
 const instructionsSteps = document.getElementById("instructions-steps");
 
+
+let recipeId;
+const favBtn = document.getElementById("favBtn");
+
+favBtn.addEventListener("click", () => {
+   const currentUserFavArray = searchUserById(getLoggedUserId()).favourites;
+   const index = currentUserFavArray.findIndex(element => element === recipeId);
+   if(index < 0){
+      currentUserFavArray.push(recipeId);
+      favBtn.innerText = "Rimuovi dai preferiti";
+   }else{
+      if(currentUserFavArray.length === 1){
+         currentUserFavArray = [];
+      }else{
+         currentUserFavArray.splice(index, 1);
+      }
+      favBtn.innerText = "Aggiungi ai preferiti";
+   }
+   upddateUserFavourites(currentUserFavArray);
+});
+
 // ===============================
 // CARICAMENTO E RENDERING RICETTA
 // ===============================
@@ -45,7 +67,7 @@ window.addEventListener("load", async () => {
     // ===============================
 
     // Estrae l'id della ricetta dalla query string dell'URL (?id=...)
-    const recipeId = window.location.search.substring(4);
+    recipeId = window.location.search.substring(4);
 
     // ===============================
     // FETCH E NORMALIZZAZIONE DATI
@@ -63,6 +85,15 @@ window.addEventListener("load", async () => {
 
     // Inserisce il titolo della ricetta nella pagina
     recipeTitle.innerText = recipeDetails.name;
+
+    if(getLoggedUserId()){
+      if(searchUserById(getLoggedUserId()).favourites.some(element => element === recipeId)){
+         favBtn.innerText = "Rimuovi dai preferiti";
+      }else{
+         favBtn.innerText = "Aggiungi ai preferiti";
+      }
+      favBtn.classList.remove("d-none");
+    }
     
     // Inserisce l'immagine della ricetta nella pagina
     imageBox.innerHTML = `
