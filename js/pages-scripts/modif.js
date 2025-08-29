@@ -1,7 +1,7 @@
 // Gestione eventi per pagina di modifica profilo utente
 
 import { handleUserError } from "../errorsManagement.js";
-import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, authUsername, updateUserUsername, authEmail, updateUserEmail, getRegisteredUsers } from "../usersManagement.js";
+import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, updateUserUsername, updateUserEmail, getRegisteredUsers } from "../usersManagement.js";
 import * as validate from "../validate.js";
 
 // Oggetti DOM per gli input del form di modifica con valori di default e stato di validazione
@@ -168,9 +168,6 @@ modifSubBtn.addEventListener("click", async () => {
     // Sequenza: 1) Verifica disponibilità username, 2) Applica modifica al database
     if(modifUsernameInput.DOMelement.required){
         try {
-            // Verifica che il nuovo username non sia già in uso
-            authUsername(modifUsernameInput.DOMelement.value);
-            // Se la validazione passa, procede con l'aggiornamento
             updateUserUsername(modifUsernameInput.DOMelement.value);
             alert("Nome utente aggiornato");
         } catch (error) {
@@ -186,8 +183,6 @@ modifSubBtn.addEventListener("click", async () => {
     // Sequenza: 1) Verifica disponibilità email, 2) Applica modifica al database
     if(modifEmailInput.DOMelement.required){
         try {
-            // Verifica che la nuova email non sia già in uso
-            authEmail(modifEmailInput.DOMelement.value)
             // Se la validazione passa, procede con l'aggiornamento
             updateUserEmail(modifEmailInput.DOMelement.value);
             alert("Email aggiornata");

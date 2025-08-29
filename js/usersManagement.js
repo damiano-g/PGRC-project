@@ -293,6 +293,7 @@ async function updateUserData(field, newValue, needsPreprocessing = null, isArra
  * }
  */
 export function updateUserUsername(newUsername){
+    authUsername(newUsername);
     updateUserData("username", newUsername);
     return true;
 }
@@ -317,6 +318,7 @@ export function updateUserUsername(newUsername){
  * }
  */ 
 export function updateUserEmail(newUserEmail){
+    authEmail(newUserEmail);
     updateUserData("email", newUserEmail);
     return true;
 }
