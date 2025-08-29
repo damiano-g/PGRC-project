@@ -9,16 +9,33 @@
     
 </head>
 <body id="search-page">
-    <div class="container-fluid">
-         <a href="../index.html">Home</a>
-        <h1 class="text-center">Search page</h1>
-        <div class="input-group">
-            <input type="text" class="form-control" id="searchBar" placeholder="Cerca la tua prossima ricetta">
-            <button class="btn btn-outline-secondary" type="button" id="searchBtn">Cerca</button>
-        </div>
-    </div>
+    <div class="fluid-container">
+        <nav class="navbar navbar-expand-md">
+            <div class="container-fluid">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown">
+                            Area personale
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="./login.html" class="dropdown-item">Accedi</a></li>
+                            <li><a href="./signIn.html" class="dropdown-item">Registrati</a></li>
+                            <li><a href="./favourites.html" class="dropdown-item">Preferiti</a></li>
+                            <li><a href="./modifUser.html" class="dropdown-item">Impostazioni</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="../index.html" class="dropdown-item">Homepage</a></li>
+                </ul>
+            </div>
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchBar" placeholder="Cerca la tua prossima ricetta">
+                <button class="btn btn-outline-secondary" type="button" id="searchBtn">Cerca</button>
+            </div>
+        </nav>
 
-    <div class="container" id="results-container">
+        <h2 class="mx-auto text-center px-4 py-2">Risultati della ricerca</h2>
+
+        <div class="container" id="results-container">
     </div>
 
     <script type="module" src="../js/pages-scripts/search.js"></script>

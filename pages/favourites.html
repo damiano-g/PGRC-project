@@ -7,16 +7,34 @@
     <link rel="stylesheet" href="../recipeStyle.css">
     <title>Favourites page</title>
 </head>
-<body id="index-page">
+<body id="fav-page">
     <div class="fluid-container">
+        <nav class="navbar navbar-expand-md">
+            <div class="container-fluid">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown">
+                            Area personale
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="./login.html" class="dropdown-item">Accedi</a></li>
+                            <li><a href="./signIn.html" class="dropdown-item">Registrati</a></li>
+                            <li><a href="./modifUser.html" class="dropdown-item">Impostazioni</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="../index.html" class="dropdown-item">Homepage</a></li>
+                    </li>
+                </ul>
+            </div>
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchBar" placeholder="Cerca la tua prossima ricetta">
+                <button class="btn btn-outline-secondary" type="button" id="searchBtn">Cerca</button>
+            </div>
+        </nav>
+        
         <h2 class="mx-auto text-center px-4 py-2">Il mio ricettario</h2>
-        <div class="input-group">
-            <input type="text" class="form-control" id="searchBar" placeholder="Cerca la tua prossima ricetta">
-            <button class="btn btn-outline-secondary" type="button" id="searchBtn">Cerca</button>
-        </div>
     
-        <h3 class="mx-auto text-center px-4 py-2">Ricette preferite</h3>
-        <div class="row" id="categories"></div>
+        <div class="row" id="fovourites"></div>
     </div>
 
     <script type="module" src="../js/pages-scripts/favourites.js"></script>
