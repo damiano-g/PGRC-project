@@ -1,4 +1,11 @@
-// Gestione completa degli utenti: storage, validazione, autenticazione e operazioni CRUD
+/**
+ * @fileoverview Gestione completa utenti - storage, validazione, autenticazione e operazioni CRUD
+ * @description Sistema completo per gestione utenti con localStorage/sessionStorage,
+ * validazione duplicati, autenticazione sicura e operazioni atomiche
+ * @author damia
+ * @version 1.0.0
+ * @since 2025-08-28
+ */
 
 import { UserManagementError, } from "./errorsManagement.js";
 import { User } from "./data-models.js";
@@ -7,383 +14,179 @@ import { User } from "./data-models.js";
 // CONFIGURAZIONE E COSTANTI
 // ============================================================================
 
-// Chiavi per dati web storage
+/** @type {string} Chiave localStorage per array utenti registrati */
 const usersDBKey = "users";
+
+/** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
 const loggedUserKey = "loggedUser";
 
 // ============================================================================
-// VARIABILI DI STATO
+// VARIABILI DI STATO CACHE
 // ============================================================================
 
-// Registro utenti registrati aggiornato ad ogni caricamento di pagina -> vedi window.onload
-// L'aggiornamento costante permette un'eventuale ricerca in tempo reale di username e/o mail già utilizzate
-// NOTA: Attualmente la variabile è sovrascritta ad ogni chiamata del getter, quindi non mantiene vera cache
-// Da valutare l'implementazione - potrebbe essere superfluo e potrebbe essere rimossa per semplificare il codice
+/** 
+ * @type {Array} Cache locale array utenti - aggiornata ad ogni accesso
+ * @description Mantiene copia sincronizzata con localStorage per performance.
+ * Attualmente sovrascritta ad ogni getter call - da valutare ottimizzazione futura
+ */
 let registeredUsers = [];
 
+/** 
+ * @type {string} Cache locale ID utente loggato - sincronizzata con sessionStorage
+ */
 let loggedUserId = "";
 
 // ============================================================================
-// FUNZIONI GETTER PER ACCESSO AI DATI
+// LAYER STORAGE - ACCESSO DATI PERSISTENCE
 // ============================================================================
 
 /**
- * Recupera l'array degli utenti registrati aggiornato dal localStorage
- * Restituisce una copia dell'array originale impedendo modifiche esterne
+ * Recupera array utenti registrati dal localStorage con parsing JSON automatico
+ * Layer interno per accesso sicuro ai dati persistenti
  * 
- * @returns {Array} Array degli utenti registrati (deep copy)
- * @throws {UserManagementError} In caso di errori di lettura dal localStorage
+ * @private
+ * @returns {Array<User>} Array utenti o array vuoto se storage vuoto
+ * @throws {UserManagementError} Se errori di lettura o parsing JSON (tipo "STORAGE")
+ */
+function retrieveRegisteredUsers() {
+    try{
+        const JSONFile = localStorage.getItem(usersDBKey);
+        return JSONFile ? JSON.parse(JSONFile) : [];
+    }catch(err){
+        throw new UserManagementError("STORAGE", "Errore di lettura database utenti", err);
+    }
+}
+
+/**
+ * Recupera ID utente loggato dal sessionStorage
+ * Layer interno per accesso sicuro alla sessione corrente
+ * 
+ * @private
+ * @returns {string} ID utente loggato o stringa vuota se non presente
+ * @throws {UserManagementError} Se errori di lettura sessionStorage (tipo "STORAGE")
+ */
+function retreiveLoggedUser(){
+    try{
+        return sessionStorage.getItem(loggedUserKey) || "";
+    }catch(err){
+        throw new UserManagementError("STORAGE", "Errore di lettura sessione utente", err);
+    }
+}
+
+/**
+ * Salva array utenti nel localStorage con serializzazione JSON automatica
+ * Layer interno per persistenza sicura dei dati
+ * 
+ * @private
+ * @param {Array<User>} usersArray - Array utenti da persistere
+ * @throws {UserManagementError} Se errori di scrittura o serializzazione (tipo "STORAGE")
+ */
+function updateUsersDB(usersArray){
+    try{
+        localStorage.setItem(usersDBKey, JSON.stringify(usersArray));
+    }catch(error){
+        throw new UserManagementError("STORAGE", "Errore di scrittura database utenti", error);
+    }
+}
+
+// ============================================================================
+// API PUBBLICA - ACCESSO DATI CON CACHE
+// ============================================================================
+
+/**
+ * Recupera array utenti registrati aggiornato con deep copy per safety
+ * API pubblica per accesso read-only ai dati utenti
+ * 
+ * @returns {Array<User>} Deep copy array utenti (safe da modifiche esterne)
+ * @throws {UserManagementError} Se errori di lettura, fallback array vuoto
+ * 
+ * @example
+ * // Accesso sicuro lista utenti
+ * const users = getRegisteredUsers();
+ * users.forEach(user => console.log(user.username)); // Safe iteration
  */
 export function getRegisteredUsers() {
     try{
-        registeredUsers = retrieveRegisteredUsers() || [];
+        registeredUsers = retrieveRegisteredUsers();
         return structuredClone(registeredUsers);
     }catch(error){
-        console.error("Error", error);
+        console.error("Errore recupero utenti:", error);
         registeredUsers = [];
         return [];
     }
 }
 
 /**
- * Recupera l'ID dell'utente attualmente loggato dal sessionStorage
- * Gestisce automaticamente gli errori di lettura restituendo una stringa vuota come fallback
+ * Recupera ID utente attualmente loggato con gestione errori automatica
+ * API pubblica per controllo stato login cross-page
  * 
- * @returns {string} ID dell'utente loggato o stringa vuota se non presente o in caso di errore
+ * @returns {string} ID utente loggato o stringa vuota se non presente/errori
+ * 
  * @example
- * // Recupera l'ID dell'utente corrente
+ * // Check stato login
  * const currentUserId = getLoggedUserId();
  * if (currentUserId) {
  *   console.log("Utente loggato:", currentUserId);
+ *   // Mostra UI autenticata
  * } else {
- *   console.log("Nessun utente loggato");
+ *   // Redirect a login page
+ *   window.location.href = "./login.html";
  * }
  */
 export function getLoggedUserId() {
     try {
-        loggedUserId = retreiveLoggedUser() || "";
+        loggedUserId = retreiveLoggedUser();
         return loggedUserId;
     } catch (error) {
-        console.error("Error", error);
+        console.error("Errore recupero sessione:", error);
         loggedUserId = "";
-        return loggedUserId;
+        return "";
     } 
 }
 
-// ============================================================================
-// FUNZIONI DI STORAGE INTERNO
-// ============================================================================
-
-// Recupera e restituisce l'array di utenti dal localStorage (se non esiste, restituisce array vuoto)
-function retrieveRegisteredUsers() {
-    try{
-        const JSONFile = localStorage.getItem(usersDBKey);
-        const array = (JSONFile ? JSON.parse(JSONFile) : []);
-        return array;
-    }catch(err){
-        throw new UserManagementError("STORAGE", "Errore di lettura nel database", err);
-    }
-}
-
 /**
- * Funzione interna per recuperare l'array degli utenti registrati dal localStorage
- * Gestisce il parsing JSON e restituisce un array vuoto se non esistono dati
+ * Aggiorna ID utente loggato nel sessionStorage per persistenza sessione
+ * API pubblica per gestione stato login post-autenticazione
  * 
- * @private
- * @returns {Array} Array degli utenti registrati dal localStorage o array vuoto se non presente
- * 
- * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
- * @throws {UserManagementError} Se si verificano errori di parsing JSON (tipo "STORAGE")
+ * @param {string} userId - ID univoco utente da impostare come loggato
+ * @throws {UserManagementError} Se errori di scrittura sessionStorage (tipo "STORAGE")
  * 
  * @example
- * // Uso interno - recupera dati dal storage
- * const users = retrieveRegisteredUsers();
- * console.log("Utenti trovati:", users.length);
- */
-function retreiveLoggedUser(){
-    try{
-        const userId = sessionStorage.getItem(loggedUserKey) || "";
-        return userId;
-    }catch(err){
-        throw new UserManagementError("STORAGE", "Errore di lettura nel database", err);
-    }
-}
-
-
-/**
- * Funzione interna per salvare l'array degli utenti nel localStorage
- * Gestisce la serializzazione JSON e la scrittura con gestione errori
- * 
- * @private
- * @param {Array} usersArray - Array degli utenti da salvare nel localStorage
- * 
- * @throws {UserManagementError} Se si verificano errori di scrittura nel localStorage (tipo "STORAGE")
- * @throws {UserManagementError} Se si verificano errori di serializzazione JSON (tipo "STORAGE")
- * 
- * @example
- * // Uso interno - salva array utenti aggiornato
- * updateUsersDB(modifiedUsersArray);
- */
-function updateUsersDB(usersArray){
-    
-    try{
-        localStorage.setItem(usersDBKey, JSON.stringify(usersArray));
-    }catch(error){
-        throw new UserManagementError("STORAGE", "Errore di scrittura nel database", error) ;
-    }
-}
-
-
-/**
- * Aggiorna l'ID dell'utente attualmente loggato nel sessionStorage
- * Gestisce la sessione di login dell'utente corrente con persistenza tra le pagine
- * 
- * @param {string} userId - ID univoco dell'utente da impostare come loggato
- * 
- * @throws {UserManagementError} Se si verificano errori di scrittura nel sessionStorage (tipo "STORAGE")
- * 
- * @example
- * // Imposta un utente come loggato dopo autenticazione
+ * // Post-login: imposta utente come loggato
  * try {
  *   updateLoggedUser("user_1703123456789_1234");
- *   console.log("Utente impostato come loggato");
+ *   window.location.href = "./pages/landing.html";
  * } catch (error) {
  *   handleUserError(error);
  * }
- * 
- * @example
- * // Uso tipico nel flusso di login
- * const admitted = await admitUser(foundUserId, password);
- * if (admitted) {
- *   updateLoggedUser(foundUserId);
- *   window.location.href = "./pages/landing.html";
- * }
- * */
+ */
 export function updateLoggedUser(userId){
-
     try{
         sessionStorage.setItem(loggedUserKey, userId);
+        loggedUserId = userId; // Aggiorna cache locale
     }catch(error){
-        throw new UserManagementError("STORAGE", "Errore di scrittura nel database", error)
+        throw new UserManagementError("STORAGE", "Errore aggiornamento sessione", error);
     }
 }
 
 // ============================================================================
-// OPERAZIONI CRUD ATOMICHE
+// VALIDAZIONE - CONTROLLO DUPLICATI E DISPONIBILITÀ
 // ============================================================================
 
 /**
- * Aggiunge un nuovo utente all'array e aggiorna il localStorage
- * Implementazione atomica: legge dati freschi, modifica e salva in un'unica operazione
- * 
- * @param {Object} newUserObject - Oggetto utente completo da aggiungere al database
- * @param {string} newUserObject.id - ID univoco dell'utente
- * @param {string} newUserObject.username - Nome utente
- * @param {string} newUserObject.email - Email dell'utente
- * @param {string} newUserObject.password - Password hashata dell'utente
- * @param {Array} newUserObject.favorites - Array dei preferiti dell'utente
- * @param {string} newUserObject.creationDate - Data di creazione in formato ISO
- * 
- * @throws {UserManagementError} In caso di errori di lettura o scrittura nel localStorage
- * 
- * @example
- * // Aggiunge un nuovo utente al database
- * try {
- *   const newUser = await createUserObject("mario", "mario@email.com", "password123");
- *   addNewUser(newUser);
- *   console.log("Utente aggiunto con successo");
- * } catch (error) {
- *   handleUserError(error);
- * }
- */
-export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
-    authUsername(chosenUsername);
-    authEmail(chosenEmail);
-    const newUser = await createUserObject(chosenUsername, chosenEmail, chosenPassword);
-    const actualRegUsersArray = retrieveRegisteredUsers() || [];
-    actualRegUsersArray.push(newUser);
-    updateUsersDB(actualRegUsersArray);
-}
-
-/**
- * Rimuove un utente dall'array tramite ID e aggiorna il localStorage
- * Implementazione atomica: legge dati freschi, modifica e salva in un'unica operazione
- * 
- * @param {string} userId - ID univoco dell'utente da rimuovere dal database
- * 
- * @throws {UserManagementError} In caso di errori di lettura o scrittura nel localStorage
- * 
- * @example
- * // Rimuove un utente dal database
- * try {
- *   deleteUser("user_1703123456789_1234");
- *   console.log("Utente rimosso con successo");
- * } catch (error) {
- *   handleUserError(error);
- * }
- */
-export function deleteLoggedUser(){
-    const actualRegUsersArray = retrieveRegisteredUsers() || [];
-    const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
-    actualRegUsersArray.splice(index, 1);
-    updateUsersDB(actualRegUsersArray);
-}
-
-/**
- * Funzione utility interna per aggiornare un campo specifico dell'utente corrente
- * Gestisce il pattern atomico di lettura-modifica-scrittura per tutti i tipi di aggiornamento utente
- * Supporta preprocessing opzionale (es. hashing password) tramite parametro booleano
+ * Verifica disponibilità username nel database (no duplicati)
+ * Controllo atomico con lettura fresh dal localStorage
  * 
  * @private
- * @async
- * @param {string} field - Nome del campo da aggiornare nell'oggetto utente (es. "username", "email", "password")
- * @param {string} newValue - Nuovo valore da assegnare al campo (in chiaro per password)
- * @param {boolean|null} [needsPreprocessing=null] - Se true, applica hashing SHA-256 al valore prima del salvataggio
- * 
- * @returns {Promise<void>} Promise che risolve quando l'operazione è completata
- * 
- * @throws {UserManagementError} Se l'utente corrente non è trovato nel database (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se si verificano errori di lettura o scrittura nel localStorage (tipo "STORAGE")
- * @throws {Error} Se si verificano errori durante l'hashing della password (solo se needsPreprocessing=true)
- * 
- * @example
- * // Aggiorna username (sincrono)
- * await updateUserData("username", "nuovoUsername");
- * 
- * @example  
- * // Aggiorna password con hashing (asincrono)
- * await updateUserData("password", "nuovaPassword123", true);
- * 
- * @example
- *  * // Aggiorna email (sincrono)
- * await updateUserData("email", "nuova@email.com");
- */
-async function updateUserData(field, newValue, needsPreprocessing = null, isArray = null) {
-    try {
-        const processedValue = (needsPreprocessing ? await hashString(newValue) : (isArray ? newValue.split(",") : newValue));
-        const actualRegUsersArray = retrieveRegisteredUsers() || [];
-        const index = actualRegUsersArray.findIndex(item => item.id === getLoggedUserId());
-        if(index < 0){
-            throw new UserManagementError("NOT_FOUND", "Utente non trovato");
-        }
-        actualRegUsersArray[index][field] = processedValue;
-        updateUsersDB(actualRegUsersArray);
-    } catch (error) {
-        throw error;
-    }
-}
-
-/**
- * Aggiorna l'username dell'utente attualmente loggato
- * Implementazione atomica: legge dati freschi dal localStorage, modifica e salva
- * 
- * @param {string} newUsername - Nuovo username da assegnare all'utente corrente
- * @returns {boolean} true se l'operazione è completata con successo
- * 
- * @throws {UserManagementError} Se l'utente corrente non è trovato nel database (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se si verificano errori di lettura o scrittura nel localStorage (tipo "STORAGE")
- * 
- * @example
- * // Aggiorna l'username dell'utente loggato
- * try {
- *   updateUserUsername("nuovoUsername");
- *   console.log("Username aggiornato con successo");
- * } catch (error) {
- *   handleUserError(error);
- * }
- */
-export function updateUserUsername(newUsername){
-    authUsername(newUsername);
-    updateUserData("username", newUsername);
-    return true;
-}
-
-/**
- * Aggiorna l'email dell'utente attualmente loggato
- * Implementazione atomica: legge dati freschi dal localStorage, modifica e salva
- * 
- * @param {string} newUserEmail - Nuova email da assegnare all'utente corrente
- * @returns {boolean} true se l'operazione è completata con successo
- * 
- * @throws {UserManagementError} Se l'utente corrente non è trovato nel database (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se si verificano errori di lettura o scrittura nel localStorage (tipo "STORAGE")
- * 
- * @example
- * // Aggiorna l'email dell'utente loggato
- * try {
- *   updateUserEmail("nuova@email.com");
- *   console.log("Email aggiornata con successo");
- * } catch (error) {
- *   handleUserError(error);
- * }
- */ 
-export function updateUserEmail(newUserEmail){
-    authEmail(newUserEmail);
-    updateUserData("email", newUserEmail);
-    return true;
-}
-
-/**
- * Aggiorna la password dell'utente attualmente loggato con hashing automatico
- * Implementazione atomica: legge dati freschi dal localStorage, applica hash SHA-256 e salva
- * 
- * @async
- * @param {string} newUserPassword - Nuova password in chiaro da hashare e assegnare
- * @returns {Promise<boolean>} Promise che risolve a true se l'operazione è completata con successo
- * 
- * @throws {UserManagementError} Se l'utente corrente non è trovato nel database (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se si verificano errori di lettura o scrittura nel localStorage (tipo "STORAGE")
- * @throws {Error} Se si verificano errori durante l'hashing della password
- * 
- * @example
- * // Aggiorna la password dell'utente loggato
- * try {
- *   await updateUserPassword("nuovaPassword123");
- *   console.log("Password aggiornata con successo");
- * } catch (error) {
- *   handleUserError(error);
- * }
- */
-export async function updateUserPassword(newUserPassword){
-    updateUserData("password", newUserPassword, true);
-    return true;
-}
-
-export function upddateUserFavourites(newUserFavouritesArray){
-    updateUserData("favourites", newUserFavouritesArray.toString(), null, true);
-    return true;
-}
-
-
-// ============================================================================
-// FUNZIONI DI VALIDAZIONE
-// ============================================================================
-
-
-/**
- * Verifica se un username è disponibile nel database
- * Implementazione atomica: legge dati freschi dal localStorage
- * 
- * @param {string} chosenUsername - Username da verificare per duplicati
- * @returns {boolean} true se l'username è disponibile
- * 
+ * @param {string} chosenUsername - Username da verificare
+ * @returns {boolean} true se disponibile
  * @throws {UserManagementError} Se username già in uso (tipo "VALIDATION")
- * @throws {UserManagementError} Se errori di lettura dal localStorage (tipo "STORAGE")
- * 
- * @example
- * // Verifica disponibilità username
- * try {
- *   authUsername("mario");
- *   console.log("Username disponibile");
- * } catch (error) {
- *   handleUserError(error);
- * }
+ * @throws {UserManagementError} Se errori di lettura storage (tipo "STORAGE")
  */
 function authUsername(chosenUsername){
-
-    const actualRegUsersArray = retrieveRegisteredUsers() || [];
+    const actualRegUsersArray = retrieveRegisteredUsers();
     
-    if(actualRegUsersArray.some(item => (item.username === chosenUsername))){
+    if(actualRegUsersArray.some(user => user.username === chosenUsername)){
         throw new UserManagementError("VALIDATION", "Username già in uso");
     }
     
@@ -391,29 +194,19 @@ function authUsername(chosenUsername){
 }
 
 /**
- * Verifica se un'email è disponibile nel database
- * Implementazione atomica: legge dati freschi dal localStorage
+ * Verifica disponibilità email nel database (no duplicati)
+ * Controllo atomico con lettura fresh dal localStorage
  * 
- * @param {string} chosenEmail - Email da verificare per duplicati
- * @returns {boolean} true se l'email è disponibile
- * 
+ * @private
+ * @param {string} chosenEmail - Email da verificare
+ * @returns {boolean} true se disponibile
  * @throws {UserManagementError} Se email già in uso (tipo "VALIDATION")
- * @throws {UserManagementError} Se errori di lettura dal localStorage (tipo "STORAGE")
- * 
- * @example
- * // Verifica disponibilità email
- * try {
- *   authEmail("mario@email.com");
- *   console.log("Email disponibile");
- * } catch (error) {
- *   handleUserError(error);
- * }
+ * @throws {UserManagementError} Se errori di lettura storage (tipo "STORAGE")
  */
 function authEmail(chosenEmail){
+    const actualRegUsersArray = retrieveRegisteredUsers();
 
-    const actualRegUsersArray = retrieveRegisteredUsers() || []; 
-
-    if(actualRegUsersArray.some(item => (item.email === chosenEmail))){
+    if(actualRegUsersArray.some(user => user.email === chosenEmail)){
         throw new UserManagementError("VALIDATION", "Email già in uso");
     }
 
@@ -421,81 +214,162 @@ function authEmail(chosenEmail){
 }
 
 // ============================================================================
-// FUNZIONI DI CREAZIONE E GESTIONE UTENTI
+// CRITTOGRAFIA - HASHING SICURO PASSWORD
 // ============================================================================
 
 /**
- * Genera un nuovo oggetto utente completo con password hashata e ID univoco
- * Crea la struttura dati completa necessaria per la registrazione di un nuovo utente
- * Include generazione automatica di ID timestamp-based e hashing sicuro della password
+ * Genera hash SHA-256 di una stringa utilizzando Web Crypto API
+ * Funzione core per sicurezza password con algoritmo standard
  * 
  * @async
- * @param {string} chosenUsername - Username scelto dall'utente per la registrazione
- * @param {string} valideEmail - Indirizzo email dell'utente per la registrazione
- * @param {string} validPassword - Password in chiaro che verrà automaticamente hashata
- * 
- * @returns {Promise<import('./data-models.js').User>} Promise che risolve nell'istanza User completa pronta per il salvataggio
- * 
- * @throws {Error} Se si verificano errori durante l'hashing della password
+ * @param {string} originalString - Stringa in chiaro da hashare
+ * @returns {Promise<string>} Hash SHA-256 in formato esadecimale (64 caratteri)
+ * @throws {Error} Se Web Crypto API non disponibile o errori di processing
  * 
  * @example
- * // Crea un nuovo oggetto utente con password hashata
- * try {
- *   const newUser = await createUserObject("mario", "mario@email.com", "password123");
- *   console.log("Nuovo utente creato:", newUser.id);
- *   addNewUser(newUser);
- * } catch (error) {
- *   console.error("Errore nella creazione utente:", error);
- * }
+ * // Hash password per storage sicuro
+ * const hashedPassword = await hashString("password123");
+ * console.log(hashedPassword); // "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f"
  * 
  * @example
- * // Uso tipico nel flusso di registrazione
- * async function registerUser(username, email, password) {
- *   try {
- *     authUsername(username);           // Verifica disponibilità username
- *     authEmail(email);                 // Verifica disponibilità email
- *     const user = await createUserObject(username, email, password);
- *     addNewUser(user);                 // Salva nel database
- *     return user;
- *   } catch (error) {
- *     handleUserError(error);
- *   }
- * }
+ * // Uso in verifica credenziali
+ * const inputHash = await hashString(userInput);
+ * const isValid = inputHash === storedHash;
  */
-async function createUserObject(chosenUsername, valideEmail, validPassword){
-    const hashPassword = await hashString(validPassword);
-    return new User(chosenUsername, valideEmail, hashPassword);
+export async function hashString(originalString) {
+    // Encoding stringa → byte array per Web Crypto API
+    const data = new TextEncoder().encode(originalString);
+    
+    // Calcolo hash SHA-256 (ArrayBuffer)
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    
+    // Conversione ArrayBuffer → Array di byte per manipolazione
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    
+    // Formattazione esadecimale: byte → hex string (2 cifre, zero-padded)
+    const hashPassword = hashArray
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+
+    return hashPassword;
 }
 
+// ============================================================================
+// FACTORY E COSTRUZIONE OGGETTI
+// ============================================================================
 
 /**
- * Funzione utility interna per ricercare un utente nel database tramite parametro generico
- * Supporta ricerca per qualsiasi campo dell'oggetto utente (username, email, id, ecc.)
- * Restituisce una deep copy per impedire modifiche esterne ai dati originali
+ * Factory function per creazione oggetto User con validation e hashing automatico
+ * Funzione interna che coordina validazione, hashing e costruzione
  * 
  * @private
- * @param {string} searchParameter - Nome del campo da utilizzare per la ricerca -> "username", "id", "email"
- * @param {string} searchValue - Valore da cercare nel campo specificato
- * @returns {Object} Oggetto utente completo (deep copy) se trovato
- * 
- * @throws {UserManagementError} Se l'utente non è trovato nel database (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
- * 
- * @example
- * // Cerca utente per username (uso interno)
- * const user = searchUser("username", "mario");
- * 
- * @example
- * // Cerca utente per ID (uso interno)
- * const user = searchUser("id", "user_1703123456789_1234");
+ * @async
+ * @param {string} chosenUsername - Username già validato
+ * @param {string} chosenEmail - Email già validata
+ * @param {string} chosenPassword - Password in chiaro da hashare
+ * @returns {Promise<User>} Istanza User completa pronta per storage
+ * @throws {Error} Se errori durante hashing password
  */
-function searchUser(searchParameter, searchValue){
+async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
+    const hashPassword = await hashString(chosenPassword);
+    return new User(chosenUsername, chosenEmail, hashPassword);
+}
+
+// ============================================================================
+// OPERAZIONI CRUD - CREATE, READ, UPDATE, DELETE
+// ============================================================================
+
+/**
+ * Aggiunge nuovo utente al sistema con validation chain completa
+ * Entry point unificato per registrazione con operazione atomica
+ * 
+ * @async
+ * @param {string} chosenUsername - Username desiderato
+ * @param {string} chosenEmail - Email desiderata  
+ * @param {string} chosenPassword - Password in chiaro
+ * @returns {Promise<User>} Utente creato e salvato
+ * @throws {UserManagementError} Se username/email già in uso (tipo "VALIDATION")
+ * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {Error} Se errori durante hashing
+ * 
+ * @example
+ * // Registrazione completa con gestione errori
+ * try {
+ *   const newUser = await addNewUser("mario", "mario@email.com", "password123");
+ *   console.log("Utente registrato:", newUser.id);
+ *   // Redirect to welcome page
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */
+export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
+    // Validation chain: username + email duplicati
+    authUsername(chosenUsername);
+    authEmail(chosenEmail);
+    
+    // User creation con hashing automatico
+    const newUser = await createUserObject(chosenUsername, chosenEmail, chosenPassword);
+    
+    // Storage atomico: read → modify → write
+    const actualRegUsersArray = retrieveRegisteredUsers();
+    actualRegUsersArray.push(newUser);
+    updateUsersDB(actualRegUsersArray);
+    
+    return newUser;
+}
+
+/**
+ * Rimuove utente attualmente loggato dal database
+ * Operazione atomica per self-deletion account
+ * 
+ * @throws {UserManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * 
+ * @example
+ * // Eliminazione account corrente
+ * try {
+ *   deleteLoggedUser();
+ *   sessionStorage.clear(); // Cleanup sessione
+ *   window.location.href = "./index.html";
+ * } catch (error) {
+ *   handleUserError(error);
+ * }
+ */
+export function deleteLoggedUser(){
+    const actualRegUsersArray = retrieveRegisteredUsers();
+    const currentUserId = getLoggedUserId();
+    const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
+    
+    if(index < 0){
+        throw new UserManagementError("NOT_FOUND", "Utente loggato non trovato per eliminazione");
+    }
+    
+    actualRegUsersArray.splice(index, 1);
+    updateUsersDB(actualRegUsersArray);
+}
+
+// ============================================================================
+// UTILITY INTERNE - RICERCA E AGGIORNAMENTO
+// ============================================================================
+
+/**
+ * Engine di ricerca generico per utenti tramite campo specifico
+ * Utility interna per query flessibili con deep copy safety
+ * 
+ * @private
+ * @param {string} searchField - Campo da usare per ricerca ("username", "id", "email")
+ * @param {string} searchValue - Valore da cercare nel campo
+ * @returns {User} Deep copy oggetto utente trovato
+ * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se errori di lettura (tipo "STORAGE")
+ */
+function searchUser(searchField, searchValue){
     try {
-        const actualRegUsersArray = retrieveRegisteredUsers() || [];
-        const index = actualRegUsersArray.findIndex(item => item[searchParameter] === searchValue);
+        const actualRegUsersArray = retrieveRegisteredUsers();
+        const index = actualRegUsersArray.findIndex(user => user[searchField] === searchValue);
      
         if(index < 0){
-            throw new UserManagementError("NOT_FOUND", "Utente non trovato");
+            throw new UserManagementError("NOT_FOUND", `Utente non trovato per ${searchField}: ${searchValue}`);
         }
 
         return structuredClone(actualRegUsersArray[index]);
@@ -505,53 +379,86 @@ function searchUser(searchParameter, searchValue){
 }
 
 /**
- * Ricerca un utente nel database tramite username e restituisce l'oggetto utente completo
- * Restituisce una deep copy per impedire modifiche esterne ai dati originali
+ * Engine di aggiornamento generico per campi utente loggato
+ * Utility interna per operazioni atomiche update con preprocessing opzionale
  * 
- * @param {string} providedUsername - Username dell'utente da cercare
- * @returns {Object} Oggetto utente completo (deep copy) se trovato
+ * @private
+ * @async
+ * @param {string} field - Nome campo da aggiornare
+ * @param {string|Array} newValue - Nuovo valore da assegnare
+ * @param {boolean} [needsHashing=false] - Se true, applica hash SHA-256
+ * @param {boolean} [isArray=false] - Se true, processa come array da stringa comma-separated
+ * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ */
+async function updateUserData(field, newValue, needsHashing = false, isArray = false) {
+    try {
+        // Preprocessing value based on type
+        let processedValue = newValue;
+        if (needsHashing) {
+            processedValue = await hashString(newValue);
+        } else if (isArray) {
+            processedValue = newValue.split(",");
+        }
+        
+        // Atomic update operation
+        const actualRegUsersArray = retrieveRegisteredUsers();
+        const currentUserId = getLoggedUserId();
+        const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
+        
+        if(index < 0){
+            throw new UserManagementError("NOT_FOUND", "Utente loggato non trovato per aggiornamento");
+        }
+        
+        actualRegUsersArray[index][field] = processedValue;
+        updateUsersDB(actualRegUsersArray);
+        
+    } catch (error) {
+        throw error;
+    }
+}
+
+// ============================================================================
+// API PUBBLICA - RICERCA UTENTI
+// ============================================================================
+
+/**
+ * Ricerca utente per username con deep copy safety
+ * API pubblica per lookup utenti durante login
  * 
- * @throws {UserManagementError} Se l'utente non è trovato nel database (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
+ * @param {string} username - Username da cercare
+ * @returns {User} Deep copy oggetto utente (safe da modifiche)
+ * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * 
  * @example
- * // Cerca un utente per username
+ * // Lookup utente per login
  * try {
  *   const user = searchUserbyName("mario");
- *   console.log("Utente trovato:", user.email);
+ *   const isAuthenticated = await admitUser(user.id, inputPassword);
  * } catch (error) {
- *   if (error.type === "NOT_FOUND") {
- *     console.log("Utente non trovato");
- *   } else {
- *     handleUserError(error);
- *   }
+ *   console.log("Utente non trovato");
  * }
  */
-export function searchUserbyName(providedUsername) {
-    return searchUser("username", providedUsername);
+export function searchUserbyName(username) {
+    return searchUser("username", username);
 }
 
 /**
- * Ricerca un utente nel database tramite ID e restituisce l'oggetto utente completo
- * Restituisce una deep copy per impedire modifiche esterne ai dati originali
+ * Ricerca utente per ID con deep copy safety
+ * API pubblica per lookup by ID (es. da sessione)
  * 
- * @param {string} userId - ID univoco dell'utente da cercare
- * @returns {Object} Oggetto utente completo (deep copy) se trovato
- * 
- * @throws {UserManagementError} Se l'utente non è trovato nel database (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
+ * @param {string} userId - ID univoco da cercare
+ * @returns {User} Deep copy oggetto utente (safe da modifiche)
+ * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * 
  * @example
- * // Cerca un utente per ID
+ * // Recupero profilo utente loggato
  * try {
- *   const user = searchUserById("user_1703123456789_1234");
- *   console.log("Utente trovato:", user.username);
+ *   const currentUserId = getLoggedUserId();
+ *   const currentUser = searchUserById(currentUserId);
+ *   displayUserProfile(currentUser);
  * } catch (error) {
- *   if (error.type === "NOT_FOUND") {
- *     console.log("Utente non trovato");
- *   } else {
- *     handleUserError(error);
- *   }
+ *   redirectToLogin();
  * }
  */
 export function searchUserById(userId){
@@ -559,150 +466,117 @@ export function searchUserById(userId){
 }
 
 // ============================================================================
-// FUNZIONI DI AUTENTICAZIONE
+// API PUBBLICA - AGGIORNAMENTO PROFILO
 // ============================================================================
 
 /**
- * Verifica le credenziali di autenticazione di un utente confrontando password hashate
- * Implementa l'autenticazione sicura hashando la password fornita e confrontandola con quella salvata
- * Utilizzata durante il processo di login per validare le credenziali utente
+ * Aggiorna username utente loggato con validation duplicati
+ * API pubblica per modifica profilo con controlli atomici
  * 
- * @async
- * @param {string} userId - ID univoco dell'utente da autenticare
- * @param {string} providedPassword - Password in chiaro fornita dall'utente per l'autenticazione
- * 
- * @returns {Promise<boolean>} Promise che risolve a true se le credenziali sono corrette, false altrimenti
- * 
- * @throws {UserManagementError} Se si verificano errori di lettura dal localStorage (tipo "STORAGE")
- * @throws {Error} Se si verificano errori durante l'hashing della password fornita
+ * @param {string} newUsername - Nuovo username desiderato
+ * @returns {boolean} true se aggiornamento completato
+ * @throws {UserManagementError} Se username già in uso (tipo "VALIDATION")
+ * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
- * // Autentica un utente durante il login
+ * // Aggiornamento username da form profilo
+ * try {
+ *   updateUserUsername("nuovoUsername");
+ *   showSuccessMessage("Username aggiornato!");
+ * } catch (error) {
+ *   showErrorMessage(error.message);
+ * }
+ */
+export async function updateUserUsername(newUsername){
+    authUsername(newUsername); // Validation duplicati
+    await updateUserData("username", newUsername);
+    return true;
+}
+
+/**
+ * Aggiorna email utente loggato con validation duplicati
+ * API pubblica per modifica profilo con controlli atomici
+ * 
+ * @param {string} newEmail - Nuova email desiderata
+ * @returns {boolean} true se aggiornamento completato
+ * @throws {UserManagementError} Se email già in uso (tipo "VALIDATION")
+ * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ */
+export async function updateUserEmail(newEmail){
+    authEmail(newEmail); // Validation duplicati
+    await updateUserData("email", newEmail);
+    return true;
+}
+
+/**
+ * Aggiorna password utente loggato con hashing automatico
+ * API pubblica per cambio password sicuro
+ * 
+ * @param {string} newPassword - Nuova password in chiaro
+ * @returns {boolean} true se aggiornamento completato
+ * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {Error} Se errori durante hashing
+ */
+export async function updateUserPassword(newPassword){
+    await updateUserData("password", newPassword, true); // needsHashing = true
+    return true;
+}
+
+/**
+ * Aggiorna array favourites utente loggato
+ * API pubblica per gestione ricette preferite
+ * 
+ * @param {Array<string>} newFavouritesArray - Array ID ricette preferite
+ * @returns {boolean} true se aggiornamento completato
+ * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ */
+export async function updateUserFavourites(newFavouritesArray){
+    await updateUserData("favourites", newFavouritesArray.toString(), false, true); // isArray = true
+    return true;
+}
+
+// ============================================================================
+// AUTENTICAZIONE - VERIFICA CREDENZIALI
+// ============================================================================
+
+/**
+ * Verifica credenziali utente tramite confronto hash password
+ * Core function per autenticazione sicura durante login
+ * 
+ * @async
+ * @param {string} userId - ID univoco utente da autenticare
+ * @param {string} providedPassword - Password in chiaro fornita
+ * @returns {Promise<boolean>} true se credenziali corrette, false altrimenti
+ * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
+ * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {Error} Se errori durante hashing password fornita
+ * 
+ * @example
+ * // Flusso login completo
  * try {
  *   const user = searchUserbyName("mario");
- *   const isAuthenticated = await admitUser(user.id, "password123");
+ *   const isAuthenticated = await admitUser(user.id, inputPassword);
  *   
  *   if (isAuthenticated) {
  *     updateLoggedUser(user.id);
- *     console.log("Login riuscito");
+ *     window.location.href = "./pages/landing.html";
  *   } else {
- *     console.log("Password errata");
+ *     showErrorMessage("Password errata");
  *   }
  * } catch (error) {
  *   handleUserError(error);
  * }
- * 
- * @example
- * // Uso tipico nel flusso completo di login
- * async function loginUser(username, password) {
- *   try {
- *     const user = searchUserbyName(username);        // Cerca utente
- *     const admitted = await admitUser(user.id, password); // Verifica password
- *     
- *     if (admitted) {
- *       updateLoggedUser(user.id);                    // Imposta come loggato
- *       window.location.href = "./pages/landing.html"; // Redirect
- *     } else {
- *       alert("Password errata");
- *     }
- *   } catch (error) {
- *     handleUserError(error);                         // Gestisce errori (es. utente non trovato)
- *   }
- * }
  */
 export async function admitUser(userId, providedPassword){
-
-    const actualRegUsersArray = retrieveRegisteredUsers() || [];
-
-    const index = actualRegUsersArray.findIndex(item => item.id === userId);
-    const userHash = actualRegUsersArray[index].password;
-
+    const actualRegUsersArray = retrieveRegisteredUsers();
+    const index = actualRegUsersArray.findIndex(user => user.id === userId);
+    
+    if(index < 0){
+        throw new UserManagementError("NOT_FOUND", "Utente non trovato per autenticazione");
+    }
+    
+    const storedHash = actualRegUsersArray[index].password;
     const providedHash = await hashString(providedPassword);
 
-    return userHash === providedHash;
-}
-
-// ============================================================================
-// FUNZIONI CRITTOGRAFICHE
-// ============================================================================
-
-/**
- * Genera l'hash SHA-256 di una stringa utilizzando la Web Crypto API
- * Converte la stringa in formato esadecimale sicuro per storage e confronti
- * Utilizzata per hashing delle password e verifica credenziali
- * 
- * @async
- * @param {string} originalString - Stringa originale da hashare (es. password in chiaro)
- * 
- * @returns {Promise<string>} Promise che risolve nella stringa hash SHA-256 in formato esadecimale
- * 
- * @throws {Error} Se si verificano errori durante il processo di hashing (es. Web Crypto API non disponibile)
- * 
- * @example
- * // Hashing di una password per registrazione
- * try {
- *   const hashedPassword = await hashString("password123");
- *   console.log("Password hashata:", hashedPassword);
- *   // Output: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f"
- * } catch (error) {
- *   console.error("Errore nell'hashing:", error);
- * }
- * 
- * @example
- * // Uso nel processo di autenticazione
- * async function verifyPassword(inputPassword, storedHash) {
- *   try {
- *     const inputHash = await hashString(inputPassword);
- *     return inputHash === storedHash;
- *   } catch (error) {
- *     throw new Error("Errore durante la verifica password");
- *   }
- * }
- * 
- * @example
- * // Integrazione nel flusso di creazione utente
- * const userObject = {
- *   username: "mario",
- *   email: "mario@email.com",
- *   password: await hashString("mySecretPassword"),
- *   // ...altri campi
- * };
- */
-export async function hashString(originalString) {
-    // ========================================
-    // FASE 1: ENCODING DELLA STRINGA
-    // ========================================
-    // Converte la stringa in un array di byte (Uint8Array) usando TextEncoder
-    // Necessario perché la Web Crypto API lavora con dati binari, non stringhe
-    const data = new TextEncoder().encode(originalString);
-
-    // ========================================
-    // FASE 2: CALCOLO HASH SHA-256
-    // ========================================
-    // Calcola l'hash SHA-256 dell'array di byte tramite la Web Crypto API
-    // crypto.subtle.digest restituisce una Promise che risolve in un ArrayBuffer
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-
-    // ========================================
-    // FASE 3: CONVERSIONE IN ARRAY MANIPOLABILE
-    // ========================================
-    // Converte l'ArrayBuffer in un array di numeri (byte) per poterlo manipolare
-    // Ogni elemento rappresenta un byte del hash (valore 0-255)
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-    // ========================================
-    // FASE 4: FORMATTAZIONE ESADECIMALE
-    // ========================================
-    // Trasforma ogni byte in una stringa esadecimale di due cifre e le concatena tutte
-    // padStart(2, "0") garantisce sempre 2 cifre (es. "0f" invece di "f")
-    // Questo produce una stringa hash leggibile e pronta per essere salvata/confrontata
-    const hashPassword = hashArray
-        .map(hashArrayItem => hashArrayItem.toString(16).padStart(2, "0"))
-        .join("");
-
-    // ========================================
-    // FASE 5: RETURN HASH FINALE
-    // ========================================
-    // Restituisce la stringa hash finale (64 caratteri esadecimali per SHA-256)
-    return hashPassword;
+    return storedHash === providedHash;
 }
