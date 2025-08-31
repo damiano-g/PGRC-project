@@ -281,3 +281,13 @@ export function createPreviewArray(itemsObj){
 
     return previewArray;
 }
+
+
+export function Review(recipeId, userId, tasteRate, difficultyRate){
+    this.recipeId = recipeId;
+    this.userId = userId;
+    this.tasteRate = tasteRate;
+    this.difficultyRate = difficultyRate;
+    this.id = generateItemId("review");
+    this.date = new Date().toDateString();
+}
