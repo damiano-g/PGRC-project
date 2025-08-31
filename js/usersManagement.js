@@ -15,10 +15,10 @@ import { User, Note } from "./data-models.js";
 // ============================================================================
 
 /** @type {string} Chiave localStorage per array utenti registrati */
-const usersDBKey = "users";
+const USERS_DB_KEY = "users";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
-const loggedUserKey = "loggedUser";
+const LOGGED_USER_KEY = "loggedUser";
 
 // ============================================================================
 // VARIABILI DI STATO CACHE
@@ -50,7 +50,7 @@ let loggedUserId = "";
  */
 function retrieveRegisteredUsers() {
     try{
-        const JSONFile = localStorage.getItem(usersDBKey);
+        const JSONFile = localStorage.getItem(USERS_DB_KEY);
         return JSONFile ? JSON.parse(JSONFile) : [];
     }catch(err){
         throw new UserManagementError("STORAGE", "Errore di lettura database utenti", err);
@@ -67,7 +67,7 @@ function retrieveRegisteredUsers() {
  */
 function retreiveLoggedUser(){
     try{
-        return sessionStorage.getItem(loggedUserKey) || "";
+        return sessionStorage.getItem(LOGGED_USER_KEY) || "";
     }catch(err){
         throw new UserManagementError("STORAGE", "Errore di lettura sessione utente", err);
     }
@@ -83,7 +83,7 @@ function retreiveLoggedUser(){
  */
 function updateUsersDB(usersArray){
     try{
-        localStorage.setItem(usersDBKey, JSON.stringify(usersArray));
+        localStorage.setItem(USERS_DB_KEY, JSON.stringify(usersArray));
     }catch(error){
         throw new UserManagementError("STORAGE", "Errore di scrittura database utenti", error);
     }
@@ -162,7 +162,7 @@ export function getLoggedUserId() {
  */
 export function updateLoggedUser(userId){
     try{
-        sessionStorage.setItem(loggedUserKey, userId);
+        sessionStorage.setItem(LOGGED_USER_KEY, userId);
         loggedUserId = userId; // Aggiorna cache locale
     }catch(error){
         throw new UserManagementError("STORAGE", "Errore aggiornamento sessione", error);
@@ -303,19 +303,25 @@ async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
  * }
  */
 export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
-    // Validation chain: username + email duplicati
-    authUsername(chosenUsername);
-    authEmail(chosenEmail);
-    
-    // User creation con hashing automatico
-    const newUser = await createUserObject(chosenUsername, chosenEmail, chosenPassword);
-    
-    // Storage atomico: read → modify → write
-    const actualRegUsersArray = retrieveRegisteredUsers();
-    actualRegUsersArray.push(newUser);
-    updateUsersDB(actualRegUsersArray);
-    
-    return newUser;
+
+    try {
+        // Validation chain: username + email duplicati
+        authUsername(chosenUsername);
+        authEmail(chosenEmail);
+        
+        // User creation con hashing automatico
+        const newUser = await createUserObject(chosenUsername, chosenEmail, chosenPassword);
+        
+        // Storage atomico: read → modify → write
+        const actualRegUsersArray = retrieveRegisteredUsers();
+        actualRegUsersArray.push(newUser);
+        updateUsersDB(actualRegUsersArray);
+        
+        return newUser;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }
 
 /**
@@ -336,16 +342,22 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
  * }
  */
 export function deleteLoggedUser(){
-    const actualRegUsersArray = retrieveRegisteredUsers();
-    const currentUserId = getLoggedUserId();
-    const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
-    
-    if(index < 0){
-        throw new UserManagementError("NOT_FOUND", "Utente loggato non trovato per eliminazione");
+
+    try {
+        const actualRegUsersArray = retrieveRegisteredUsers();
+        const currentUserId = retreiveLoggedUser();
+        const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
+        
+        if(index < 0){
+            throw new UserManagementError("NOT_FOUND", "Utente loggato non trovato per eliminazione");
+        }
+        
+        actualRegUsersArray.splice(index, 1);
+        updateUsersDB(actualRegUsersArray);
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
-    
-    actualRegUsersArray.splice(index, 1);
-    updateUsersDB(actualRegUsersArray);
 }
 
 // ============================================================================
@@ -374,6 +386,7 @@ function searchUser(searchField, searchValue){
 
         return structuredClone(actualRegUsersArray[index]);
     } catch (error) {
+        console.error(error);
         throw error;
     }
 }
@@ -394,7 +407,7 @@ async function updateUserData(field, newValue, needsHashing = null) {
     try {
         // Atomic update operation
         const actualRegUsersArray = retrieveRegisteredUsers();
-        const currentUserId = getLoggedUserId();
+        const currentUserId = retreiveLoggedUser();
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
@@ -407,6 +420,7 @@ async function updateUserData(field, newValue, needsHashing = null) {
         updateUsersDB(actualRegUsersArray);
         
     } catch (error) {
+        console.error(error);
         throw error;
     }
 }
@@ -481,9 +495,14 @@ export function searchUserById(userId){
  * }
  */
 export async function updateUserUsername(newUsername){
-    authUsername(newUsername); // Validation duplicati
-    await updateUserData("username", newUsername);
-    return true;
+    try {
+        authUsername(newUsername); // Validation duplicati
+        await updateUserData("username", newUsername);
+        return true;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }
 
 /**
@@ -496,9 +515,15 @@ export async function updateUserUsername(newUsername){
  * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
  */
 export async function updateUserEmail(newEmail){
-    authEmail(newEmail); // Validation duplicati
-    await updateUserData("email", newEmail);
-    return true;
+    try {
+        authEmail(newEmail); // Validation duplicati
+        await updateUserData("email", newEmail);
+        return true;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+    
 }
 
 /**
@@ -511,8 +536,13 @@ export async function updateUserEmail(newEmail){
  * @throws {Error} Se errori durante hashing
  */
 export async function updateUserPassword(newPassword){
-    await updateUserData("password", newPassword, true); // needsHashing = true
-    return true;
+    try {
+        await updateUserData("password", newPassword, true); // needsHashing = true
+        return true;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }
 
 /**
@@ -524,15 +554,21 @@ export async function updateUserPassword(newPassword){
  * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
  */
 export async function updateUserFavourites(recipeId){
-    const userFavouritesArray = searchUserById(getLoggedUserId()).favourites;
-    const index = userFavouritesArray.findIndex(element => element === recipeId);
-    if(index < 0){
-        userFavouritesArray.push(recipeId);
-    }else{
-        userFavouritesArray.splice(index, 1);
+    try {
+        const userFavouritesArray = searchUserById(retreiveLoggedUser()).favourites;
+        const index = userFavouritesArray.findIndex(element => element === recipeId);
+        if(index < 0){
+            userFavouritesArray.push(recipeId);
+        }else{
+            userFavouritesArray.splice(index, 1);
+        }
+        await updateUserData("favourites", userFavouritesArray); 
+        return true;
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
-    await updateUserData("favourites", userFavouritesArray); 
-    return true;
+    
 }
 
 /**
@@ -570,15 +606,21 @@ export async function updateUserFavourites(recipeId){
  * }
  */
 export async function updateUserNotes(userNote){
-    const userNotesArray = searchUserById(getLoggedUserId()).notes;
-    if(userNote instanceof Note){
-        userNotesArray.push(userNote);
-    }else{
-        const index = userNotesArray.findIndex(element => element.id === userNote);
-        userNotesArray.splice(index ,1);
+    try {
+        const userNotesArray = searchUserById(retreiveLoggedUser()).notes;
+        if(userNote instanceof Note){
+            userNotesArray.push(userNote);
+        }else{
+            const index = userNotesArray.findIndex(element => element.id === userNote);
+            userNotesArray.splice(index, 1);
+        }
+        await updateUserData("notes", userNotesArray);
+        return true;
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
-    await updateUserData("notes", userNotesArray);
-    return true;
+    
 }
 
 // ============================================================================
@@ -614,15 +656,21 @@ export async function updateUserNotes(userNote){
  * }
  */
 export async function admitUser(userId, providedPassword){
-    const actualRegUsersArray = retrieveRegisteredUsers();
-    const index = actualRegUsersArray.findIndex(user => user.id === userId);
+    try {
+        const actualRegUsersArray = retrieveRegisteredUsers();
+        const index = actualRegUsersArray.findIndex(user => user.id === userId);
+        
+        if(index < 0){
+            throw new UserManagementError("NOT_FOUND", "Utente non trovato per autenticazione");
+        }
+        
+        const storedHash = actualRegUsersArray[index].password;
+        const providedHash = await hashString(providedPassword);
     
-    if(index < 0){
-        throw new UserManagementError("NOT_FOUND", "Utente non trovato per autenticazione");
+        return storedHash === providedHash;
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
     
-    const storedHash = actualRegUsersArray[index].password;
-    const providedHash = await hashString(providedPassword);
-
-    return storedHash === providedHash;
 }
