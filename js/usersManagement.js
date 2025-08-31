@@ -480,15 +480,16 @@ export function searchUserById(userId){
  * Aggiorna username utente loggato con validation duplicati
  * API pubblica per modifica profilo con controlli atomici
  * 
+ * @async
  * @param {string} newUsername - Nuovo username desiderato
- * @returns {boolean} true se aggiornamento completato
+ * @returns {Promise<boolean>} true se aggiornamento completato
  * @throws {UserManagementError} Se username già in uso (tipo "VALIDATION")
  * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
  * // Aggiornamento username da form profilo
  * try {
- *   updateUserUsername("nuovoUsername");
+ *   await updateUserUsername("nuovoUsername");
  *   showSuccessMessage("Username aggiornato!");
  * } catch (error) {
  *   showErrorMessage(error.message);
@@ -509,10 +510,20 @@ export async function updateUserUsername(newUsername){
  * Aggiorna email utente loggato con validation duplicati
  * API pubblica per modifica profilo con controlli atomici
  * 
+ * @async
  * @param {string} newEmail - Nuova email desiderata
- * @returns {boolean} true se aggiornamento completato
+ * @returns {Promise<boolean>} true se aggiornamento completato
  * @throws {UserManagementError} Se email già in uso (tipo "VALIDATION")
  * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * 
+ * @example
+ * // Aggiornamento email da form profilo
+ * try {
+ *   await updateUserEmail("nuovaemail@esempio.com");
+ *   showSuccessMessage("Email aggiornata!");
+ * } catch (error) {
+ *   showErrorMessage(error.message);
+ * }
  */
 export async function updateUserEmail(newEmail){
     try {
@@ -530,10 +541,20 @@ export async function updateUserEmail(newEmail){
  * Aggiorna password utente loggato con hashing automatico
  * API pubblica per cambio password sicuro
  * 
+ * @async
  * @param {string} newPassword - Nuova password in chiaro
- * @returns {boolean} true se aggiornamento completato
+ * @returns {Promise<boolean>} true se aggiornamento completato
  * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
  * @throws {Error} Se errori durante hashing
+ * 
+ * @example
+ * // Cambio password da form profilo
+ * try {
+ *   await updateUserPassword("nuovaPassword123");
+ *   showSuccessMessage("Password aggiornata!");
+ * } catch (error) {
+ *   showErrorMessage("Errore nell'aggiornamento password");
+ * }
  */
 export async function updateUserPassword(newPassword){
     try {
@@ -546,12 +567,25 @@ export async function updateUserPassword(newPassword){
 }
 
 /**
- * Aggiorna array favourites utente loggato
- * API pubblica per gestione ricette preferite
+ * Gestisce toggle favourites per ricetta specifica (add/remove automatico)
+ * API pubblica per gestione ricette preferite con logica toggle
  * 
- * @param {Array} newFavouritesArray - Array ID ricette preferite
- * @returns {boolean} true se aggiornamento completato
+ * @async
+ * @param {string} recipeId - ID ricetta da aggiungere/rimuovere dai preferiti
+ * @returns {Promise<boolean>} true se operazione completata
+ * @throws {UserManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
  * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * 
+ * @example
+ * // Toggle preferiti da pagina ricetta
+ * try {
+ *   await updateUserFavourites("recipe_52772");
+ *   const user = searchUserById(getLoggedUserId());
+ *   const isFav = user.favourites.includes("recipe_52772");
+ *   updateFavouriteButton(isFav ? "remove" : "add");
+ * } catch (error) {
+ *   showErrorMessage("Errore nell'aggiornamento preferiti");
+ * }
  */
 export async function updateUserFavourites(recipeId){
     try {
