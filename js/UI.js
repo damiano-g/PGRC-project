@@ -7,7 +7,7 @@
  * @since 2025-08-28
  */
 
-import { getLoggedUserId, searchUserById } from "./usersManagement.js";
+import { getLoggedUserId, isFavourite, searchUserById } from "./usersManagement.js";
 
 
 // ===============================
@@ -220,9 +220,8 @@ export function populateNotesContainer(userNotesArray, container){
     }
 }
 
-export function favBtnDisplay(btn, currentRecipeId){
-    const currentUser = searchUserById(getLoggedUserId());
-    if(currentUser.favourites.some(element => element === currentRecipeId)){
+export function favBtnDisplay(btn, userLogged, userFavourite){
+    if(userLogged && userFavourite){
         btn.innerText = "Rimuovi dai preferiti";
     }else{
         btn.innerText = "Aggiungi ai preferiti";

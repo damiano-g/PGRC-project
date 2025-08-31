@@ -13,7 +13,7 @@
 
 import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
 import { FullRecipe, Note } from "../data-models.js";          // Modello dati completo ricetta
-import { getLoggedUserId, searchUserById, searchUserbyName, updateUserFavourites, updateUserNotes } from "../usersManagement.js";
+import { addNewUserNote, deleteUserNote, getLoggedUserId, isFavourite, searchUserById, searchUserbyName, updateUserFavourites, } from "../usersManagement.js";
 import { favBtnDisplay, populateNotesContainer } from "../UI.js";
 
 // ===============================
@@ -42,8 +42,12 @@ let detailedRecipeId;
 const favBtn = document.getElementById("favBtn");
 
 favBtn.addEventListener("click", () => {
-   updateUserFavourites(detailedRecipeId);
-   favBtnDisplay(favBtn, detailedRecipeId);
+   if(getLoggedUserId()){
+      updateUserFavourites(detailedRecipeId);
+      favBtnDisplay(favBtn, true, isFavourite());
+   }else{
+      window.location.href = "./login.html";
+   }
 });
 
 noteTextInput.addEventListener("input", () => {
@@ -57,8 +61,7 @@ noteTextInput.addEventListener("input", () => {
 noteInsBtn.addEventListener("click", () => {
    try {
       noteInsBtn.disabled = true;
-      const newNote = new Note(detailedRecipeId, String(noteTextInput.value));
-      updateUserNotes(newNote);
+      addNewUserNote(detailedRecipeId, noteTextInput.value); 
       noteTextInput.value = "";
       populateNotesContainer(searchUserById(getLoggedUserId()).notes, userNotesContainer);
       alert("Nota inserita");
@@ -73,7 +76,7 @@ userNotesContainer.addEventListener("click", click => {
    const btn = click.target.closest("button");
    if(btn){
       try {
-         updateUserNotes(btn.dataset.noteId);
+         deleteUserNote(btn.dataset.noteId);
          populateNotesContainer(searchUserById(getLoggedUserId()).notes, userNotesContainer);
          alert("Nota rimossa");
       } catch (error) {
@@ -117,9 +120,9 @@ window.addEventListener("load", async () => {
     // Inserisce il titolo della ricetta nella pagina
     recipeTitle.innerText = recipeDetails.name;
 
+    favBtnDisplay(favBtn, getLoggedUserId(), isFavourite(detailedRecipeId));
+    
     if(getLoggedUserId()){
-      favBtnDisplay(favBtn, detailedRecipeId);
-      favBtn.classList.remove("d-none");
       notesSection.classList.remove("d-none");
       const recipeNotes = searchUserById(getLoggedUserId()).notes.filter(element => element.recipeId === detailedRecipeId);
       populateNotesContainer(recipeNotes, userNotesContainer);

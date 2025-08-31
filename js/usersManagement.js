@@ -639,23 +639,49 @@ export async function updateUserFavourites(recipeId){
  *   await updateUserNotes(newNote); // Aggiunge oggetto completo
  * }
  */
-export async function updateUserNotes(userNote){
+async function updateUserNotes(recipeId = null, text = null, noteId = null){
     try {
         const userNotesArray = searchUserById(retreiveLoggedUser()).notes;
-        if(userNote instanceof Note){
-            userNotesArray.push(userNote);
+ 
+        if((text && recipeId) && !noteId){
+            userNotesArray.push(new Note(recipeId, text));
         }else{
-            const index = userNotesArray.findIndex(element => element.id === userNote);
-            userNotesArray.splice(index, 1);
+            if(!(text && recipeId) && noteId){
+                const index = userNotesArray.findIndex(element => element.id === userNote);
+                userNotesArray.splice(index, 1);
+            }else{
+                throw new Error("Wrong data format");
+                
+            }
         }
+        
         await updateUserData("notes", userNotesArray);
         return true;
     } catch (error) {
         console.error(error);
         throw error;
-    }
-    
+    }    
 }
+
+export async function addNewUserNote(recipeId, text){
+    try {
+        return updateUserNotes(new Note(recipeId, text));
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function deleteUserNote(noteId) {
+    try {
+        return updateUserNotes(null, null, noteId);
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+
 
 // ============================================================================
 // AUTENTICAZIONE - VERIFICA CREDENZIALI
@@ -705,6 +731,12 @@ export async function admitUser(userId, providedPassword){
     } catch (error) {
         console.error(error);
         throw error;
-    }
-    
+    }  
+}
+
+
+// DB INTERROGATION
+
+export function isFavourite(recipeId){
+    return searchUserById(retreiveLoggedUser()).favourites.some(element => element === recipeId);
 }
