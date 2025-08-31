@@ -32,24 +32,56 @@ const ingredientsList = document.getElementById("ingredients-list");
 /** @type {HTMLElement} Container per le istruzioni di preparazione */
 const instructionsSteps = document.getElementById("instructions-steps");
 
+/** @type {HTMLElement} Sezione note personali - mostrata solo se utente loggato */
 const notesSection = document.getElementById("notes");
+
+/** @type {HTMLElement} Container per rendering note utente esistenti */
 const userNotesContainer = document.getElementById("user-notes");
+
+/** @type {HTMLInputElement} Input field per testo nuova nota */
 const noteTextInput = document.getElementById("insert-note");
+
+/** @type {HTMLButtonElement} Pulsante inserimento nota */
 const noteInsBtn = document.querySelector("form .btn");
 
-
-let detailedRecipeId;
+/** @type {HTMLButtonElement} Pulsante toggle preferiti */
 const favBtn = document.getElementById("favBtn");
 
+/** @type {string} ID ricetta corrente estratto da URL */
+let detailedRecipeId;
+
+
+// ===============================
+// EVENT LISTENERS - GESTIONE PREFERITI
+// ===============================
+
+/**
+ * Event listener per toggle preferiti
+ * Gestisce aggiunta/rimozione ricetta dai preferiti con controllo login
+ * Try/catch gestisce errori storage e user feedback
+ */
 favBtn.addEventListener("click", () => {
    if(getLoggedUserId()){
-      updateUserFavourites(detailedRecipeId);
-      favBtnDisplay(favBtn, true, isFavourite());
+      try {
+         updateUserFavourites(detailedRecipeId);
+         favBtnDisplay(favBtn, true, isFavourite()); // Aggiornamento UI stato button
+      } catch (error) {
+         console.error(error); //Da implementare meglio il comportamento in caso di errore
+         alert("Errore: preferiti non aggiornati");
+      }
    }else{
       window.location.href = "./login.html";
    }
 });
 
+// ===============================
+// EVENT LISTENERS - GESTIONE NOTE
+// ===============================
+
+/**
+ * Event listener per abilitazione dinamica pulsante inserimento nota
+ * Abilita pulsante solo se input contiene testo
+ */
 noteTextInput.addEventListener("input", () => {
    if(noteTextInput.value.length > 0){
       noteInsBtn.disabled = false;
@@ -58,9 +90,14 @@ noteTextInput.addEventListener("input", () => {
    }
 });
 
+/**
+ * Event listener per inserimento nuova nota
+ * Operazione atomica con UI cleanup e refresh container note
+ * Include error handling per ripristino stato button
+ */
 noteInsBtn.addEventListener("click", () => {
    try {
-      noteInsBtn.disabled = true;
+      noteInsBtn.disabled = true; // Previene doppi inserimenti
       addNewUserNote(detailedRecipeId, noteTextInput.value); 
       noteTextInput.value = "";
       populateNotesContainer(searchUserById(getLoggedUserId()).notes, userNotesContainer);
@@ -72,6 +109,11 @@ noteInsBtn.addEventListener("click", () => {
    }
 });
 
+/**
+ * Event listener per eliminazione note (event delegation)
+ * Gestisce click su pulsanti delete all'interno del container note
+ * Pattern event delegation per buttons dinamicamente creati
+ */
 userNotesContainer.addEventListener("click", click => {
    const btn = click.target.closest("button");
    if(btn){
@@ -81,7 +123,7 @@ userNotesContainer.addEventListener("click", click => {
          alert("Nota rimossa");
       } catch (error) {
          console.error(error)
-         alert("Errore");
+         alert("Errore, nota non rimossa");
       }
    }
 });
@@ -92,85 +134,95 @@ userNotesContainer.addEventListener("click", click => {
 
 /**
  * Event listener per caricamento iniziale della pagina dettagli
- * Estrae ID ricetta dall'URL e carica tutti i dettagli completi
+ * Orchestrazione completa: URL parsing → API call → data processing → UI population
+ * Gestisce sia contenuto ricetta che features user-specific (preferiti/note)
  */
 window.addEventListener("load", async () => {
+   try {
+      // ===============================
+      // ESTRAZIONE PARAMETRO URL
+      // ===============================
+
+      // Estrae l'id della ricetta dalla query string dell'URL (?id=...)
+      detailedRecipeId = window.location.search.substring(4);
+
+      // ===============================
+      // FETCH E NORMALIZZAZIONE DATI
+      // ===============================
+
+      // Effettua la fetch dei dettagli ricetta tramite l'ID
+      const APIresponse = await fetchById(detailedRecipeId);
+
+      // Crea un oggetto ricetta completo a partire dalla risposta API
+      const recipeDetails = new FullRecipe(APIresponse.meals[0]);
+
+      // ===============================
+      // POPOLAZIONE ELEMENTI UI
+      // ===============================
+
+      // Inserisce il titolo della ricetta nella pagina
+      recipeTitle.innerText = recipeDetails.name;
+
+      // Configurazione pulsante preferiti basata su stato login e preferenze utente
+      favBtnDisplay(favBtn, getLoggedUserId(), isFavourite(detailedRecipeId));
+
+      // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
+      if(getLoggedUserId()){
+         notesSection.classList.remove("d-none");
+         const recipeNotes = searchUserById(getLoggedUserId()).notes.filter(element => element.recipeId === detailedRecipeId);
+         populateNotesContainer(recipeNotes, userNotesContainer);
+      }
+
+      // Inserisce l'immagine della ricetta nella pagina
+      imageBox.innerHTML = `
+            <img src="${recipeDetails.image}" alt="${recipeDetails.name}">
+      `;
+
+      // Popola la lista degli ingredienti
+      recipeDetails.ingredients.forEach(element => {
+            const listItem = document.createElement("li");
+            listItem.innerText = element.name+": "+element.measure;
+            ingredientsList.appendChild(listItem);
+      });
+
+      // Inserisce le istruzioni di preparazione
+      instructionsSteps.innerText = recipeDetails.instructions;
+   } catch (error) {
+      console.error(error);
+      alert("Errore nel caricamento della pagina: si prega di riprovare");
+      window.history.back();
+   }
     
-    // ===============================
-    // ESTRAZIONE PARAMETRO URL
-    // ===============================
-
-    // Estrae l'id della ricetta dalla query string dell'URL (?id=...)
-    detailedRecipeId = window.location.search.substring(4);
-
-    // ===============================
-    // FETCH E NORMALIZZAZIONE DATI
-    // ===============================
-
-    // Effettua la fetch dei dettagli ricetta tramite l'ID
-    const APIresponse = await fetchById(detailedRecipeId);
-
-    // Crea un oggetto ricetta completo a partire dalla risposta API
-    const recipeDetails = new FullRecipe(APIresponse.meals[0]);
-
-    // ===============================
-    // POPOLAZIONE ELEMENTI UI
-    // ===============================
-
-    // Inserisce il titolo della ricetta nella pagina
-    recipeTitle.innerText = recipeDetails.name;
-
-    favBtnDisplay(favBtn, getLoggedUserId(), isFavourite(detailedRecipeId));
-    
-    if(getLoggedUserId()){
-      notesSection.classList.remove("d-none");
-      const recipeNotes = searchUserById(getLoggedUserId()).notes.filter(element => element.recipeId === detailedRecipeId);
-      populateNotesContainer(recipeNotes, userNotesContainer);
-    }
-    
-    // Inserisce l'immagine della ricetta nella pagina
-    imageBox.innerHTML = `
-        <img src="${recipeDetails.image}" alt="${recipeDetails.name}">
-    `;
-
-    // Popola la lista degli ingredienti
-    recipeDetails.ingredients.forEach(element => {
-        const listItem = document.createElement("li");
-        listItem.innerText = element.name+": "+element.measure;
-        ingredientsList.appendChild(listItem);
-    });
-
-    // Inserisce le istruzioni di preparazione
-    instructionsSteps.innerText = recipeDetails.instructions;
 });
 
 // ===============================
-// FLUSSO DI ESECUZIONE
+// FLUSSO DI ESECUZIONE DOCUMENTATO
 // ===============================
 
 /*
 SCENARIO TIPICO - Navigazione da search o carousel:
 
 1. **URL Navigation**:
-   - Utente clicca card/slide da altra pagina
+   - Utente clicka card/slide da altra pagina
    - Browser naviga a recipe-details.html?id=52772
 
-2. **Page Load**:
-   - window.load event triggera il processo
+2. **Page Load Event**:
+   - window.load event triggera il processo di inizializzazione
    - substring(4) estrae "52772" da "?id=52772"
 
-3. **API Call**:
+3. **API Call & Data Processing**:
    - fetchById("52772") richiede dettagli a TheMealDB
    - Riceve response: {meals: [{idMeal: "52772", strMeal: "...", ...}]}
+   - new FullRecipe(APIresponse.meals[0]) normalizza dati API
 
-4. **Data Processing**:
-   - new FullRecipe(APIresponse.meals[0]) normalizza dati
-   - Ingredienti processati in array strutturato
-   - Istruzioni pulite e formattate
-
-5. **UI Population**:
+4. **UI Population - Recipe Content**:
    - Titolo → recipeTitle.innerText
    - Immagine → imageBox.innerHTML con img responsive
-   - Ingredienti → forEach crea li elements
+   - Ingredienti → forEach crea li elements con quantità
    - Istruzioni → instructionsSteps.innerText
+
+5. **UI Population - User Features**:
+   - favBtnDisplay() configura pulsante preferiti basato su login state
+   - Se loggato: mostra sezione note + popola note esistenti per ricetta
+   - Event listeners attivi per interazioni preferiti e note
 */
