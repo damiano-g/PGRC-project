@@ -24,8 +24,8 @@
  * compatibilità con la gestione nativa degli errori JavaScript.
  */
 
-export function UserManagementError(type, message, details = null){
-        this.name = "UserManagementError";
+export function UsersManagementError(type, message, details = null){
+        this.name = "UsersManagementError";
         this.type = type;
         this.message = message;
         this.details = details;
@@ -35,14 +35,24 @@ export function UserManagementError(type, message, details = null){
 // - Crea un nuovo oggetto che ha come prototype Error.prototype.
 // - In questo modo, tutte le istanze di UserManagementError avranno accesso ai metodi e proprietà di Error (come lo stack trace).
 // - Permette di trattare UserManagementError come un vero errore JavaScript nei catch e nei log.
-UserManagementError.prototype = Object.create(Error.prototype);
+UsersManagementError.prototype = Object.create(Error.prototype);
 
 // Imposta la proprietà 'constructor' del prototype su UserManagementError.
 // Quando si verifica il tipo di oggetto (ad esempio con instanceof), il costruttore risulta corretto.
 // Utile per introspezione, serializzazione e per evitare ambiguità se si creano istanze con new.
-UserManagementError.prototype.constructor = UserManagementError;
+UsersManagementError.prototype.constructor = UsersManagementError;
 
+export function ReviewsManagementError(type, message, details = null){
+        this.name = "ReviewsManagementError";
+        this.type = type;
+        this.message = message;
+        this.details = details;
+        this.timestamp = new Date().toISOString();
+}
 
+ReviewsManagementError.prototype = Object.create(Error.prototype);
+
+ReviewsManagementError.prototype.constructor = ReviewsManagementError;
 
 /**
  * Gestore centralizzato degli errori per la gestione utenti.
@@ -56,7 +66,7 @@ UserManagementError.prototype.constructor = UserManagementError;
  * - Per altri tipi o errori generici, mostra un alert con il messaggio generico.
  *
  * Parametri:
- *   @param {Error|UserManagementError} error - Oggetto errore da gestire. Deve avere almeno le proprietà 'type' e 'message'.
+ *   @param {Error|UsersManagementError} error - Oggetto errore da gestire. Deve avere almeno le proprietà 'type' e 'message'.
  *
  * Comportamento:
  *   - Verifica che l'oggetto sia un'istanza di Error.

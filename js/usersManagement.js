@@ -7,7 +7,7 @@
  * @since 2025-08-28
  */
 
-import { UserManagementError, } from "./errorsManagement.js";
+import { UsersManagementError, } from "./errorsManagement.js";
 import { User, Note } from "./data-models.js";
 
 // ============================================================================
@@ -46,14 +46,14 @@ let loggedUserId = "";
  * 
  * @private
  * @returns {Array<User>} Array utenti o array vuoto se storage vuoto
- * @throws {UserManagementError} Se errori di lettura o parsing JSON (tipo "STORAGE")
+ * @throws {UsersManagementError} Se errori di lettura o parsing JSON (tipo "STORAGE")
  */
 function retrieveRegisteredUsers() {
     try{
         const JSONFile = localStorage.getItem(USERS_DB_KEY);
         return JSONFile ? JSON.parse(JSONFile) : [];
     }catch(err){
-        throw new UserManagementError("STORAGE", "Errore di lettura database utenti", err);
+        throw new UsersManagementError("STORAGE", "Errore di lettura database utenti", err);
     }
 }
 
@@ -63,13 +63,13 @@ function retrieveRegisteredUsers() {
  * 
  * @private
  * @returns {string} ID utente loggato o stringa vuota se non presente
- * @throws {UserManagementError} Se errori di lettura sessionStorage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se errori di lettura sessionStorage (tipo "STORAGE")
  */
-function retreiveLoggedUser(){
+function retrieveLoggedUser(){
     try{
         return sessionStorage.getItem(LOGGED_USER_KEY) || "";
     }catch(err){
-        throw new UserManagementError("STORAGE", "Errore di lettura sessione utente", err);
+        throw new UsersManagementError("STORAGE", "Errore di lettura sessione utente", err);
     }
 }
 
@@ -79,13 +79,13 @@ function retreiveLoggedUser(){
  * 
  * @private
  * @param {Array<User>} usersArray - Array utenti da persistere
- * @throws {UserManagementError} Se errori di scrittura o serializzazione (tipo "STORAGE")
+ * @throws {UsersManagementError} Se errori di scrittura o serializzazione (tipo "STORAGE")
  */
 function updateUsersDB(usersArray){
     try{
         localStorage.setItem(USERS_DB_KEY, JSON.stringify(usersArray));
     }catch(error){
-        throw new UserManagementError("STORAGE", "Errore di scrittura database utenti", error);
+        throw new UsersManagementError("STORAGE", "Errore di scrittura database utenti", error);
     }
 }
 
@@ -98,7 +98,7 @@ function updateUsersDB(usersArray){
  * API pubblica per accesso read-only ai dati utenti
  * 
  * @returns {Array<User>} Deep copy array utenti (safe da modifiche esterne)
- * @throws {UserManagementError} Se errori di lettura, fallback array vuoto
+ * @throws {UsersManagementError} Se errori di lettura, fallback array vuoto
  * 
  * @example
  * // Accesso sicuro lista utenti
@@ -135,7 +135,7 @@ export function getRegisteredUsers() {
  */
 export function getLoggedUserId() {
     try {
-        loggedUserId = retreiveLoggedUser();
+        loggedUserId = retrieveLoggedUser();
         return loggedUserId;
     } catch (error) {
         console.error("Errore recupero sessione:", error);
@@ -149,7 +149,7 @@ export function getLoggedUserId() {
  * API pubblica per gestione stato login post-autenticazione
  * 
  * @param {string} userId - ID univoco utente da impostare come loggato
- * @throws {UserManagementError} Se errori di scrittura sessionStorage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se errori di scrittura sessionStorage (tipo "STORAGE")
  * 
  * @example
  * // Post-login: imposta utente come loggato
@@ -165,7 +165,7 @@ export function updateLoggedUser(userId){
         sessionStorage.setItem(LOGGED_USER_KEY, userId);
         loggedUserId = userId; // Aggiorna cache locale
     }catch(error){
-        throw new UserManagementError("STORAGE", "Errore aggiornamento sessione", error);
+        throw new UsersManagementError("STORAGE", "Errore aggiornamento sessione", error);
     }
 }
 
@@ -180,14 +180,14 @@ export function updateLoggedUser(userId){
  * @private
  * @param {string} chosenUsername - Username da verificare
  * @returns {boolean} true se disponibile
- * @throws {UserManagementError} Se username già in uso (tipo "VALIDATION")
- * @throws {UserManagementError} Se errori di lettura storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se username già in uso (tipo "VALIDATION")
+ * @throws {UsersManagementError} Se errori di lettura storage (tipo "STORAGE")
  */
 function authUsername(chosenUsername){
     const actualRegUsersArray = retrieveRegisteredUsers();
     
     if(actualRegUsersArray.some(user => user.username === chosenUsername)){
-        throw new UserManagementError("VALIDATION", "Username già in uso");
+        throw new UsersManagementError("VALIDATION", "Username già in uso");
     }
     
     return true;
@@ -200,14 +200,14 @@ function authUsername(chosenUsername){
  * @private
  * @param {string} chosenEmail - Email da verificare
  * @returns {boolean} true se disponibile
- * @throws {UserManagementError} Se email già in uso (tipo "VALIDATION")
- * @throws {UserManagementError} Se errori di lettura storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se email già in uso (tipo "VALIDATION")
+ * @throws {UsersManagementError} Se errori di lettura storage (tipo "STORAGE")
  */
 function authEmail(chosenEmail){
     const actualRegUsersArray = retrieveRegisteredUsers();
 
     if(actualRegUsersArray.some(user => user.email === chosenEmail)){
-        throw new UserManagementError("VALIDATION", "Email già in uso");
+        throw new UsersManagementError("VALIDATION", "Email già in uso");
     }
 
     return true;
@@ -288,8 +288,8 @@ async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
  * @param {string} chosenEmail - Email desiderata  
  * @param {string} chosenPassword - Password in chiaro
  * @returns {Promise<User>} Utente creato e salvato
- * @throws {UserManagementError} Se username/email già in uso (tipo "VALIDATION")
- * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se username/email già in uso (tipo "VALIDATION")
+ * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * @throws {Error} Se errori durante hashing
  * 
  * @example
@@ -328,8 +328,8 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
  * Rimuove utente attualmente loggato dal database
  * Operazione atomica per self-deletion account
  * 
- * @throws {UserManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
  * // Eliminazione account corrente
@@ -345,11 +345,11 @@ export function deleteLoggedUser(){
 
     try {
         const actualRegUsersArray = retrieveRegisteredUsers();
-        const currentUserId = retreiveLoggedUser();
+        const currentUserId = retrieveLoggedUser();
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            throw new UserManagementError("NOT_FOUND", "Utente loggato non trovato per eliminazione");
+            throw new UsersManagementError("NOT_FOUND", "Utente loggato non trovato per eliminazione");
         }
         
         actualRegUsersArray.splice(index, 1);
@@ -372,8 +372,8 @@ export function deleteLoggedUser(){
  * @param {string} searchField - Campo da usare per ricerca ("username", "id", "email")
  * @param {string} searchValue - Valore da cercare nel campo
  * @returns {User} Deep copy oggetto utente trovato
- * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se errori di lettura (tipo "STORAGE")
+ * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se errori di lettura (tipo "STORAGE")
  */
 function searchUser(searchField, searchValue){
     try {
@@ -381,7 +381,7 @@ function searchUser(searchField, searchValue){
         const index = actualRegUsersArray.findIndex(user => user[searchField] === searchValue);
      
         if(index < 0){
-            throw new UserManagementError("NOT_FOUND", `Utente non trovato per ${searchField}: ${searchValue}`);
+            throw new UsersManagementError("NOT_FOUND", `Utente non trovato per ${searchField}: ${searchValue}`);
         }
 
         return structuredClone(actualRegUsersArray[index]);
@@ -400,18 +400,18 @@ function searchUser(searchField, searchValue){
  * @param {string} field - Nome campo da aggiornare
  * @param {string|Array} newValue - Nuovo valore da assegnare
  * @param {boolean} [needsHashing=false] - Se true, applica hash SHA-256
- * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  */
 async function updateUserData(field, newValue, needsHashing = null) {
     try {
         // Atomic update operation
         const actualRegUsersArray = retrieveRegisteredUsers();
-        const currentUserId = retreiveLoggedUser();
+        const currentUserId = retrieveLoggedUser();
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            throw new UserManagementError("NOT_FOUND", "Utente loggato non trovato per aggiornamento");
+            throw new UsersManagementError("NOT_FOUND", "Utente loggato non trovato per aggiornamento");
         }
 
         const processedValue = (needsHashing ? await hashString(newValue) : newValue);
@@ -435,7 +435,7 @@ async function updateUserData(field, newValue, needsHashing = null) {
  * 
  * @param {string} username - Username da cercare
  * @returns {User} Deep copy oggetto utente (safe da modifiche)
- * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * 
  * @example
  * // Lookup utente per login
@@ -456,7 +456,7 @@ export function searchUserbyName(username) {
  * 
  * @param {string} userId - ID univoco da cercare
  * @returns {User} Deep copy oggetto utente (safe da modifiche)
- * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * 
  * @example
  * // Recupero profilo utente loggato
@@ -483,8 +483,8 @@ export function searchUserById(userId){
  * @async
  * @param {string} newUsername - Nuovo username desiderato
  * @returns {Promise<boolean>} true se aggiornamento completato
- * @throws {UserManagementError} Se username già in uso (tipo "VALIDATION")
- * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se username già in uso (tipo "VALIDATION")
+ * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
  * // Aggiornamento username da form profilo
@@ -513,8 +513,8 @@ export async function updateUserUsername(newUsername){
  * @async
  * @param {string} newEmail - Nuova email desiderata
  * @returns {Promise<boolean>} true se aggiornamento completato
- * @throws {UserManagementError} Se email già in uso (tipo "VALIDATION")
- * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se email già in uso (tipo "VALIDATION")
+ * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
  * // Aggiornamento email da form profilo
@@ -544,7 +544,7 @@ export async function updateUserEmail(newEmail){
  * @async
  * @param {string} newPassword - Nuova password in chiaro
  * @returns {Promise<boolean>} true se aggiornamento completato
- * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * @throws {Error} Se errori durante hashing
  * 
  * @example
@@ -573,8 +573,8 @@ export async function updateUserPassword(newPassword){
  * @async
  * @param {string} recipeId - ID ricetta da aggiungere/rimuovere dai preferiti
  * @returns {Promise<boolean>} true se operazione completata
- * @throws {UserManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
  * // Toggle preferiti da pagina ricetta
@@ -589,7 +589,7 @@ export async function updateUserPassword(newPassword){
  */
 export async function updateUserFavourites(recipeId){
     try {
-        const userFavouritesArray = searchUserById(retreiveLoggedUser()).favourites;
+        const userFavouritesArray = searchUserById(retrieveLoggedUser()).favourites;
         const index = userFavouritesArray.findIndex(element => element === recipeId);
         if(index < 0){
             userFavouritesArray.push(recipeId);
@@ -615,9 +615,9 @@ export async function updateUserFavourites(recipeId){
  *   - Note object: Istanza Note completa da aggiungere alla collezione
  *   - String: ID nota esistente da cercare e rimuovere
  * @returns {Promise<boolean>} true se operazione completata con successo
- * @throws {UserManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se errori di storage durante aggiornamento (tipo "STORAGE")
- * @throws {UserManagementError} Se nota da rimuovere non trovata (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se errori di storage durante aggiornamento (tipo "STORAGE")
+ * @throws {UsersManagementError} Se nota da rimuovere non trovata (tipo "NOT_FOUND")
  * 
  * @example
  * // Aggiunta nuova nota
@@ -641,7 +641,7 @@ export async function updateUserFavourites(recipeId){
  */
 async function updateUserNotes(recipeId = null, text = null, noteId = null){
     try {
-        const userNotesArray = searchUserById(retreiveLoggedUser()).notes;
+        const userNotesArray = searchUserById(retrieveLoggedUser()).notes;
  
         if((text && recipeId) && !noteId){
             userNotesArray.push(new Note(recipeId, text));
@@ -695,8 +695,8 @@ export async function deleteUserNote(noteId) {
  * @param {string} userId - ID univoco utente da autenticare
  * @param {string} providedPassword - Password in chiaro fornita
  * @returns {Promise<boolean>} true se credenziali corrette, false altrimenti
- * @throws {UserManagementError} Se utente non trovato (tipo "NOT_FOUND")
- * @throws {UserManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * @throws {Error} Se errori durante hashing password fornita
  * 
  * @example
@@ -721,7 +721,7 @@ export async function admitUser(userId, providedPassword){
         const index = actualRegUsersArray.findIndex(user => user.id === userId);
         
         if(index < 0){
-            throw new UserManagementError("NOT_FOUND", "Utente non trovato per autenticazione");
+            throw new UsersManagementError("NOT_FOUND", "Utente non trovato per autenticazione");
         }
         
         const storedHash = actualRegUsersArray[index].password;
@@ -738,7 +738,7 @@ export async function admitUser(userId, providedPassword){
 // DB INTERROGATION
 
 export function isFavourite(recipeId){
-    const loggedUserId = retreiveLoggedUser();
+    const loggedUserId = retrieveLoggedUser();
     return loggedUserId && searchUserById(loggedUserId).favourites.some(element => element === recipeId);
 }
 
@@ -750,7 +750,7 @@ export function isFavourite(recipeId){
  */
 export function getUserNotes(recipeId = null){
     try{
-        const notesaArray = searchUserById(retreiveLoggedUser()).notes || [];
+        const notesaArray = searchUserById(retrieveLoggedUser()).notes || [];
         if(recipeId){
             return notesaArray.filter(element => element.recipeId === recipeId) || [];
         }
