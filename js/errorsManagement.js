@@ -43,7 +43,7 @@ UsersManagementError.prototype = Object.create(Error.prototype);
 UsersManagementError.prototype.constructor = UsersManagementError;
 
 export function ReviewsManagementError(type, message, details = null){
-        this.name = "ReviewsManagementError";
+        this.name = "StorageManagementError";
         this.type = type;
         this.message = message;
         this.details = details;
@@ -53,6 +53,19 @@ export function ReviewsManagementError(type, message, details = null){
 ReviewsManagementError.prototype = Object.create(Error.prototype);
 
 ReviewsManagementError.prototype.constructor = ReviewsManagementError;
+
+
+export function StorageManagementError(type, message, details = null){
+        this.name = "ReviewsManagementError";
+        this.type = type;
+        this.message = message;
+        this.details = details;
+        this.timestamp = new Date().toISOString();
+}
+
+StorageManagementError.prototype = Object.create(Error.prototype);
+
+StorageManagementError.prototype.constructor = StorageManagementError;
 
 /**
  * Gestore centralizzato degli errori per la gestione utenti.
