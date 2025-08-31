@@ -13,7 +13,7 @@
 
 import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
 import { FullRecipe, Note } from "../data-models.js";          // Modello dati completo ricetta
-import { addNewUserNote, deleteUserNote, getLoggedUserId, isFavourite, searchUserById, searchUserbyName, updateUserFavourites, } from "../usersManagement.js";
+import { addNewUserNote, deleteUserNote, getLoggedUserId, getUserNotes, isFavourite, searchUserById, searchUserbyName, updateUserFavourites, } from "../usersManagement.js";
 import { favBtnDisplay, populateNotesContainer } from "../UI.js";
 
 // ===============================
@@ -48,7 +48,7 @@ const noteInsBtn = document.querySelector("form .btn");
 const favBtn = document.getElementById("favBtn");
 
 /** @type {string} ID ricetta corrente estratto da URL */
-let detailedRecipeId;
+const detailedRecipeId = window.location.search.substring(4);
 
 
 // ===============================
@@ -64,7 +64,7 @@ favBtn.addEventListener("click", () => {
    if(getLoggedUserId()){
       try {
          updateUserFavourites(detailedRecipeId);
-         favBtnDisplay(favBtn, true, isFavourite()); // Aggiornamento UI stato button
+         favBtnDisplay(favBtn, true, isFavourite(detailedRecipeId)); // Aggiornamento UI stato button
       } catch (error) {
          console.error(error); //Da implementare meglio il comportamento in caso di errore
          alert("Errore: preferiti non aggiornati");
@@ -100,7 +100,7 @@ noteInsBtn.addEventListener("click", () => {
       noteInsBtn.disabled = true; // Previene doppi inserimenti
       addNewUserNote(detailedRecipeId, noteTextInput.value); 
       noteTextInput.value = "";
-      populateNotesContainer(searchUserById(getLoggedUserId()).notes, userNotesContainer);
+      populateNotesContainer(getUserNotes(detailedRecipeId), userNotesContainer);
       alert("Nota inserita");
    } catch (error) {
       noteInsBtn.disabled = false;
@@ -119,7 +119,7 @@ userNotesContainer.addEventListener("click", click => {
    if(btn){
       try {
          deleteUserNote(btn.dataset.noteId);
-         populateNotesContainer(searchUserById(getLoggedUserId()).notes, userNotesContainer);
+         populateNotesContainer(getUserNotes(detailedRecipeId), userNotesContainer);
          alert("Nota rimossa");
       } catch (error) {
          console.error(error)
@@ -144,7 +144,7 @@ window.addEventListener("load", async () => {
       // ===============================
 
       // Estrae l'id della ricetta dalla query string dell'URL (?id=...)
-      detailedRecipeId = window.location.search.substring(4);
+      //detailedRecipeId = window.location.search.substring(4);
 
       // ===============================
       // FETCH E NORMALIZZAZIONE DATI
@@ -169,13 +169,12 @@ window.addEventListener("load", async () => {
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
       if(getLoggedUserId()){
          notesSection.classList.remove("d-none");
-         const recipeNotes = searchUserById(getLoggedUserId()).notes.filter(element => element.recipeId === detailedRecipeId);
-         populateNotesContainer(recipeNotes, userNotesContainer);
+         populateNotesContainer(getUserNotes(detailedRecipeId), userNotesContainer);
       }
 
       // Inserisce l'immagine della ricetta nella pagina
       imageBox.innerHTML = `
-            <img src="${recipeDetails.image}" alt="${recipeDetails.name}">
+         <img src="${recipeDetails.image}" alt="${recipeDetails.name}">
       `;
 
       // Popola la lista degli ingredienti

@@ -647,7 +647,7 @@ async function updateUserNotes(recipeId = null, text = null, noteId = null){
             userNotesArray.push(new Note(recipeId, text));
         }else{
             if(!(text && recipeId) && noteId){
-                const index = userNotesArray.findIndex(element => element.id === userNote);
+                const index = userNotesArray.findIndex(element => element.id === noteId);
                 userNotesArray.splice(index, 1);
             }else{
                 throw new Error("Wrong data format");
@@ -665,7 +665,7 @@ async function updateUserNotes(recipeId = null, text = null, noteId = null){
 
 export async function addNewUserNote(recipeId, text){
     try {
-        return updateUserNotes(new Note(recipeId, text));
+        return updateUserNotes(recipeId, text);
     } catch (error) {
         console.error(error);
         throw error;
@@ -738,5 +738,25 @@ export async function admitUser(userId, providedPassword){
 // DB INTERROGATION
 
 export function isFavourite(recipeId){
-    return searchUserById(retreiveLoggedUser()).favourites.some(element => element === recipeId);
+    const loggedUserId = retreiveLoggedUser();
+    return loggedUserId && searchUserById(loggedUserId).favourites.some(element => element === recipeId);
 }
+
+/**
+ * Returns notes array filtered by recipe if recipe id is provided
+ * NB -> returns a deep copy of the array
+ * @param {String} recipeId - optional
+ * @returns {Array} - Filtered by recipeId if provided
+ */
+export function getUserNotes(recipeId = null){
+    try{
+        const notesaArray = searchUserById(retreiveLoggedUser()).notes || [];
+        if(recipeId){
+            return notesaArray.filter(element => element.recipeId === recipeId) || [];
+        }
+        return notesaArray;
+    }catch(error){
+        console.error(error);
+        throw error;
+    }
+};
