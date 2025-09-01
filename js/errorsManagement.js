@@ -1,29 +1,47 @@
+/**
+ * @fileoverview Sistema centralizzato per gestione errori custom multi-modulo
+ * @description Definisce error classes specializzate per ogni dominio applicativo
+ * con gestione unificata UI e debugging capabilities
+ * @author damia
+ * @version 1.0.0
+ * @since 2025-08-28
+ */
+
 // ============================================================================
-// ERROR HANDLING
+// CUSTOM ERROR CLASSES PER DOMINI APPLICATIVI
 // ============================================================================
 
 /**
- * Costruttore per errori personalizzati relativi alla gestione utenti.
+ * Classe errore specializzata per operazioni gestione utenti
+ * Estende Error nativo mantenendo compatibility con error handling JavaScript
  * 
- * Crea un oggetto errore che estende il comportamento di Error,
- * permettendo di distinguere e gestire in modo strutturato gli errori specifici
- * del modulo utenti (es. validazione, storage, autenticazione).
+ * @constructor
+ * @param {string} type - Categoria errore per gestione specifica
+ * @param {string} message - Messaggio descrittivo per logging/UI
+ * @param {any} [details=null] - Informazioni aggiuntive per debugging
  * 
- * @param {string} type    - Categoria dell'errore ('VALIDATION', 'STORAGE', 'AUTH', 'NOT_FOUND', ecc.)
- * @param {string} message - Messaggio descrittivo dell'errore, utile per log e debugging
- * @param {any}    details - (Opzionale) Informazioni aggiuntive sull'errore (es. dati di input, stack trace, ecc.)
+ * @property {string} name - Identificatore tipo errore "UsersManagementError"
+ * @property {string} type - Categoria per switch case handling
+ * @property {string} message - Messaggio descrittivo errore
+ * @property {any} details - Dati extra per debugging (stack trace, input data)
+ * @property {string} timestamp - ISO timestamp creazione errore
  * 
- * Proprietà aggiunte:
- *   - name:        Identificatore del tipo di errore ('UserManagementError')
- *   - type:        Categoria dell'errore per gestioni specifiche
- *   - message:     Messaggio descrittivo
- *   - details:     Informazioni extra per debugging o UI
- *   - timestamp:   Data e ora di creazione dell'errore (ISO string)
+ * @example
+ * // Errore validazione con dettagli
+ * throw new UsersManagementError(
+ *   "VALIDATION", 
+ *   "Username già in uso", 
+ *   { attemptedUsername: "mario", existingCount: 2 }
+ * );
  * 
- * Il prototype viene impostato per ereditare da Error, così da mantenere
- * compatibilità con la gestione nativa degli errori JavaScript.
+ * @example
+ * // Errore storage con stack trace originale
+ * try {
+ *   localStorage.setItem(key, data);
+ * } catch (storageError) {
+ *   throw new UsersManagementError("STORAGE", "Quota exceeded", storageError);
+ * }
  */
-
 export function UsersManagementError(type, message, details = null){
         this.name = "UsersManagementError";
         this.type = type;
@@ -32,18 +50,46 @@ export function UsersManagementError(type, message, details = null){
         this.timestamp = new Date().toISOString();
 }
 
-// - Crea un nuovo oggetto che ha come prototype Error.prototype.
-// - In questo modo, tutte le istanze di UserManagementError avranno accesso ai metodi e proprietà di Error (come lo stack trace).
-// - Permette di trattare UserManagementError come un vero errore JavaScript nei catch e nei log.
+/**
+ * Setup prototype chain per ereditarietà Error nativa
+ * Garantisce compatibility con instanceof Error e error handling standard
+ */
 UsersManagementError.prototype = Object.create(Error.prototype);
-
-// Imposta la proprietà 'constructor' del prototype su UserManagementError.
-// Quando si verifica il tipo di oggetto (ad esempio con instanceof), il costruttore risulta corretto.
-// Utile per introspezione, serializzazione e per evitare ambiguità se si creano istanze con new.
 UsersManagementError.prototype.constructor = UsersManagementError;
 
+/**
+ * Classe errore specializzata per operazioni gestione recensioni
+ * Pattern identico a UsersManagementError per consistency API
+ * 
+ * @constructor
+ * @param {string} type - Categoria errore ("VALIDATION", "STORAGE", "NOT_FOUND")
+ * @param {string} message - Messaggio descrittivo per logging/UI
+ * @param {any} [details=null] - Informazioni aggiuntive per debugging
+ * 
+ * @property {string} name - Identificatore tipo errore "ReviewsManagementError"
+ * @property {string} type - Categoria per switch case handling
+ * @property {string} message - Messaggio descrittivo errore
+ * @property {any} details - Dati extra per debugging
+ * @property {string} timestamp - ISO timestamp creazione errore
+ * 
+ * @example
+ * // Errore validazione rating
+ * throw new ReviewsManagementError(
+ *   "VALIDATION", 
+ *   "Rating deve essere tra 1 e 5", 
+ *   { providedRating: 7, validRange: [1,5] }
+ * );
+ * 
+ * @example
+ * // Errore ricetta non trovata
+ * throw new ReviewsManagementError(
+ *   "NOT_FOUND", 
+ *   "Ricetta non trovata per review", 
+ *   { recipeId: "recipe_123", searchAttempts: 3 }
+ * );
+ */
 export function ReviewsManagementError(type, message, details = null){
-        this.name = "StorageManagementError";
+        this.name = "ReviewsManagementError"; // ← FIX: Era "StorageManagementError"
         this.type = type;
         this.message = message;
         this.details = details;
@@ -51,12 +97,41 @@ export function ReviewsManagementError(type, message, details = null){
 }
 
 ReviewsManagementError.prototype = Object.create(Error.prototype);
-
 ReviewsManagementError.prototype.constructor = ReviewsManagementError;
 
-
+/**
+ * Classe errore specializzata per operazioni storage layer
+ * Gestisce errori localStorage, sessionStorage, database operations
+ * 
+ * @constructor
+ * @param {string} type - Categoria errore ("READ", "WRITE", "PARSE", "QUOTA")
+ * @param {string} message - Messaggio descrittivo per logging/UI
+ * @param {any} [details=null] - Informazioni aggiuntive per debugging
+ * 
+ * @property {string} name - Identificatore tipo errore "StorageManagementError"
+ * @property {string} type - Categoria per switch case handling
+ * @property {string} message - Messaggio descrittivo errore
+ * @property {any} details - Dati extra per debugging
+ * @property {string} timestamp - ISO timestamp creazione errore
+ * 
+ * @example
+ * // Errore parsing JSON malformato
+ * throw new StorageManagementError(
+ *   "PARSE", 
+ *   "JSON malformato in localStorage", 
+ *   { storageKey: "users", rawData: "invalid{json" }
+ * );
+ * 
+ * @example
+ * // Errore quota storage
+ * throw new StorageManagementError(
+ *   "QUOTA", 
+ *   "Spazio localStorage esaurito", 
+ *   { attemptedSize: "2MB", availableSpace: "500KB" }
+ * );
+ */
 export function StorageManagementError(type, message, details = null){
-        this.name = "ReviewsManagementError";
+        this.name = "StorageManagementError"; // ← FIX: Era "ReviewsManagementError"
         this.type = type;
         this.message = message;
         this.details = details;
@@ -64,50 +139,76 @@ export function StorageManagementError(type, message, details = null){
 }
 
 StorageManagementError.prototype = Object.create(Error.prototype);
-
 StorageManagementError.prototype.constructor = StorageManagementError;
 
+// ============================================================================
+// ERROR HANDLING CENTRALIZZATO UI
+// ============================================================================
+
 /**
- * Gestore centralizzato degli errori per la gestione utenti.
- *
- * Riceve un oggetto errore (idealmente istanza di UserManagementError o Error)
- * e mostra un messaggio di alert specifico in base alla categoria dell'errore (type).
- *
- * - Se l'errore è di tipo 'VALIDATION', mostra un alert con il messaggio di validazione.
- * - Se l'errore è di tipo 'STORAGE', mostra un alert relativo a problemi di storage.
- * - Se l'errore è di tipo 'AUTH', mostra un alert per errori di autenticazione.
- * - Per altri tipi o errori generici, mostra un alert con il messaggio generico.
- *
- * Parametri:
- *   @param {Error|UsersManagementError} error - Oggetto errore da gestire. Deve avere almeno le proprietà 'type' e 'message'.
- *
- * Comportamento:
- *   - Verifica che l'oggetto sia un'istanza di Error.
- *   - In base alla proprietà 'type', seleziona il messaggio di alert più appropriato.
- *   - Permette di centralizzare la gestione degli errori UI, evitando duplicazione di codice nei vari moduli.
- *
- * Esempio d'uso:
- *   try {
- *     // ...logica che può generare errori...
- *   } catch (err) {
- *     handleUserError(err);
- *   }
+ * Gestore centralizzato errori con alerting personalizzato per categoria
+ * Fornisce UI feedback consistency e logging centralizzato per debugging
+ * 
+ * @param {Error|UsersManagementError|ReviewsManagementError|StorageManagementError} error 
+ *        Oggetto errore da gestire - deve implementare properties 'type' e 'message'
+ * 
+ * @description
+ * Switch handler per categorie errore:
+ * - VALIDATION: Errori input utente, duplicati, constraint violations
+ * - STORAGE: Errori persistence layer, quota, access permissions
+ * - AUTH: Errori autenticazione, autorizzazione, sessioni
+ * - NOT_FOUND: Errori ricerca entità, risorse mancanti
+ * - DEFAULT: Fallback per errori non categorizzati
+ * 
+ * @example
+ * // Gestione errore validation
+ * try {
+ *   addNewUser("", "invalid-email", "123");
+ * } catch (error) {
+ *   handleUserError(error); // → "Errore di validazione: Email già in uso"
+ * }
+ * 
+ * @example
+ * // Gestione errore storage con logging
+ * try {
+ *   updateUsersDB(largeData);
+ * } catch (error) {
+ *   console.error("Storage error details:", error.details);
+ *   handleUserError(error); // → "Errore di storage: Quota exceeded"
+ * }
+ * 
+ * @example
+ * // Chain error handling per multiple operations
+ * try {
+ *   const user = searchUserbyName("mario");
+ *   const isAuth = await admitUser(user.id, password);
+ *   updateLoggedUser(user.id);
+ * } catch (error) {
+ *   handleUserError(error); // Gestisce qualsiasi errore nella chain
+ * }
+ * 
+ * @todo Considera aggiungere logging levels (debug, info, warn, error)
+ * @todo Implementa toast notifications invece di alert per UX migliore
+ * @todo Aggiungi error reporting remoto per production monitoring
  */
 export function handleUserError(error) {
 
     if(error instanceof Error){
         switch(error.type){
             case 'VALIDATION':
-            alert(`Errore di validazione: ${error.message}`);
-            break;
-        case 'STORAGE':
-            alert(`Errore di storage: ${error.message}`);
-            break;
-        case 'AUTH':
-            alert(`Errore di autenticazione: ${error.message}`);
-            break;
-        default:
-            alert(`Errore: ${error.message}`);
+                alert(`Errore di validazione: ${error.message}`);
+                break;
+            case 'STORAGE':
+                alert(`Errore di storage: ${error.message}`);
+                break;
+            case 'AUTH':
+                alert(`Errore di autenticazione: ${error.message}`);
+                break;
+            case 'NOT_FOUND':
+                alert(`Risorsa non trovata: ${error.message}`);
+                break;
+            default:
+                alert(`Errore: ${error.message}`);
         }
     }
 }
