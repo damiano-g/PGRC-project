@@ -60,7 +60,7 @@ export function getRegisteredUsers() {
     }catch(error){
         console.error("Errore recupero utenti:", error);
         registeredUsers = [];
-        return [];
+        throw error;
     }
 }
 
@@ -88,7 +88,7 @@ export function getLoggedUserId() {
     } catch (error) {
         console.error("Errore recupero sessione:", error);
         loggedUserId = "";
-        return "";
+        throw error;
     } 
 }
 
@@ -558,8 +558,12 @@ export async function hashString(originalString) {
  * }
  */
 export function isFavourite(recipeId){
-    const loggedUserId = getLoggedUserId();
-    return loggedUserId && searchUserById(loggedUserId).favourites.some(element => element === recipeId);
+    try {
+        const loggedUserId = getLoggedUserId();
+        return loggedUserId && searchUserById(loggedUserId).favourites.some(element => element === recipeId);
+    } catch (error) {
+        throw error;
+    }
 }
 
 /**

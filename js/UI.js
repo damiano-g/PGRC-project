@@ -228,6 +228,14 @@ export function favBtnDisplay(btn, userLogged, userFavourite){
     }
 }
 
+export function revBtnDisplay(btn, userLogged, userReviewed){
+    if(userLogged && userReviewed){
+        btn.innerText = "Rimuovi recensione";
+    }else{
+        btn.innerText = "Aggiungi recensione";
+    }
+}
+
 
 
 // ===============================

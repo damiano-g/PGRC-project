@@ -14,7 +14,8 @@
 import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
 import { FullRecipe, Note } from "../data-models.js";          // Modello dati completo ricetta
 import { addNewUserNote, deleteUserNote, getLoggedUserId, getUserNotes, isFavourite, searchUserById, searchUserbyName, updateUserFavourites, } from "../usersManagement.js";
-import { favBtnDisplay, populateNotesContainer } from "../UI.js";
+import { favBtnDisplay, revBtnDisplay, populateNotesContainer } from "../UI.js";
+import { addReview, deleteReview, isReviewed } from "../reviewsManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -47,6 +48,14 @@ const noteInsBtn = document.querySelector("form .btn");
 /** @type {HTMLButtonElement} Pulsante toggle preferiti */
 const favBtn = document.getElementById("favBtn");
 
+const revBtn = document.getElementById("revBtn");
+const revForm = document.querySelector(".modal .form");
+const revAlertText = document.querySelector(".modal .text");
+const revConfirmBtn = document.querySelector(".modal-footer .btn");
+const revFormInputs = document.querySelectorAll(".modal .form input");
+const tasteRateInput = document.getElementById("tasteRate");
+const difficultyRateInput = document.getElementById("difficultyRate");
+
 /** @type {string} ID ricetta corrente estratto da URL */
 const detailedRecipeId = window.location.search.substring(4);
 
@@ -61,17 +70,58 @@ const detailedRecipeId = window.location.search.substring(4);
  * Try/catch gestisce errori storage e user feedback
  */
 favBtn.addEventListener("click", () => {
-   if(getLoggedUserId()){
-      try {
+   try {
+      if(getLoggedUserId()){
          updateUserFavourites(detailedRecipeId);
          favBtnDisplay(favBtn, true, isFavourite(detailedRecipeId)); // Aggiornamento UI stato button
-      } catch (error) {
-         console.error(error); //Da implementare meglio il comportamento in caso di errore
-         alert("Errore: preferiti non aggiornati");
+      }else{
+         window.location.href = "./login.html";
       }
-   }else{
-      window.location.href = "./login.html";
+   } catch (error) {
+      console.error(error); //Da implementare meglio il comportamento in caso di errore
+      alert("Errore: preferiti non aggiornati");
    }
+});
+
+revFormInputs.forEach(input => input.addEventListener("change", () => {
+   if(Number(tasteRateInput.value) > 0 && Number(difficultyRateInput.value) > 0){
+      revConfirmBtn.disabled = false;
+   }else{
+      revConfirmBtn.disabled = true;
+   }
+}));
+
+revBtn.addEventListener("click", () => {
+   try {
+      const currentUserId = getLoggedUserId();
+      if(currentUserId){
+         if(isReviewed(detailedRecipeId, currentUserId)){
+            revConfirmBtn.onclick = () => {
+               deleteReview(detailedRecipeId, currentUserId);
+               alert("Recensione eliminata");
+               revBtnDisplay(revBtn, true, false);
+               revConfirmBtn.disabled = true;
+            } 
+            revForm.classList.add("d-none");
+            revAlertText.classList.remove("d-none");
+            revConfirmBtn.disabled = false;
+         }else{
+            revConfirmBtn.onclick = () => {
+               addReview(detailedRecipeId, currentUserId, tasteRateInput.value, difficultyRateInput.value);
+               alert("Recensione aggiunta");
+               revBtnDisplay(revBtn, true, true);
+               revConfirmBtn.disabled = true;
+            }
+            revForm.classList.remove("d-none");
+            revAlertText.classList.add("d-none");
+         }
+      }else{
+         window.location.href = "./login.html";
+      }
+   } catch (error) {
+      console.error(error);
+      alert("Recensioni non aggiornate");
+   };
 });
 
 // ===============================
@@ -156,6 +206,9 @@ window.addEventListener("load", async () => {
       // Crea un oggetto ricetta completo a partire dalla risposta API
       const recipeDetails = new FullRecipe(APIresponse.meals[0]);
 
+
+      const currentUserId = getLoggedUserId();
+
       // ===============================
       // POPOLAZIONE ELEMENTI UI
       // ===============================
@@ -164,10 +217,11 @@ window.addEventListener("load", async () => {
       recipeTitle.innerText = recipeDetails.name;
 
       // Configurazione pulsante preferiti basata su stato login e preferenze utente
-      favBtnDisplay(favBtn, getLoggedUserId(), isFavourite(detailedRecipeId));
+      favBtnDisplay(favBtn, currentUserId, isFavourite(detailedRecipeId, currentUserId));
+      revBtnDisplay(revBtn, currentUserId, isReviewed(detailedRecipeId, currentUserId)); // Da valutare unificazione funzione se gestione tramite icone
 
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
-      if(getLoggedUserId()){
+      if(currentUserId){
          notesSection.classList.remove("d-none");
          populateNotesContainer(getUserNotes(detailedRecipeId), userNotesContainer);
       }
