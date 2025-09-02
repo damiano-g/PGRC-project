@@ -265,18 +265,19 @@ FullRecipe.prototype.getIngredients = function (rawRecipeObj){
  * Se ci sono multiple chiavi array, viene processata solo la prima
  * secondo l'ordine restituito da Object.keys() (non garantito per oggetti).
  */
-export function createPreviewArray(itemsObj){
+export function createPreviewArray(itemsObj, itemsType = null){
     
     /** @type {Array<ItemPreview>} Array accumulator per oggetti preview */
     const previewArray = [];
     
     /** @type {string} Nome della prima chiave nell'oggetto response (es. "meals", "categories") */
-    const arrayName = Object.keys(itemsObj)[0];
+    const arrayType = Array.isArray(itemsObj) && itemsType ? itemsType : Object.keys(itemsObj)[0];
+    const originalArray = Array.isArray(itemsObj) && itemsType ? itemsObj : itemsObj[arrayType];
 
     // Itera sull'array contenuto nella risposta API
-    itemsObj[arrayName].forEach(element => {
+    originalArray.forEach(element => {
         /** @type {ItemPreview} Oggetto preview normalizzato dall'elemento raw */
-        const item = new ItemPreview(element, arrayName);
+        const item = new ItemPreview(element, arrayType);
         previewArray.push(item);
     });
 
@@ -292,3 +293,5 @@ export function Review(recipeId, userId, tasteRate, difficultyRate){
     this.id = generateItemId("review");
     this.date = new Date().toDateString();
 }
+
+
