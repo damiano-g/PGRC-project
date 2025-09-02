@@ -94,19 +94,21 @@ function recipeAvgRate(recipeId, ratingType){
     }
 }
 
-export function getTasteAvg(recipeId){
-    try {
-        return recipeAvgRate(recipeId, "tasteRate");
-    } catch (error) {
-        console.error(error);
-    }
-}
+export const RatingFunctions = {
+    getTasteAvg: function(recipeId){
+        try {
+            return recipeAvgRate(recipeId, "tasteRate");
+        } catch (error) {
+            console.error(error);
+        }
+    },
 
-export function getDifficultyAvg(recipeId){
-    try {
-        return recipeAvgRate(recipeId, "difficultyRate");
-    } catch (error) {
-        console.error(error);
+    getDifficultyAvg: function(recipeId){
+        try {
+            return recipeAvgRate(recipeId, "difficultyRate");
+        } catch (error) {
+            console.error(error);
+        }
     }
 }
 

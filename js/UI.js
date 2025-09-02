@@ -7,8 +7,6 @@
  * @since 2025-08-28
  */
 
-import { getLoggedUserId, isFavourite, searchUserById } from "./usersManagement.js";
-
 
 // ===============================
 // CREAZIONE COMPONENTI CARD
@@ -38,7 +36,7 @@ import { getLoggedUserId, isFavourite, searchUserById } from "./usersManagement.
  * const cardElement = createPreviewCard(preview);
  * container.appendChild(cardElement);
  */
-function createPreviewCard(itemPreviewObj){
+function createPreviewCard(itemPreviewObj, ratingFunctions = null){
     
     const card = document.createElement("div");
     card.classList.add("card");
@@ -49,16 +47,36 @@ function createPreviewCard(itemPreviewObj){
     card.dataset.itemId = itemPreviewObj.id;
     card.innerHTML = `
         <div class="row g-0">
-            <div class="col-4">
+            <div class="col-5">
                 <img src="${itemPreviewObj.image}" alt="${itemPreviewObj.name}" class="img-fluid">
             </div>
-            <div class="col-8">
-                <div class="card-body d-flex align-items-center">
-                    <h5 class="card-title mb-0">${itemPreviewObj.name}</h5>
+            <div class="col-7">
+                <div class="row card-body d-flex align-items-center">
+                    <h5 class="card-title mb-3">${itemPreviewObj.name}</h5>
                 </div>
             </div>
         </div>
     `;
+
+    console.log(itemPreviewObj.type);
+    if(itemPreviewObj.type === "meals" && ratingFunctions){
+        const tasteAvg = ratingFunctions.getTasteAvg(itemPreviewObj.id);
+        const difficultyAvg = ratingFunctions.getDifficultyAvg(itemPreviewObj.id);
+
+        const reviews = document.createElement("div");
+        reviews.classList.add("container");
+        reviews.classList.add("ps-4");
+        reviews.innerHTML = `
+            <div class="row">
+                <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteAvg}"></progress></progress>
+            </div>
+            <div class="row">
+                <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyAvg}"></progress></progress>
+            </div>
+        `;
+
+        card.querySelector(".card-body").appendChild(reviews);
+    }
 
     return card;
 };
@@ -96,10 +114,10 @@ function createPreviewCard(itemPreviewObj){
  * La funzione assume che il container sia un elemento DOM valido.
  * Non esegue validazione dell'input per performance.
  */
-export function populatePreviewContainer(previewItemsArray, container){
+export function populatePreviewContainer(previewItemsArray, container, ratingFunctions = null){
     container.innerHTML = "";
     previewItemsArray.forEach(element => {
-        container.appendChild(createPreviewCard(element));
+        container.appendChild(createPreviewCard(element, ratingFunctions));
     });
 };
 
@@ -130,17 +148,25 @@ export function populatePreviewContainer(previewItemsArray, container){
  * const slideElement = createCarouselItem(recipe);
  * carouselInner.appendChild(slideElement);
  */
-function createCarouselItem(itemPreviewObj){
+function createCarouselItem(itemPreviewObj, ratingFunctions){
     const carouselItem = document.createElement("div");
     carouselItem.classList.add("carousel-item");
 
     // Data attribute per identificazione (conversione esplicita a stringa)
+    const tasteAvg = ratingFunctions.getTasteAvg(itemPreviewObj.id);
+    const difficultyAvg = ratingFunctions.getDifficultyAvg(itemPreviewObj.id);
     carouselItem.dataset.itemId = String(itemPreviewObj.id);
 
     carouselItem.innerHTML = `
         <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
         <div class="carousel-caption d-none d-md-block"> <!-- d-none and d-md-block hides captions in smaller viewports -->
             <h5>${itemPreviewObj.name}</h5>
+            <div class="row">
+                <span>Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteAvg}"></progress></progress>
+            </div>
+            <div class="row">
+                <span>Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyAvg}"></progress></progress>
+            </div>
         </div>
     `;
 
@@ -183,11 +209,11 @@ function createCarouselItem(itemPreviewObj){
  * La funzione non attiva automaticamente il primo slide.
  * È responsabilità del codice chiamante aggiungere classe .active.
  */
-export function populateCarousel(itemPreviewArray, carouselInner){
+export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions){
     carouselInner.innerHTML = "";
 
     itemPreviewArray.forEach(element => {
-        carouselInner.appendChild(createCarouselItem(element));
+        carouselInner.appendChild(createCarouselItem(element, ratingFunctions));
     });
 };
 

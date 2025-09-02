@@ -5,7 +5,8 @@
     object-fit: cover;
 }
 
-.carousel-item h5{
+.carousel-item h5,
+.carousel-item span{
     background-color: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
     padding: 8px 16px;

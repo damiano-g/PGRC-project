@@ -13,6 +13,7 @@
 
 import { ItemPreview, FullRecipe, createPreviewArray, } from "../data-models.js";     // Modelli dati e normalizzazione
 import { fetchAllCategories, rndFetch, } from "../recipesAPI.js";                     // API calls per dati iniziali
+import { RatingFunctions } from "../reviewsManagement.js";
 import { populateCarousel, populatePreviewContainer } from "../UI.js";                       // Componenti UI per rendering
 
 // ===============================
@@ -52,7 +53,7 @@ window.addEventListener("load", async () => {
         recipesArray.push(createPreviewArray(await rndFetch())[0]);
     }
 
-    populateCarousel(recipesArray, slideshow);
+    populateCarousel(recipesArray, slideshow, RatingFunctions);
 
     // Attiva il primo slide del carousel (Bootstrap requirement)
     document.querySelector(".carousel-inner .carousel-item").classList.add("active");

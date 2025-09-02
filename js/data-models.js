@@ -91,7 +91,8 @@ export function Note(recipeId, text){
  *   // id e image saranno stringhe vuote
  * });
  */
-export function ItemPreview(rawObj){
+export function ItemPreview(rawObj, itemType){
+    this.type = itemType,
     this.id = rawObj.idMeal || rawObj.strCategory || "",
     this.name = rawObj.strMeal || rawObj.strCategory || "",
     this.image = rawObj.strMealThumb || rawObj.strCategoryThumb || "../assets/images/no_image.jpg"
@@ -275,8 +276,8 @@ export function createPreviewArray(itemsObj){
     // Itera sull'array contenuto nella risposta API
     itemsObj[arrayName].forEach(element => {
         /** @type {ItemPreview} Oggetto preview normalizzato dall'elemento raw */
-        const recipe = new ItemPreview(element);
-        previewArray.push(recipe);
+        const item = new ItemPreview(element, arrayName);
+        previewArray.push(item);
     });
 
     return previewArray;
