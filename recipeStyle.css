@@ -29,12 +29,16 @@
     height: 150px;
 }
 
-#index-page .img-fluid{
+#index-page .img-fluid,
+#fav-page .img-fluid{
     height: 75px;
 }
 
 #results-container .card,
 #categories .card,
+#fav-recipes .card,
+#rev-recipes .card,
+#noted-recipes .card,
 .carousel-item {
     cursor: pointer;
     transition: transform 0.5s ease;
@@ -43,12 +47,18 @@
 
 #results-container .card:hover,
 #categories .card:hover,
+#fav-recipes .card:hover,
+#rev-recipes .card:hover,
+#noted-recipes .card:hover,
 .carousel-item:hover {
     transform: scale(1.002);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-#categories{
+#categories,
+#fav-recipes,
+#rev-recipes,
+#noted-recipes{
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
