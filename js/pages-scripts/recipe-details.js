@@ -15,7 +15,7 @@ import { fetchById } from "../recipesAPI.js";            // API call per dettagl
 import { FullRecipe } from "../data-models.js";          // Modello dati completo ricetta
 import { addNewUserNote, deleteUserNote, getLoggedUserId, getUserNotes, isFavourite, updateUserFavourites, } from "../usersManagement.js";
 import { favBtnDisplay, revBtnDisplay, populateNotesContainer } from "../UI.js";
-import { addReview, deleteReview, isReviewed, RatingFunctions } from "../reviewsManagement.js";
+import { addReview, deleteReview, isReviewed, GlobalRatingFunctions } from "../reviewsManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM

@@ -13,8 +13,8 @@
 
 import { fetchByCategory, fetchByName, } from "../recipesAPI.js";        // Funzioni API per ricerca ricette
 import { ItemPreview, createPreviewArray } from "../data-models.js";     // Modelli dati e normalizzazione
-import { populatePreviewContainer } from "../UI.js";         // Componenti UI per rendering
-import { RatingFunctions } from "../reviewsManagement.js";
+import { DisplayPreviews } from "../UI.js";         // Componenti UI per rendering
+import { GlobalRatingFunctions } from "../reviewsManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -40,7 +40,8 @@ const resultsContainer = document.getElementById("results-container");
 searchBtn.addEventListener("click", async () => {
     const array = createPreviewArray(await fetchByName(String(searchBar.value)));
     history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
-    populatePreviewContainer(array, resultsContainer, RatingFunctions);
+    DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions);
+    // oldPopulatePreviewContainer(array, resultsContainer, RatingFunctions);
 });
 
 // ===============================
@@ -85,7 +86,8 @@ window.addEventListener("load", async () => {
     
     if(query[0] === "cat"){
         const array = createPreviewArray(await fetchByCategory(query[1]));
-        populatePreviewContainer(array, resultsContainer, RatingFunctions);
+        DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions);
+        //oldPopulatePreviewContainer(array, resultsContainer, RatingFunctions);
     }
 });
 

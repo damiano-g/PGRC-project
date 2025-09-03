@@ -1,7 +1,7 @@
 import { createPreviewArray } from "../data-models.js";
 import { fetchById } from "../recipesAPI.js";
-import { getStoredReviews, isReviewed, RatingFunctions } from "../reviewsManagement.js";
-import { populatePreviewContainer } from "../UI.js";
+import { getStoredReviews, isReviewed, GlobalRatingFunctions, UserRatingFunctions } from "../reviewsManagement.js";
+import { DisplayPreviews } from "../UI.js";
 import { getRegisteredUsers, getLoggedUserId, searchUserById } from "../usersManagement.js";
 
 /** @type {HTMLButtonElement} Pulsante ricerca nella home */
@@ -11,8 +11,8 @@ const favSearchBtn = document.getElementById("searchBtn");
 const favSearchBar = document.getElementById("searchBar");
 
 const personalFavsContainer = document.getElementById("fav-recipes");
-const presonalRevsContainer = document.getElementById("rev-recipes");
-const PersonalNotesContainer = document.getElementById("noted-recipes");
+const personalRevsContainer = document.getElementById("rev-recipes");
+const personalNotesContainer = document.getElementById("noted-recipes");
 
 const personalPageBody = document.querySelector("body");
 
@@ -46,7 +46,7 @@ window.addEventListener("load", async () => {
         tempArray.push(response.meals[0]);
     }
 
-    populatePreviewContainer(createPreviewArray(tempArray, "none"), personalFavsContainer, RatingFunctions);
+    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "meals"), personalFavsContainer, GlobalRatingFunctions);
 
     tempArray.splice(0, tempArray.length);
 
@@ -55,7 +55,7 @@ window.addEventListener("load", async () => {
         tempArray.push(response.meals[0]);
     }
 
-    populatePreviewContainer(createPreviewArray(tempArray, "none"), presonalRevsContainer, RatingFunctions);
+    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "reviews"), personalRevsContainer, UserRatingFunctions, currentUser.id);
 
     tempArray.splice(0, tempArray.length);
 
@@ -64,5 +64,5 @@ window.addEventListener("load", async () => {
         tempArray.push(response.meals[0]);
     }
 
-    populatePreviewContainer(createPreviewArray(tempArray, "none"), PersonalNotesContainer, RatingFunctions);
+    DisplayPreviews.displayWithNote(createPreviewArray(tempArray, "notes"), personalNotesContainer, currentUser.notes);
 });

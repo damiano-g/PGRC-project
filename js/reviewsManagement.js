@@ -76,7 +76,7 @@ export function deleteReview(recipeId, userId){
     }
 }
 
-function recipeAvgRate(recipeId, ratingType){
+function recipeAvgRate (recipeId, ratingType) {
     try {
         let sum = 0;
         let totalReviews = 0;
@@ -86,16 +86,26 @@ function recipeAvgRate(recipeId, ratingType){
                 totalReviews++;
             }
         });
-    
         return sum/totalReviews;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+function recipeUserRate(recipeId, userId, ratingType) {
+    try {
+        const review = getStoredReviews().find(element => element.recipeId === recipeId && element.userId === userId);
+        return review ? review[ratingType] : undefined;
     } catch (error) {
         console.error(error);
         throw error;
     }
 }
 
-export const RatingFunctions = {
-    getTasteAvg: function(recipeId){
+export const GlobalRatingFunctions = {
+   
+    getTasteRate: function(recipeId){
         try {
             return recipeAvgRate(recipeId, "tasteRate");
         } catch (error) {
@@ -103,14 +113,32 @@ export const RatingFunctions = {
         }
     },
 
-    getDifficultyAvg: function(recipeId){
+    getDifficultyRate: function(recipeId){
         try {
             return recipeAvgRate(recipeId, "difficultyRate");
         } catch (error) {
             console.error(error);
         }
     }
-}
+};
+
+export const UserRatingFunctions = {
+    getTasteRate: function(recipeId, userId){
+        try {
+            return recipeUserRate(recipeId, userId, "tasteRate");
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    
+    getDifficultyRate: function(recipeId, userId){
+        try {
+            return recipeUserRate(recipeId, userId, "difficultyRate");
+        } catch (error) {
+            console.error(error);
+        }
+    }
+};
 
 
 export function isReviewed(recipeId, userId){

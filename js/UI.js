@@ -7,37 +7,7 @@
  * @since 2025-08-28
  */
 
-
-// ===============================
-// CREAZIONE COMPONENTI CARD
-// ===============================
-
-/**
- * Crea una card di anteprima responsive da un oggetto ItemPreview
- * Utilizza layout Bootstrap con immagine a sinistra e contenuto a destra
- * 
- * @function createPreviewCard
- * @param {import('./data-models.js').ItemPreview} itemPreviewObj - Oggetto dati normalizzato
- * @param {string} itemPreviewObj.id - ID univoco per data attribute
- * @param {string} itemPreviewObj.name - Nome da mostrare come titolo
- * @param {string} itemPreviewObj.image - URL immagine per thumbnail
- * @returns {HTMLElement} Elemento card pronto per inserimento nel DOM
- * 
- * @description
- * Struttura della card generata:
- * - Layout responsive Bootstrap (row + col-4/col-8)
- * - Immagine fluid a sinistra (col-4)
- * - Contenuto centrato a destra (col-8)
- * - Data attribute per identificazione durante click events
- * - Spacing uniforme con margini Bootstrap
- * 
- * @example
- * const preview = new ItemPreview({idMeal: "123", strMeal: "Pasta", strMealThumb: "url"});
- * const cardElement = createPreviewCard(preview);
- * container.appendChild(cardElement);
- */
-function createPreviewCard(itemPreviewObj, ratingFunctions = null){
-    
+function createPreviewCard (itemPreviewObj, bodyElement = null) {
     const card = document.createElement("div");
     card.classList.add("card");
     card.classList.add("mb-1");
@@ -58,68 +28,79 @@ function createPreviewCard(itemPreviewObj, ratingFunctions = null){
         </div>
     `;
 
-    console.log(itemPreviewObj.type);
-    if(itemPreviewObj.type === "meals" && ratingFunctions){
-        const tasteAvg = ratingFunctions.getTasteAvg(itemPreviewObj.id);
-        const difficultyAvg = ratingFunctions.getDifficultyAvg(itemPreviewObj.id);
-
-        const reviews = document.createElement("div");
-        reviews.classList.add("container");
-        reviews.classList.add("ps-4");
-        reviews.innerHTML = `
-            <div class="row">
-                <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteAvg}"></progress></progress>
-            </div>
-            <div class="row">
-                <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyAvg}"></progress></progress>
-            </div>
-        `;
-
-        card.querySelector(".card-body").appendChild(reviews);
+    if(bodyElement){
+      card.querySelector(".card-body").appendChild(bodyElement);  
     }
 
     return card;
-};
+}
 
-// ===============================
-// GESTIONE POPOLAZIONE CONTAINER
-// ===============================
-
-/**
- * Popola un container DOM con array di card preview
- * Rimuove contenuto precedente e aggiunge tutte le nuove card
- * 
- * @function populateContainer
- * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array oggetti normalizzati
- * @param {HTMLElement} container - Elemento DOM container target
- * @returns {void}
- * 
- * @description
- * Strategia di popolamento:
- * 1. Svuota completamente il container (innerHTML = "")
- * 2. Crea una card per ogni elemento dell'array
- * 3. Appende ogni card al container via appendChild
- *
- * @example
- * // Popola container risultati ricerca
- * const searchResults = createPreviewArray(apiResponse);
- * populateContainer(searchResults, document.getElementById("results-container"));
- * 
- * @example  
- * // Popola dashboard categorie
- * const categories = createPreviewArray(categoriesResponse);
- * populateContainer(categories, document.getElementById("categories-grid"));
- *
- * @note
- * La funzione assume che il container sia un elemento DOM valido.
- * Non esegue validazione dell'input per performance.
- */
-export function populatePreviewContainer(previewItemsArray, container, ratingFunctions = null){
+function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null) {
     container.innerHTML = "";
-    previewItemsArray.forEach(element => {
-        container.appendChild(createPreviewCard(element, ratingFunctions));
-    });
+
+    for(let i=0; i < previewItemsArray.length; i++){
+        let relatedBodyElement = null;
+        if(bodyElementsArray){
+            relatedBodyElement = bodyElementsArray[i];
+        }
+        container.appendChild(createPreviewCard(previewItemsArray[i], relatedBodyElement));
+    }
 };
+
+export const DisplayPreviews = {
+
+    displayWithRating: function (previewItemsArray, container, ratingFunctions, userId = null) {
+        
+        const bodyElementsArray = [];
+
+        previewItemsArray.forEach(element => {
+            const taste = ratingFunctions.getTasteRate(element.id, userId);
+            const difficulty = ratingFunctions.getDifficultyRate(element.id, userId);
+            
+            const title = element.type === "meals" ? "Recensioni globali" : "La mia recensione";
+            
+            let content = `<h6>${title}</h6>`;
+
+            if(Number(taste) > 0 && Number(difficulty) > 0){
+                content += `
+                    <div class="row">
+                        <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${taste}"></progress></progress>
+                    </div>
+                    <div class="row">
+                        <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficulty}"></progress></progress>
+                    </div>
+                `;
+            }else{
+                content += "Ancora nessuna recensione";
+            }
+
+            const reviews = document.createElement("div");
+            reviews.classList.add("container");
+            reviews.classList.add("ps-4");
+            reviews.innerHTML = content; 
+
+            bodyElementsArray.push(reviews);
+        });
+        
+        populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
+    },
+
+    displayWithNote: function (previewItemsArray, container, userNotesArray) {
+        const bodyElementsArray = [];
+
+        userNotesArray.forEach(element => {
+            const note = document.createElement("p");
+            note.innerText = element.text;
+            bodyElementsArray.push(note);
+        });
+
+        populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
+    },
+
+    displayCategories: function (previewItemsArray, container) {
+        populatePreviewContainer(previewItemsArray, container);
+    }
+}
 
 
 // ===============================
@@ -153,8 +134,8 @@ function createCarouselItem(itemPreviewObj, ratingFunctions){
     carouselItem.classList.add("carousel-item");
 
     // Data attribute per identificazione (conversione esplicita a stringa)
-    const tasteAvg = ratingFunctions.getTasteAvg(itemPreviewObj.id);
-    const difficultyAvg = ratingFunctions.getDifficultyAvg(itemPreviewObj.id);
+    const tasteAvg = ratingFunctions.getTasteRate(itemPreviewObj.id);
+    const difficultyAvg = ratingFunctions.getDifficultyRate(itemPreviewObj.id);
     carouselItem.dataset.itemId = String(itemPreviewObj.id);
 
     carouselItem.innerHTML = `
