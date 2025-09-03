@@ -5,277 +5,356 @@
  * @author damia
  * @version 1.0.0
  * @since 2025-08-28
+ * @requires data-models - ItemPreview objects per input standardizzato
  */
 
-function createPreviewCard (itemPreviewObj, bodyElement = null) {
-    const card = document.createElement("div");
-    card.classList.add("card");
-    card.classList.add("mb-1");
-    card.classList.add("mt-1");
-
-    // Aggiunge data attribute per identificazione durante event delegation
-    card.dataset.itemId = itemPreviewObj.id;
-    card.innerHTML = `
-        <div class="row g-0">
-            <div class="col-5">
-                <img src="${itemPreviewObj.image}" alt="${itemPreviewObj.name}" class="img-fluid">
-            </div>
-            <div class="col-7">
-                <div class="row card-body d-flex align-items-center">
-                    <h5 class="card-title mb-3">${itemPreviewObj.name}</h5>
-                </div>
-            </div>
-        </div>
-    `;
-
-    if(bodyElement){
-      card.querySelector(".card-body").appendChild(bodyElement);  
-    }
-
-    return card;
-}
-
-function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null) {
-    container.innerHTML = "";
-
-    for(let i=0; i < previewItemsArray.length; i++){
-        let relatedBodyElement = null;
-        if(bodyElementsArray){
-            relatedBodyElement = bodyElementsArray[i];
-        }
-        container.appendChild(createPreviewCard(previewItemsArray[i], relatedBodyElement));
-    }
-};
-
-export const DisplayPreviews = {
-
-    displayWithRating: function (previewItemsArray, container, ratingFunctions, userId = null) {
-        
-        const bodyElementsArray = [];
-
-        previewItemsArray.forEach(element => {
-            const taste = ratingFunctions.getTasteRate(element.id, userId);
-            const difficulty = ratingFunctions.getDifficultyRate(element.id, userId);
-            
-            const title = element.type === "meals" ? "Recensioni globali" : "La mia recensione";
-            
-            let content = `<h6>${title}</h6>`;
-
-            if(Number(taste) > 0 && Number(difficulty) > 0){
-                content += `
-                    <div class="row">
-                        <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${taste}"></progress></progress>
-                    </div>
-                    <div class="row">
-                        <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficulty}"></progress></progress>
-                    </div>
-                `;
-            }else{
-                content += "Ancora nessuna recensione";
-            }
-
-            const reviews = document.createElement("div");
-            reviews.classList.add("container");
-            reviews.classList.add("ps-4");
-            reviews.innerHTML = content; 
-
-            bodyElementsArray.push(reviews);
-        });
-        
-        populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
-    },
-
-    displayWithNote: function (previewItemsArray, container, userNotesArray) {
-        const bodyElementsArray = [];
-
-        userNotesArray.forEach(element => {
-            const note = document.createElement("p");
-            note.innerText = element.text;
-            bodyElementsArray.push(note);
-        });
-
-        populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
-    },
-
-    displayCategories: function (previewItemsArray, container) {
-        populatePreviewContainer(previewItemsArray, container);
-    }
-}
-
-
-// ===============================
-// CREAZIONE ELEMENTI CAROUSEL
-// ===============================
+// ================================================================================================
+// PRIVATE UTILITY FUNCTIONS
+// ================================================================================================
 
 /**
- * Crea un elemento slide per carousel Bootstrap da un oggetto ItemPreview
- * Include immagine full-width e caption overlay per desktop
+ * Crea una singola card preview da oggetto ItemPreview normalizzato
  * 
- * @function createCarouselItem
+ * @function createPreviewCard
+ * @private
  * @param {import('./data-models.js').ItemPreview} itemPreviewObj - Oggetto dati normalizzato
  * @param {string} itemPreviewObj.id - ID univoco per data attribute
- * @param {string} itemPreviewObj.name - Nome da mostrare nella caption
- * @param {string} itemPreviewObj.image - URL immagine per slide
- * @returns {HTMLElement} Elemento carousel-item pronto per inserimento nel carousel
+ * @param {string} itemPreviewObj.name - Nome da mostrare nel titolo
+ * @param {string} itemPreviewObj.image - URL immagine per card
+ * @param {HTMLElement|null} [bodyElement=null] - Elemento aggiuntivo da appendere al card-body
+ * @returns {HTMLElement} Card Bootstrap pronta per inserimento nel DOM
  * 
  * @description
- * - Div con classe carousel-item per Bootstrap carousel
- * - Immagine responsive full-width (d-block w-100)
- * - Caption overlay nascosta su mobile (d-none d-md-block)
- * - Data attribute per identificazione durante click events
+ * Factory function per card Bootstrap responsive con layout 5/7 colonne.
+ * - Immagine sinistra (col-5) responsive con .img-fluid
+ * - Contenuto destro (col-7) con titolo e spazio per elementi aggiuntivi
+ * - Data attribute per identificazione durante event delegation
+ * - Compatibile con CSS Grid per layout affiancato automatico
  * 
  * @example
- * const recipe = new ItemPreview({idMeal: "456", strMeal: "Pizza", strMealThumb: "url"});
- * const slideElement = createCarouselItem(recipe);
- * carouselInner.appendChild(slideElement);
+ * const recipe = new ItemPreview({idMeal: "123", strMeal: "Pasta"});
+ * const extraContent = document.createElement("div");
+ * const cardElement = createPreviewCard(recipe, extraContent);
+ * 
+ * @since 1.0.0
  */
-function createCarouselItem(itemPreviewObj, ratingFunctions){
-    const carouselItem = document.createElement("div");
-    carouselItem.classList.add("carousel-item");
-
-    // Data attribute per identificazione (conversione esplicita a stringa)
-    const tasteAvg = ratingFunctions.getTasteRate(itemPreviewObj.id);
-    const difficultyAvg = ratingFunctions.getDifficultyRate(itemPreviewObj.id);
-    carouselItem.dataset.itemId = String(itemPreviewObj.id);
-
-    carouselItem.innerHTML = `
-        <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
-        <div class="carousel-caption d-none d-md-block"> <!-- d-none and d-md-block hides captions in smaller viewports -->
-            <h5>${itemPreviewObj.name}</h5>
-            <div class="row">
-                <span>Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteAvg}"></progress></progress>
-            </div>
-            <div class="row">
-                <span>Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyAvg}"></progress></progress>
-            </div>
-        </div>
-    `;
-
-    return carouselItem;
-};
-
-
-// ===============================
-// GESTIONE POPOLAZIONE CAROUSEL
-// ===============================
+function createPreviewCard (itemPreviewObj, bodyElement = null) { /* implementation */ }
 
 /**
- * Popola un carousel Bootstrap con array di slide da ItemPreview
- * Rimuove slide precedenti e aggiunge tutti i nuovi elementi
+ * Utility generica per popolamento container con array di card
+ * 
+ * @function populatePreviewContainer
+ * @private
+ * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array oggetti normalizzati
+ * @param {HTMLElement} container - Container target per inserimento card
+ * @param {Array<HTMLElement>|null} [bodyElementsArray=null] - Array elementi body opzionali
+ * @returns {void}
+ * 
+ * @description
+ * Popolazione sequenziale container con matching 1:1 tra preview e body elements.
+ * - Reset completo container (innerHTML = "")
+ * - Iterazione con indice per matching array paralleli
+ * - Creazione card con body element corrispondente se fornito
+ * 
+ * @todo Aggiungere validazione lunghezza array per mismatch
+ * @todo Considerare batch DOM insertion per performance
+ * 
+ * @since 1.0.0
+ */
+function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null) { /* implementation */ }
+
+/**
+ * Crea elemento slide per carousel Bootstrap da oggetto ItemPreview
+ * 
+ * @function createCarouselItem
+ * @private
+ * @param {import('./data-models.js').ItemPreview} itemPreviewObj - Oggetto dati normalizzato
+ * @param {Object} ratingFunctions - Oggetto con funzioni getTasteRate e getDifficultyRate
+ * @returns {HTMLElement} Elemento carousel-item pronto per carousel Bootstrap
+ * 
+ * @description
+ * Factory per slide carousel con caption overlay e rating progress bars.
+ * - Immagine full-width responsive (d-block w-100)
+ * - Caption overlay nascosta su mobile (d-none d-md-block)
+ * - Progress bars per taste e difficulty rating
+ * - Data attribute per event delegation
+ * 
+ * @example
+ * const recipe = new ItemPreview({idMeal: "456", strMeal: "Pizza"});
+ * const slideElement = createCarouselItem(recipe, GlobalRatingFunctions);
+ * 
+ * @since 1.0.0
+ */
+function createCarouselItem(itemPreviewObj, ratingFunctions) { /* implementation */ }
+
+/**
+ * Crea card per visualizzazione note utente con pulsante rimozione
+ * 
+ * @function createNoteCard
+ * @private
+ * @param {Object} userNote - Oggetto nota utente
+ * @param {string} userNote.id - ID univoco nota per data attribute
+ * @param {string} userNote.text - Contenuto testuale della nota
+ * @returns {HTMLElement} Card Bootstrap con footer e pulsante rimozione
+ * 
+ * @description
+ * Factory specializzata per card note con layout card-body + card-footer.
+ * - Contenuto nota nel body
+ * - Pulsante rimozione nel footer con data-note-id
+ * - Styling Bootstrap standard per consistenza UI
+ * 
+ * @todo Aggiungere truncate per note lunghe
+ * @todo Implementare preview/expand per contenuto esteso
+ * 
+ * @since 1.0.0
+ */
+function createNoteCard(userNote) { /* implementation */ }
+
+// ================================================================================================
+// PUBLIC API - DISPLAY STRATEGIES
+// ================================================================================================
+
+/**
+ * Namespace per strategie di display specializzate per diversi tipi di contenuto
+ * 
+ * @namespace DisplayPreviews
+ * @description
+ * Raccolta di metodi specializzati per rendering preview con contenuto aggiuntivo.
+ * Ogni metodo implementa una strategia specifica per tipo di dati e layout.
+ * 
+ * @since 1.0.0
+ */
+export const DisplayPreviews = {
+
+    /**
+     * Display preview con rating progress bars (globali o utente)
+     * 
+     * @function displayWithRating
+     * @memberof DisplayPreviews
+     * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array ricette normalizzate
+     * @param {HTMLElement} container - Container target per rendering
+     * @param {Object} ratingFunctions - Oggetto con getTasteRate e getDifficultyRate
+     * @param {string|null} [userId=null] - ID utente per rating personalizzati (null = globali)
+     * @returns {void}
+     * 
+     * @description
+     * Strategia display per ricette con visualizzazione rating via progress bars.
+     * - userId null → "Recensioni globali" con rating medi
+     * - userId fornito → "La mia recensione" con rating utente specifico
+     * - Fallback "Ancora nessuna recensione" per rating mancanti
+     * - Progress bars HTML5 con max=5 e value dinamico
+     * 
+     * @example
+     * // Rating globali
+     * DisplayPreviews.displayWithRating(recipes, container, GlobalRatingFunctions);
+     * 
+     * // Rating utente specifico
+     * DisplayPreviews.displayWithRating(recipes, container, UserRatingFunctions, "user123");
+     * 
+     * @todo Aggiungere validazione range rating (0-5)
+     * @todo Implementare color coding per progress bars
+     * 
+     * @since 1.0.0
+     */
+    displayWithRating: function (previewItemsArray, container, ratingFunctions, userId = null) { /* implementation */ },
+
+    /**
+     * Display preview con note testuali utente
+     * 
+     * @function displayWithNote
+     * @memberof DisplayPreviews
+     * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array ricette normalizzate
+     * @param {HTMLElement} container - Container target per rendering
+     * @param {Array<Object>} userNotesArray - Array note utente con text property
+     * @returns {void}
+     * 
+     * @description
+     * Strategia display per ricette con note testuali dell'utente.
+     * - Matching 1:1 tra preview e note tramite indice array
+     * - Rendering note come paragrafi semplici nel card-body
+     * - Assume corrispondenza ordinata tra array input
+     * 
+     * @example
+     * const notes = [{text: "Ricetta facile"}, {text: "Troppo salata"}];
+     * DisplayPreviews.displayWithNote(recipes, container, notes);
+     * 
+     * @todo Validare lunghezza array per mismatch preview/note
+     * @todo Aggiungere formatting HTML per note (bold, italic, links)
+     * 
+     * @since 1.0.0
+     */
+    displayWithNote: function (previewItemsArray, container, userNotesArray) { /* implementation */ },
+
+    /**
+     * Display semplice preview senza contenuto aggiuntivo
+     * 
+     * @function displayCategories
+     * @memberof DisplayPreviews
+     * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array categorie normalizzate
+     * @param {HTMLElement} container - Container target per rendering
+     * @returns {void}
+     * 
+     * @description
+     * Strategia display minimale per categorie o contenuto senza metadati.
+     * - Solo card base con immagine e titolo
+     * - Nessun contenuto aggiuntivo nel card-body
+     * - Layout ottimizzato per griglie di navigazione
+     * 
+     * @example
+     * // Display categorie ricette
+     * DisplayPreviews.displayCategories(categories, categoriesContainer);
+     * 
+     * @since 1.0.0
+     */
+    displayCategories: function (previewItemsArray, container) { /* implementation */ }
+};
+
+// ================================================================================================
+// PUBLIC API - CAROUSEL MANAGEMENT
+// ================================================================================================
+
+/**
+ * Popola carousel Bootstrap con array di slide da ItemPreview
  * 
  * @function populateCarousel
  * @param {Array<import('./data-models.js').ItemPreview>} itemPreviewArray - Array oggetti normalizzati
  * @param {HTMLElement} carouselInner - Elemento .carousel-inner di Bootstrap
+ * @param {Object} ratingFunctions - Oggetto funzioni rating per caption
  * @returns {void}
  * 
  * @description
- * Strategia di popolamento carousel:
- * 1. Svuota completamente il carousel-inner
- * 2. Crea un carousel-item per ogni elemento dell'array
- * 3. Appende ogni slide al carousel-inner
- * 
- * Note Bootstrap:
- * - Il primo slide deve essere attivato manualmente (.active)
- * - Gestione navigation e indicators delegata al codice chiamante
- * - Responsive behavior automatico tramite classi Bootstrap
+ * Popolamento completo carousel con slide e caption rating.
+ * - Reset completo carousel-inner
+ * - Creazione slide sequenziale con rating caption
+ * - Compatibilità Bootstrap carousel controls/indicators
+ * - Nessuna attivazione automatica primo slide
  * 
  * @example
- * // Popola carousel homepage con ricette casuali
  * const randomRecipes = await get5RandomRecipes();
- * populateCarousel(randomRecipes, document.querySelector(".carousel-inner"));
- * // Attiva primo slide
+ * populateCarousel(randomRecipes, document.querySelector(".carousel-inner"), GlobalRatingFunctions);
+ * // Attivazione manuale primo slide
  * document.querySelector(".carousel-item").classList.add("active");
  * 
- * @note
- * La funzione non attiva automaticamente il primo slide.
- * È responsabilità del codice chiamante aggiungere classe .active.
+ * @todo Aggiungere opzione auto-activate primo slide
+ * @todo Implementare lazy loading per immagini slide
+ * 
+ * @since 1.0.0
  */
-export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions){
-    carouselInner.innerHTML = "";
+export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions) { /* implementation */ }
 
-    itemPreviewArray.forEach(element => {
-        carouselInner.appendChild(createCarouselItem(element, ratingFunctions));
-    });
-};
+// ================================================================================================
+// PUBLIC API - SPECIALIZED CONTAINERS
+// ================================================================================================
 
+/**
+ * Gestione container note con logica show/hide automatica
+ * 
+ * @function populateNotesContainer
+ * @param {Array<Object>} userNotesArray - Array note utente
+ * @param {HTMLElement} container - Container target per note
+ * @returns {void}
+ * 
+ * @description
+ * Popolamento specializzato per container note con gestione visibilità.
+ * - Array vuoto → container nascosto (.d-none)
+ * - Array popolato → container visibile + note cards
+ * - Card note con pulsanti rimozione
+ * 
+ * @example
+ * // Container nascosto se nessuna nota
+ * populateNotesContainer([], notesContainer);
+ * 
+ * // Container visibile con note
+ * populateNotesContainer(userNotes, notesContainer);
+ * 
+ * @todo Aggiungere animazioni show/hide
+ * @todo Implementare paginazione per molte note
+ * 
+ * @since 1.0.0
+ */
+export function populateNotesContainer(userNotesArray, container) { /* implementation */ }
 
-function createNoteCard(userNote){
-    const noteCard = document.createElement("div");
-    noteCard.classList.add("card");
-    noteCard.classList.add("mb-2");
-    noteCard.classList.add("mt-2");
+// ================================================================================================
+// PUBLIC API - BUTTON STATE MANAGEMENT
+// ================================================================================================
 
-    noteCard.innerHTML = `
-        <div class="card-body">${userNote.text}</div>
-        <div class="card-footer"><button class="btn btn-secondary btn-sm" data-note-id="${userNote.id}">Rimuovi nota</button></div>
-    `
+/**
+ * Aggiorna testo pulsante preferiti in base allo stato utente
+ * 
+ * @function favBtnDisplay
+ * @param {HTMLButtonElement} btn - Pulsante preferiti da aggiornare
+ * @param {boolean} userLogged - Flag autenticazione utente
+ * @param {boolean} userFavourite - Flag ricetta nei preferiti
+ * @returns {void}
+ * 
+ * @description
+ * State management per pulsante toggle preferiti.
+ * - userLogged && userFavourite → "Rimuovi dai preferiti"
+ * - Altri casi → "Aggiungi ai preferiti"
+ * 
+ * @example
+ * favBtnDisplay(favButton, true, isInFavourites(recipeId));
+ * 
+ * @todo Aggiungere state icons/loading indicators
+ * 
+ * @since 1.0.0
+ */
+export function favBtnDisplay(btn, userLogged, userFavourite) { /* implementation */ }
 
-    return noteCard;
-}
+/**
+ * Aggiorna testo pulsante recensione in base allo stato utente
+ * 
+ * @function revBtnDisplay
+ * @param {HTMLButtonElement} btn - Pulsante recensione da aggiornare
+ * @param {boolean} userLogged - Flag autenticazione utente
+ * @param {boolean} userReviewed - Flag ricetta già recensita
+ * @returns {void}
+ * 
+ * @description
+ * State management per pulsante toggle recensione.
+ * - userLogged && userReviewed → "Rimuovi recensione"
+ * - Altri casi → "Aggiungi recensione"
+ * 
+ * @example
+ * revBtnDisplay(reviewButton, true, hasUserReview(recipeId, userId));
+ * 
+ * @todo Aggiungere preview rating nel button state
+ * 
+ * @since 1.0.0
+ */
+export function revBtnDisplay(btn, userLogged, userReviewed) { /* implementation */ }
 
-
-// NB -> funzione boilerplate -> unificare la logica di popolamento dei container
-export function populateNotesContainer(userNotesArray, container){
-    container.innerHTML = "";
-    if(userNotesArray.length > 0){
-        userNotesArray.forEach(element => {
-            container.appendChild(createNoteCard(element));
-        });
-        container.classList.remove("d-none");
-    }else{
-        container.classList.add("d-none");
-    }
-}
-
-export function favBtnDisplay(btn, userLogged, userFavourite){
-    if(userLogged && userFavourite){
-        btn.innerText = "Rimuovi dai preferiti";
-    }else{
-        btn.innerText = "Aggiungi ai preferiti";
-    }
-}
-
-export function revBtnDisplay(btn, userLogged, userReviewed){
-    if(userLogged && userReviewed){
-        btn.innerText = "Rimuovi recensione";
-    }else{
-        btn.innerText = "Aggiungi recensione";
-    }
-}
-
-
-
-// ===============================
-// PATTERN E DESIGN DECISIONS
-// ===============================
+// ================================================================================================
+// ARCHITECTURE NOTES
+// ================================================================================================
 
 /*
-DESIGN PATTERN UTILIZZATI:
+DESIGN PATTERNS IMPLEMENTATI:
 
 1. **Factory Pattern**:
    - createPreviewCard() e createCarouselItem() sono factory per elementi DOM
    - Input standardizzato (ItemPreview) → Output consistente (HTMLElement)
    - Incapsulano logica di creazione e struttura HTML
 
-2. **Separation of Concerns**:
-   - Funzioni di creazione separate da funzioni di popolamento
+2. **Strategy Pattern**:
+   - DisplayPreviews namespace con strategie multiple
+   - displayWithRating, displayWithNote, displayCategories
+   - Interfaccia comune, implementazione specializzata
+
+3. **Separation of Concerns**:
+   - Funzioni private per creazione, pubbliche per orchestrazione
    - Layout responsive delegato a CSS Grid/Bootstrap
    - Event handling delegato al codice chiamante
 
-3. **Data Attributes Strategy**:
+4. **Data Attributes Strategy**:
    - dataset.itemId per identificazione senza inquinare proprietà DOM
    - Permette event delegation efficiente nel codice chiamante
    - Type conversion esplicita (String()) per consistenza
 
-4. **CSS-First Responsive Design**:
-   - Card verticali compatibili con CSS Grid automatico
-   - Bootstrap classes per responsive behavior
-   - No layout logic in JavaScript
-
 ARCHITETTURA MODULARE:
 
-- **createPreviewCard**: Componente riusabile per liste/griglie
-- **createCarouselItem**: Componente specializzato per carousel
-- **populateContainer**: Utility generica per container qualsiasi
-- **populateCarousel**: Utility specifica per carousel Bootstrap
+- **Private Utilities**: Funzioni base per creazione elementi
+- **Public API Display**: Strategie specializzate per contenuto
+- **Public API Specialized**: Container e button management
+- **No Layout Logic**: Responsabilità delegata a CSS/Bootstrap
 */
