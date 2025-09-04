@@ -1,313 +1,178 @@
-# Architettura Progetto - Gestione Ricette e Utenti
-
-## Panoramica del progetto
-- **Tipologia**: Applicazione web frontend-only per gestione ricette
-- **Contesto**: Progetto universitario, primo approccio alla programmazione web
-- **Tecnologie**: HTML, CSS, JavaScript ES6, Bootstrap, localStorage/sessionStorage
-- **Backend**: Nessuno - simulazione API per ricette, gestione utenti locale
+# 📚 SSRI-PWM - Documentazione Flussi di Lavoro e Struttura Progetto
 
 ---
 
-## Struttura file e cartelle
+## 📁 Struttura delle Cartelle e File Principali
 
 ```
-project-root/
-├── index.html                     # Homepage/Login principale
-├── pages/
-│   ├── signin.html                # Registrazione nuovo utente
-│   ├── dashboard.html             # Dashboard utente loggato
-│   ├── search.html                # Ricerca e filtri ricette
-│   ├── recipe-detail.html         # Dettaglio singola ricetta
-│   └── profile.html               # Gestione profilo utente
-├── js/
-│   ├── common.js                  # Core: storage, utilities, inizializzazione
-│   ├── auth.js                    # Autenticazione e gestione utenti
-│   ├── validate.js                # Validazione input e form
-│   ├── recipes.js                 # Gestione ricette e API
-│   ├── notes.js                   # Gestione note private
-│   ├── reviews.js                 # Gestione recensioni pubbliche
-│   └── page-scripts/
-│       ├── signin.js              # Script specifico registrazione
-│       ├── login.js               # Script specifico login
-│       ├── dashboard.js           # Script specifico dashboard
-│       ├── search.js              # Script specifico ricerca
-│       ├── recipe-detail.js       # Script specifico dettaglio ricetta
-│       └── profile.js             # Script specifico profilo
-├── css/
-│   └── styles.css                 # Stili personalizzati + Bootstrap
-└── assets/
-    └── images/                    # Immagini statiche
-```
-
-## Struttura effettiva user-database (refactorizzato):
-
-```
-project-tests/
-└── user-database/
-    ├── index.html                # Pagina principale login
-    ├── myStyle.css               # Stili personalizzati
-    ├── favicon.ico               # Icona del sito
-    ├── js/                       # Moduli JavaScript core
-    │   ├── usersManagement.js    # Business logic utenti (CRUD, validazione, auth)
-    │   ├── validate.js           # Validazione input con feedback visivo
-    │   ├── errorsManagement.js   # Sistema gestione errori centralizzato
-    │   └── pages-scripts/        # Script specifici per ogni pagina
-    │       ├── login.js          # Logic login e autenticazione
-    │       ├── singin.js         # Logic registrazione nuovo utente
-    │       ├── landing.js        # Logic dashboard utente loggato
-    │       └── modif.js          # Logic modifica profilo utente
-    └── pages/                    # Pagine HTML dell'applicazione
-        ├── signIn.html           # Interfaccia registrazione
-        ├── landing.html          # Dashboard post-login
-        └── modifUser.html        # Interfaccia modifica profilo
+ssri-pwm/
+│
+├── index.html                  # Homepage con carousel ricette random e categorie
+├── recipeStyle.css             # Stili per card, carousel, griglie ricette
+├── usersStyle.css              # Stili per feedback validazione utente
+│
+├── pages/                      # Pagine principali del sito
+│   ├── favourites.html         # Pagina personale utente (preferiti, recensioni, note)
+│   ├── landing.html            # Pagina categorie ricette
+│   ├── login.html              # Login utente
+│   ├── modifUser.html          # Modifica profilo utente
+│   ├── recipe-details.html     # Dettagli ricetta, recensioni, note
+│   ├── search.html             # Ricerca ricette per nome
+│   └── signIn.html             # Registrazione nuovo utente
+│
+├── js/                         # Logica applicativa e moduli business
+│   ├── data-models.js          # Modelli dati: User, Note, Review, Recipe, Preview
+│   ├── errorsManagement.js     # Gestione errori tipizzati
+│   ├── recipesAPI.js           # Interfaccia TheMealDB API
+│   ├── reviewsManagement.js    # Sistema recensioni e rating
+│   ├── storageManagement.js    # Persistenza localStorage
+│   ├── UI.js                   # Componenti rendering card/carousel
+│   ├── usersManagement.js      # CRUD utenti + autenticazione
+│   ├── validate.js             # Validazione form real-time
+│   └── pages-scripts/          # Script specifici per pagina
+│       ├── favourites.js
+│       ├── index.js
+│       ├── landing.js
+│       ├── login.js
+│       ├── modif.js
+│       ├── recipe-details.js
+│       ├── search.js
+│       └── singin.js
 ```
 
 ---
 
-## Architettura dati e storage
+## 🗂️ Modelli Dati Principali
 
-### Database locali (localStorage/sessionStorage)
-
-#### Chiavi storage principali:
-- `"users"` (localStorage) - Array utenti registrati
-- `"recipes"` (localStorage) - Cache ricette da API  
-- `"notes"` (localStorage) - Note private utente-ricetta
-- `"reviews"` (localStorage) - Recensioni pubbliche
-- `"userPreferences"` (localStorage) - Preferenze e ricette salvate
-- `"loggedUser"` (sessionStorage) - ID utente correntemente loggato
-
-#### Struttura oggetto utente:
-```
-{
-    id: "user_<timestamp>_<random>",
-    username: string,
-    email: string,
-    passwordHash: string (SHA-256),
-    favorites: array[recipeId],
-    creationDate: ISO string,
-    profile: {
-        fullName?: string,
-        preferredCuisines?: array
-    }
-}
-```
-
-#### Struttura oggetto nota:
-```
-{
-    id: "note_<timestamp>_<random>",
-    userId: string,
-    recipeId: string,
-    content: string,
-    createdAt: ISO string,
-    isPrivate: boolean
-}
-```
-
-#### Struttura oggetto recensione:
-```
-{
-    id: "review_<timestamp>_<random>",
-    userId: string,
-    recipeId: string,
-    rating: number (1-5),
-    comment: string,
-    createdAt: ISO string
-}
-```
+- **User**: id, username, email, password, favourites (array di id ricette), notes (array di Note)
+- **Note**: id, recipeId, text, date
+- **Review**: id, recipeId, userId, tasteRate, difficultyRate, date
+- **ItemPreview**: id, name, image, type (meals/categories/reviews/notes)
+- **FullRecipe**: id, name, image, instructions, dateAdded, ingredients (array)
 
 ---
 
-## Strategia di gestione dati
+## 🔄 Flussi di Lavoro Utente
 
-### Inizializzazione distribuita
-- **Ogni pagina** carica solo i dati che le servono
-- **Cache intelligente** per evitare caricamenti multipli
-- **Lazy loading** per ricette da API
-- **Funzioni getter** per dati sempre aggiornati
+### 1. **Accesso e Registrazione**
+- **login.html**: L’utente inserisce credenziali → validazione → accesso → redirect area personale.
+- **signIn.html**: Registrazione nuovo utente → validazione dati → creazione User → accesso automatico.
 
-### Operazioni atomiche vs cache
-#### Operazioni atomiche (critiche):
-- Registrazione nuovo utente
-- Eliminazione account
-- Modifica dati profilo
-- Aggiornamento sessione login
+### 2. **Homepage (`index.html`)**
+- Visualizza carousel ricette random (fetch da API).
+- Mostra categorie ricette (fetch da API).
+- Barra di ricerca per ricette → redirect a search.html.
 
-#### Operazioni con cache (non critiche):
-- Validazione username/email in tempo reale
-- Ricerca utenti esistenti
-- Visualizzazione dati profilo
+### 3. **Ricerca Ricette (`search.html`)**
+- Input ricerca → fetch ricette da API → visualizzazione risultati in card.
+- Clic su card → redirect a recipe-details.html con id ricetta.
 
-### Pre-caricamento ricette
-- **All'avvio dell'app**: caricamento completo ricette da API
-- **Storage locale**: cache per ricerca veloce offline
-- **Sync periodico**: aggiornamento dati su richiesta
+### 4. **Dettaglio Ricetta (`recipe-details.html`)**
+- Visualizza dettagli ricetta (ingredienti, istruzioni).
+- Se utente loggato:
+  - Può aggiungere/rimuovere dai preferiti.
+  - Può aggiungere/rimuovere recensione (taste/difficulty).
+  - Può aggiungere/rimuovere nota personale.
 
----
+### 5. **Area Personale (`favourites.html`)**
+- Sezioni:
+  - **Preferiti**: Ricette salvate dall’utente.
+  - **Recensioni**: Ricette recensite dall’utente (con rating personale).
+  - **Note**: Ricette annotate dall’utente.
+- Visualizzazione card con rating globale/utente e note.
+- Event delegation per navigazione verso dettagli ricetta.
 
-## Flusso applicazione
-
-### 1. Accesso iniziale (index.html)
-- Controllo stato login esistente
-- Redirect automatico a dashboard se già loggato
-- Form login per utenti registrati
-- Link a registrazione per nuovi utenti
-
-### 2. Registrazione (signin.html)
-- Validazione input in tempo reale
-- Controllo duplicati username/email
-- Creazione account con password hashata
-- Redirect automatico a dashboard post-registrazione
-
-### 3. Dashboard utente (dashboard.html)
-- Verifica autenticazione all'accesso
-- Panoramica ricette preferite
-- Accesso rapido a ricerca e profilo
-- Visualizzazione ultime attività (note/recensioni)
-
-### 4. Ricerca ricette (search.html)
-- Pre-caricamento dati ricette
-- Ricerca in tempo reale su cache locale
-- Filtri per ingredienti, difficoltà, tempo
-- Paginazione risultati
-
-### 5. Dettaglio ricetta (recipe-detail.html)
-- Visualizzazione completa ricetta
-- Gestione note private (CRUD)
-- Gestione recensioni pubbliche (lettura/scrittura)
-- Azioni: aggiungi/rimuovi dai preferiti
-
-### 6. Gestione profilo (profile.html)
-- Modifica dati personali (operazione atomica)
-- Visualizzazione cronologia note/recensioni
-- Gestione preferenze applicazione
-- Eliminazione account (con conferma)
+### 6. **Modifica Profilo (`modifUser.html`)**
+- Modifica username, email, password.
+- Validazione real-time su tutti i campi.
+- Password modificabile solo previa autorizzazione (verifica password corrente).
+- Aggiornamenti selettivi: solo le sezioni abilitate vengono modificate.
+- Reset pagina dopo modifica per coerenza dati.
 
 ---
 
-## Architettura moduli JavaScript
+## ⚙️ Flusso Tecnico Principale
 
-### common.js - Core dell'applicazione
-**Responsabilità:**
-- Gestione chiavi storage e accesso dati
-- Funzioni di inizializzazione per ogni pagina
-- Utilities generali (hash, date, validazioni base)
-- Getter/setter per tutti i database locali
-- Cache intelligente per ottimizzazioni
+### **Gestione Utenti**
+- **usersManagement.js**: CRUD utenti, autenticazione, ricerca per id.
+- **validate.js**: Validazione form (username, email, password).
+- **modif.js**: Gestione stato form, abilitazione sezioni, submit selettivo.
 
-**Funzioni principali:**
-- `initializePage(requiredData)` - Inizializzazione modulare
-- `getRegisteredUsers()` - Getter con cache per utenti
-- `atomicAddUser()` - Aggiunta utente atomica
-- `atomicDeleteUser()` - Eliminazione utente atomica
-- `atomicUpdateUser()` - Modifica utente atomica
+### **Gestione Ricette**
+- **recipesAPI.js**: Fetch ricette/categorie da TheMealDB.
+- **data-models.js**: Normalizzazione dati API in oggetti business.
 
-### auth.js - Gestione autenticazione
-**Responsabilità:**
-- Validazione credenziali e creazione utenti
-- Hashing password e confronto sicuro
-- Gestione stato sessione utente
+### **Gestione Recensioni**
+- **reviewsManagement.js**: Aggiunta/rimozione recensioni, calcolo rating medio globale/utente, verifica esistenza recensione.
+- **UI.js**: Rendering card con rating, progress bar, note.
 
-**Funzioni principali:**
-- `validateUserEntry()` - Controllo duplicati
-- `createUserObject()` - Creazione oggetto utente completo
-- `searchUserbyName()` - Ricerca utente per username
-- `admitUser()` - Verifica credenziali login
-
-### recipes.js - Gestione ricette
-**Responsabilità:**
-- Caricamento ricette da API esterna
-- Cache locale e gestione offline
-- Funzioni di ricerca e filtro
-- Gestione preferiti utente
-
-**Funzioni principali:**
-- `loadRecipesFromAPI()` - Caricamento iniziale
-- `getRecipes()` - Getter con lazy loading
-- `searchRecipes()` - Ricerca locale sui dati
-- `toggleFavorite()` - Gestione preferiti
-
-### notes.js - Gestione note private
-**Responsabilità:**
-- CRUD note personali per ricetta
-- Associazione nota-utente-ricetta
-- Ricerca nelle proprie note
-
-### reviews.js - Gestione recensioni pubbliche
-**Responsabilità:**
-- CRUD recensioni pubbliche
-- Sistema di rating
-- Aggregazione recensioni per ricetta
-
-### validate.js - Validazione input
-**Responsabilità:**
-- Validazione campi form in tempo reale
-- Formattazione UI con classi Bootstrap
-- Gestione stato pulsanti submit
+### **Gestione Preferiti e Note**
+- **favourites.js**: Caricamento e rendering ricette preferite, recensite, annotate.
+- **UI.js**: Visualizzazione card con rating/note.
 
 ---
 
-## Strategie di resilienza
+## 🛠️ Flusso di Interazione tra Moduli
 
-### Gestione errori storage
-- Try/catch per operazioni localStorage/sessionStorage
-- Fallback per storage non disponibile
-- Messaggi utente informativi per errori
-
-### Gestione navigazione durante operazioni asincrone
-- Feedback visivo durante operazioni critiche
-- Disabilitazione temporanea controlli UI
-- Operazioni rapide per minimizzare finestra di rischio
-
-### Gestione accesso diretto alle pagine
-- Inizializzazione distribuita per ogni pagina
-- Controllo prerequisiti e redirect automatici
-- Caricamento lazy dei dati richiesti
+1. **User effettua login** → usersManagement.js verifica credenziali → se ok, salva id utente loggato.
+2. **User cerca ricetta** → recipesAPI.js fetch ricette → UI.js visualizza card.
+3. **User aggiunge recensione** → reviewsManagement.js aggiorna storage → UI.js aggiorna rating.
+4. **User aggiunge nota** → usersManagement.js aggiorna array notes → UI.js aggiorna card.
+5. **User modifica profilo** → modif.js gestisce form → usersManagement.js aggiorna dati → reload pagina.
 
 ---
 
-## Considerazioni per implementazione
+## 🧩 Relazioni tra Dati
 
-### Sicurezza (limitazioni documentate)
-- Hash client-side solo per dimostrazione didattica
-- Persistenza locale: privacy e portabilità limitate
-- Documentazione chiara dei limiti di sicurezza
-
-### Performance
-- Pre-caricamento completo ricette per UX fluida
-- Cache intelligente per operazioni frequenti
-- Operazioni atomiche solo dove critico
-
-### Scalabilità futura
-- Struttura modulare facilmente estendibile
-- Possibile migrazione a IndexedDB per dataset grandi
-- Architettura pronta per integrazioni backend
-
-### UX e accessibilità
-- Feedback immediato per tutte le operazioni
-- Messaggi di errore chiari e specifici
-- Stato di caricamento visibile per operazioni lunghe
+- **User** → può avere molti **favourites** (id ricette), molte **notes** (collegate a ricette), molte **reviews** (una per ricetta).
+- **Recipe** → può avere molte **reviews** (da utenti diversi), molte **notes** (da utenti diversi).
+- **Review** → collegata a una ricetta e a un utente.
+- **Note** → collegata a una ricetta e a un utente.
 
 ---
 
-## Prossimi passi implementativi
+## 📝 Note Architetturali e Miglioramenti Semplici
 
-### Fase 1: Completamento sistema utenti
-- Finalizzazione funzioni atomiche critiche
-- Test robustezza gestione errori
-- Implementazione feedback visivo operazioni
+- **Validazione input** sempre presente nei form.
+- **Event delegation** per click su card e gestione container.
+- **Sezioni form disabilitate di default**: abilitazione selettiva per sicurezza.
+- **Gestione errori centralizzata** tramite errorsManagement.js.
+- **Rating e note** visualizzati tramite progress bar e card dedicate.
+- **Performance**: accettabile per MVP, nessuna ottimizzazione avanzata richiesta.
+- **Documentazione JSDoc** presente nei file JS principali per facilitare comprensione.
 
-### Fase 2: Integrazione gestione ricette
-- Creazione modulo recipes.js
-- Implementazione pre-caricamento API
-- Sviluppo ricerca e filtri locali
+---
 
-### Fase 3: Funzionalità avanzate
-- Sistema note private
-- Sistema recensioni pubbliche
-- Dashboard completa e gestione profilo
+## 📈 Flusso Utente Sintetico
 
-### Fase 4: Ottimizzazioni e refinement
-- Performance tuning
-- Miglioramenti UX
-- Documentazione finale e testing
+1. **Homepage** → ricerca o navigazione categorie.
+2. **Ricerca** → selezione ricetta → dettagli.
+3. **Dettagli ricetta** → aggiunta/rimozione preferiti, recensione, nota.
+4. **Area personale** → visualizza e gestisce preferiti, recensioni, note.
+5. **Modifica profilo** → aggiorna dati utente.
+
+---
+
+## 📌 Suggerimenti Architetturali (senza refactoring)
+
+- **Mantenere separazione tra logica di business e UI** (già implementato).
+- **Centralizzare gestione errori** per feedback utente uniforme.
+- **Utilizzare costruttori e factory per oggetti dati** (già presente).
+- **Documentare chiaramente le funzioni e i flussi** (JSDoc + questa guida).
+- **Evitare duplicazione codice** nei moduli di rendering e validazione.
+- **Gestire lo stato utente e autenticazione in modo centralizzato**.
+
+---
+
+## 📚 Come Consultare la Documentazione
+
+- **Per capire la logica di una pagina**: consulta lo script corrispondente in `js/pages-scripts/`.
+- **Per vedere come sono strutturati i dati**: consulta `js/data-models.js`.
+- **Per la gestione utenti**: consulta `js/usersManagement.js` e `js/validate.js`.
+- **Per la gestione recensioni**: consulta `js/reviewsManagement.js`.
+- **Per la gestione UI**: consulta `js/UI.js`.
+- **Per la gestione errori**: consulta `js/errorsManagement.js`.
+
+---
+
+**Questa guida riassume i flussi di lavoro, la struttura e le relazioni tra i moduli del progetto SSRI-PWM.**
