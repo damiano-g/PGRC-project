@@ -38,7 +38,33 @@
  * 
  * @since 1.0.0
  */
-function createPreviewCard (itemPreviewObj, bodyElement = null) { /* implementation */ }
+function createPreviewCard (itemPreviewObj, bodyElement = null) { 
+   const card = document.createElement("div");
+   card.classList.add("card");
+   card.classList.add("mb-1");
+   card.classList.add("mt-1");
+
+   // Aggiunge data attribute per identificazione durante event delegation
+   card.dataset.itemId = itemPreviewObj.id;
+   card.innerHTML = `
+      <div class="row g-0">
+         <div class="col-5">
+               <img src="${itemPreviewObj.image}" alt="${itemPreviewObj.name}" class="img-fluid">
+         </div>
+         <div class="col-7">
+               <div class="row card-body d-flex align-items-center">
+                  <h5 class="card-title mb-3">${itemPreviewObj.name}</h5>
+               </div>
+         </div>
+      </div>
+   `;
+
+   if(bodyElement){
+   card.querySelector(".card-body").appendChild(bodyElement);  
+   }
+
+   return card;
+ }
 
 /**
  * Utility generica per popolamento container con array di card
@@ -61,7 +87,17 @@ function createPreviewCard (itemPreviewObj, bodyElement = null) { /* implementat
  * 
  * @since 1.0.0
  */
-function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null) { /* implementation */ }
+function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null) { 
+   container.innerHTML = "";
+
+   for(let i=0; i < previewItemsArray.length; i++){
+      let relatedBodyElement = null;
+      if(bodyElementsArray){
+         relatedBodyElement = bodyElementsArray[i];
+      }
+      container.appendChild(createPreviewCard(previewItemsArray[i], relatedBodyElement));
+   }
+}
 
 /**
  * Crea elemento slide per carousel Bootstrap da oggetto ItemPreview
@@ -85,7 +121,30 @@ function populatePreviewContainer (previewItemsArray, container, bodyElementsArr
  * 
  * @since 1.0.0
  */
-function createCarouselItem(itemPreviewObj, ratingFunctions) { /* implementation */ }
+function createCarouselItem(itemPreviewObj, ratingFunctions) { 
+   const carouselItem = document.createElement("div");
+   carouselItem.classList.add("carousel-item");
+
+   // Data attribute per identificazione (conversione esplicita a stringa)
+   const tasteAvg = ratingFunctions.getTasteRate(itemPreviewObj.id);
+   const difficultyAvg = ratingFunctions.getDifficultyRate(itemPreviewObj.id);
+   carouselItem.dataset.itemId = String(itemPreviewObj.id);
+
+   carouselItem.innerHTML = `
+      <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
+      <div class="carousel-caption d-none d-md-block"> <!-- d-none and d-md-block hides captions in smaller viewports -->
+         <h5>${itemPreviewObj.name}</h5>
+         <div class="row">
+               <span>Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteAvg}"></progress></progress>
+         </div>
+         <div class="row">
+               <span>Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyAvg}"></progress></progress>
+         </div>
+      </div>
+   `;
+
+   return carouselItem;   
+};
 
 /**
  * Crea card per visualizzazione note utente con pulsante rimozione
@@ -108,7 +167,19 @@ function createCarouselItem(itemPreviewObj, ratingFunctions) { /* implementation
  * 
  * @since 1.0.0
  */
-function createNoteCard(userNote) { /* implementation */ }
+function createNoteCard(userNote) { 
+   const noteCard = document.createElement("div");
+   noteCard.classList.add("card");
+   noteCard.classList.add("mb-2");
+   noteCard.classList.add("mt-2");
+
+   noteCard.innerHTML = `
+      <div class="card-body">${userNote.text}</div>
+      <div class="card-footer"><button class="btn btn-secondary btn-sm" data-note-id="${userNote.id}">Rimuovi nota</button></div>
+   `;
+
+   return noteCard;
+};
 
 // ================================================================================================
 // PUBLIC API - DISPLAY STRATEGIES
@@ -126,87 +197,132 @@ function createNoteCard(userNote) { /* implementation */ }
  */
 export const DisplayPreviews = {
 
-    /**
-     * Display preview con rating progress bars (globali o utente)
-     * 
-     * @function displayWithRating
-     * @memberof DisplayPreviews
-     * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array ricette normalizzate
-     * @param {HTMLElement} container - Container target per rendering
-     * @param {Object} ratingFunctions - Oggetto con getTasteRate e getDifficultyRate
-     * @param {string|null} [userId=null] - ID utente per rating personalizzati (null = globali)
-     * @returns {void}
-     * 
-     * @description
-     * Strategia display per ricette con visualizzazione rating via progress bars.
-     * - userId null → "Recensioni globali" con rating medi
-     * - userId fornito → "La mia recensione" con rating utente specifico
-     * - Fallback "Ancora nessuna recensione" per rating mancanti
-     * - Progress bars HTML5 con max=5 e value dinamico
-     * 
-     * @example
-     * // Rating globali
-     * DisplayPreviews.displayWithRating(recipes, container, GlobalRatingFunctions);
-     * 
-     * // Rating utente specifico
-     * DisplayPreviews.displayWithRating(recipes, container, UserRatingFunctions, "user123");
-     * 
-     * @todo Aggiungere validazione range rating (0-5)
-     * @todo Implementare color coding per progress bars
-     * 
-     * @since 1.0.0
-     */
-    displayWithRating: function (previewItemsArray, container, ratingFunctions, userId = null) { /* implementation */ },
+   /**
+    * Display preview con rating progress bars (globali o utente)
+    * 
+    * @function displayWithRating
+    * @memberof DisplayPreviews
+    * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array ricette normalizzate
+    * @param {HTMLElement} container - Container target per rendering
+    * @param {Object} ratingFunctions - Oggetto con getTasteRate e getDifficultyRate
+    * @param {string|null} [userId=null] - ID utente per rating personalizzati (null = globali)
+    * @returns {void}
+    * 
+    * @description
+    * Strategia display per ricette con visualizzazione rating via progress bars.
+    * - userId null → "Recensioni globali" con rating medi
+    * - userId fornito → "La mia recensione" con rating utente specifico
+    * - Fallback "Ancora nessuna recensione" per rating mancanti
+    * - Progress bars HTML5 con max=5 e value dinamico
+    * 
+    * @example
+    * // Rating globali
+    * DisplayPreviews.displayWithRating(recipes, container, GlobalRatingFunctions);
+    * 
+    * // Rating utente specifico
+    * DisplayPreviews.displayWithRating(recipes, container, UserRatingFunctions, "user123");
+    * 
+    * @todo Aggiungere validazione range rating (0-5)
+    * @todo Implementare color coding per progress bars
+    * 
+    * @since 1.0.0
+    */
+   displayWithRating: function (previewItemsArray, container, ratingFunctions, userId = null) { 
+      const bodyElementsArray = [];
 
-    /**
-     * Display preview con note testuali utente
-     * 
-     * @function displayWithNote
-     * @memberof DisplayPreviews
-     * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array ricette normalizzate
-     * @param {HTMLElement} container - Container target per rendering
-     * @param {Array<Object>} userNotesArray - Array note utente con text property
-     * @returns {void}
-     * 
-     * @description
-     * Strategia display per ricette con note testuali dell'utente.
-     * - Matching 1:1 tra preview e note tramite indice array
-     * - Rendering note come paragrafi semplici nel card-body
-     * - Assume corrispondenza ordinata tra array input
-     * 
-     * @example
-     * const notes = [{text: "Ricetta facile"}, {text: "Troppo salata"}];
-     * DisplayPreviews.displayWithNote(recipes, container, notes);
-     * 
-     * @todo Validare lunghezza array per mismatch preview/note
-     * @todo Aggiungere formatting HTML per note (bold, italic, links)
-     * 
-     * @since 1.0.0
-     */
-    displayWithNote: function (previewItemsArray, container, userNotesArray) { /* implementation */ },
+      previewItemsArray.forEach(element => {
+         const taste = ratingFunctions.getTasteRate(element.id, userId);
+         const difficulty = ratingFunctions.getDifficultyRate(element.id, userId);
+         
+         const title = element.type === "meals" ? "Recensioni globali" : "La mia recensione";
+         
+         let content = `<h6>${title}</h6>`;
 
-    /**
-     * Display semplice preview senza contenuto aggiuntivo
-     * 
-     * @function displayCategories
-     * @memberof DisplayPreviews
-     * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array categorie normalizzate
-     * @param {HTMLElement} container - Container target per rendering
-     * @returns {void}
-     * 
-     * @description
-     * Strategia display minimale per categorie o contenuto senza metadati.
-     * - Solo card base con immagine e titolo
-     * - Nessun contenuto aggiuntivo nel card-body
-     * - Layout ottimizzato per griglie di navigazione
-     * 
-     * @example
-     * // Display categorie ricette
-     * DisplayPreviews.displayCategories(categories, categoriesContainer);
-     * 
-     * @since 1.0.0
-     */
-    displayCategories: function (previewItemsArray, container) { /* implementation */ }
+         if(Number(taste) > 0 && Number(difficulty) > 0){
+               content += `
+                  <div class="row">
+                     <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${taste}"></progress></progress>
+                  </div>
+                  <div class="row">
+                     <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficulty}"></progress></progress>
+                  </div>
+               `;
+         }else{
+               content += "Ancora nessuna recensione";
+         }
+
+         const reviews = document.createElement("div");
+         reviews.classList.add("container");
+         reviews.classList.add("ps-4");
+         reviews.innerHTML = content; 
+
+         bodyElementsArray.push(reviews);
+      });
+      
+      populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
+   },
+
+   /**
+    * Display preview con note testuali utente
+    * 
+    * @function displayWithNote
+    * @memberof DisplayPreviews
+    * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array ricette normalizzate
+    * @param {HTMLElement} container - Container target per rendering
+    * @param {Array<Object>} userNotesArray - Array note utente con text property
+    * @returns {void}
+    * 
+    * @description
+    * Strategia display per ricette con note testuali dell'utente.
+    * - Matching 1:1 tra preview e note tramite indice array
+    * - Rendering note come paragrafi semplici nel card-body
+    * - Assume corrispondenza ordinata tra array input
+    * 
+    * @example
+    * const notes = [{text: "Ricetta facile"}, {text: "Troppo salata"}];
+    * DisplayPreviews.displayWithNote(recipes, container, notes);
+    * 
+    * @todo Validare lunghezza array per mismatch preview/note
+    * @todo Aggiungere formatting HTML per note (bold, italic, links)
+    * 
+    * @since 1.0.0
+    */
+   displayWithNote: function (previewItemsArray, container, userNotesArray) { 
+      const bodyElementsArray = [];
+
+      userNotesArray.forEach(element => {
+         const note = document.createElement("p");
+         note.innerText = element.text;
+         bodyElementsArray.push(note);
+      });
+
+      populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
+   },
+
+   /**
+    * Display semplice preview senza contenuto aggiuntivo
+    * 
+    * @function displayCategories
+    * @memberof DisplayPreviews
+    * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array categorie normalizzate
+    * @param {HTMLElement} container - Container target per rendering
+    * @returns {void}
+    * 
+    * @description
+    * Strategia display minimale per categorie o contenuto senza metadati.
+    * - Solo card base con immagine e titolo
+    * - Nessun contenuto aggiuntivo nel card-body
+    * - Layout ottimizzato per griglie di navigazione
+    * 
+    * @example
+    * // Display categorie ricette
+    * DisplayPreviews.displayCategories(categories, categoriesContainer);
+    * 
+    * @since 1.0.0
+    */
+   displayCategories: function (previewItemsArray, container) { 
+      populatePreviewContainer(previewItemsArray, container);
+   }
 };
 
 // ================================================================================================
@@ -240,7 +356,13 @@ export const DisplayPreviews = {
  * 
  * @since 1.0.0
  */
-export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions) { /* implementation */ }
+export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions) { 
+  carouselInner.innerHTML = "";
+
+   itemPreviewArray.forEach(element => {
+      carouselInner.appendChild(createCarouselItem(element, ratingFunctions));
+   }); 
+};
 
 // ================================================================================================
 // PUBLIC API - SPECIALIZED CONTAINERS
@@ -272,7 +394,17 @@ export function populateCarousel(itemPreviewArray, carouselInner, ratingFunction
  * 
  * @since 1.0.0
  */
-export function populateNotesContainer(userNotesArray, container) { /* implementation */ }
+export function populateNotesContainer(userNotesArray, container) { 
+   container.innerHTML = "";
+   if(userNotesArray.length > 0){
+      userNotesArray.forEach(element => {
+         container.appendChild(createNoteCard(element));
+      });
+      container.classList.remove("d-none");
+   }else{
+      container.classList.add("d-none");
+   } 
+};
 
 // ================================================================================================
 // PUBLIC API - BUTTON STATE MANAGEMENT
@@ -299,7 +431,13 @@ export function populateNotesContainer(userNotesArray, container) { /* implement
  * 
  * @since 1.0.0
  */
-export function favBtnDisplay(btn, userLogged, userFavourite) { /* implementation */ }
+export function favBtnDisplay(btn, userLogged, userFavourite) { 
+   if(userLogged && userFavourite){
+      btn.innerText = "Rimuovi dai preferiti";
+   }else{
+      btn.innerText = "Aggiungi ai preferiti";
+   }
+};
 
 /**
  * Aggiorna testo pulsante recensione in base allo stato utente
@@ -322,7 +460,13 @@ export function favBtnDisplay(btn, userLogged, userFavourite) { /* implementatio
  * 
  * @since 1.0.0
  */
-export function revBtnDisplay(btn, userLogged, userReviewed) { /* implementation */ }
+export function revBtnDisplay(btn, userLogged, userReviewed) { 
+   if(userLogged && userReviewed){
+      btn.innerText = "Rimuovi recensione";
+   }else{
+      btn.innerText = "Aggiungi recensione";
+   }
+};
 
 // ================================================================================================
 // ARCHITECTURE NOTES
