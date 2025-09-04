@@ -39,7 +39,8 @@
 #fav-recipes .card,
 #rev-recipes .card,
 #noted-recipes .card,
-.carousel-item {
+.carousel-item,
+.carousel-item .btn {
     cursor: pointer;
     transition: transform 0.5s ease;
     transition: box-shadow 0.2s ease;
@@ -50,7 +51,7 @@
 #fav-recipes .card:hover,
 #rev-recipes .card:hover,
 #noted-recipes .card:hover,
-.carousel-item:hover {
+.carousel-item:hover{
     transform: scale(1.002);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
@@ -61,4 +62,8 @@
 #noted-recipes{
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.bi-heart{
+    color: red;
 }

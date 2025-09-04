@@ -51,16 +51,22 @@ function createPreviewCard (itemPreviewObj, bodyElement = null) {
          <div class="col-5">
                <img src="${itemPreviewObj.image}" alt="${itemPreviewObj.name}" class="img-fluid">
          </div>
-         <div class="col-7">
-               <div class="row card-body d-flex align-items-center">
-                  <h5 class="card-title mb-3">${itemPreviewObj.name}</h5>
-               </div>
+         <div class="col-7 card-body">
+            <h5 class="card-title mb-3">${itemPreviewObj.name}</h5>
          </div>
       </div>
    `;
 
    if(bodyElement){
-   card.querySelector(".card-body").appendChild(bodyElement);  
+      const cardBody = card.querySelector(".card-body");
+      cardBody.appendChild(bodyElement);
+
+      const cardFavBtn = document.createElement("button");
+      cardFavBtn.classList.add("btn", "position-absolute", "bottom-0", "end-0");
+      const cardFavIcon = document.createElement("i");
+      cardFavIcon.classList.add("bi", "bi-2x","bi-heart");
+      cardFavBtn.appendChild(cardFavIcon);
+      cardBody.appendChild(cardFavBtn);
    }
 
    return card;
@@ -131,14 +137,17 @@ function createCarouselItem(itemPreviewObj, ratingFunctions) {
    carouselItem.dataset.itemId = String(itemPreviewObj.id);
 
    carouselItem.innerHTML = `
-      <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
-      <div class="carousel-caption d-none d-md-block"> <!-- d-none and d-md-block hides captions in smaller viewports -->
-         <h5>${itemPreviewObj.name}</h5>
-         <div class="row">
+      <div class="position-relative">
+         <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
+         <div class="carousel-caption d-none d-md-block"> <!-- d-none and d-md-block hides captions in smaller viewports -->
+            <h5>${itemPreviewObj.name}</h5>
+            <button class="btn btn-lg position-absolute top-0 end-0"><i class="bi bi-2x bi-heart"></i></button>
+            <div class="row">
                <span>Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteAvg}"></progress></progress>
-         </div>
-         <div class="row">
+            </div>
+            <div class="row">
                <span>Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyAvg}"></progress></progress>
+            </div>
          </div>
       </div>
    `;
@@ -236,26 +245,26 @@ export const DisplayPreviews = {
          
          const title = element.type === "meals" ? "Recensioni globali" : "La mia recensione";
          
-         let content = `<h6>${title}</h6>`;
-
-         if(Number(taste) > 0 && Number(difficulty) > 0){
-               content += `
-                  <div class="row">
-                     <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${taste}"></progress></progress>
-                  </div>
-                  <div class="row">
-                     <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficulty}"></progress></progress>
-                  </div>
-               `;
-         }else{
-               content += "Ancora nessuna recensione";
-         }
-
          const reviews = document.createElement("div");
          reviews.classList.add("container");
          reviews.classList.add("ps-4");
+         
+         let content = `<h6>${title}</h6>`;
+         
+         if(Number(taste) > 0 && Number(difficulty) > 0){
+            content += `
+            <div class="row">
+            <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${taste}"></progress></progress>
+            </div>
+            <div class="row">
+            <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficulty}"></progress></progress>
+            </div>
+            `;
+         }else{
+            content += "Ancora nessuna recensione";
+         }
+         
          reviews.innerHTML = content; 
-
          bodyElementsArray.push(reviews);
       });
       

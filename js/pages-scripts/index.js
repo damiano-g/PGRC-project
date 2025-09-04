@@ -52,6 +52,7 @@ window.addEventListener("load", async () => {
     for(let i=1; i<=5; i++){
         recipesArray.push(createPreviewArray(await rndFetch())[0]);
     }
+    console.log(recipesArray);
 
     populateCarousel(recipesArray, slideshow, GlobalRatingFunctions);
 
@@ -90,13 +91,21 @@ catContainer.addEventListener("click", (click) => {
 // NAVIGAZIONE DA CAROUSEL
 // ===============================
 
+slideshow.addEventListener("click", (click) => {
+    const btn = click.target.closest(".btn");
+    if(btn){
+        window.location.href = `../../pages/favourites.html`;
+    }
+});
+
 /**
  * Event delegation per click su slide del carousel
  * Naviga direttamente ai dettagli della ricetta cliccata
  */
 slideshow.addEventListener("click", (click) => {
     const slide = click.target.closest(".carousel-item");
-    if(slide){
+    const btn = click.target.closest(".btn");
+    if(slide && !btn){
         window.location.href = `../../pages/recipe-details.html?id=${slide.dataset.itemId}`;
     }
 });
