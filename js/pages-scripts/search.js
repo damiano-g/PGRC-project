@@ -13,8 +13,9 @@
 
 import { fetchByCategory, fetchByName, } from "../recipesAPI.js";        // Funzioni API per ricerca ricette
 import { ItemPreview, createPreviewArray } from "../data-models.js";     // Modelli dati e normalizzazione
-import { DisplayPreviews } from "../UI.js";         // Componenti UI per rendering
+import { cardsFavBtnsDisplay, DisplayPreviews, favBtnDisplay } from "../UI.js";         // Componenti UI per rendering
 import { GlobalRatingFunctions } from "../reviewsManagement.js";
+import { getLoggedUserId, currentUserFavourite, searchUserById, updateUserFavourites } from "../usersManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -29,6 +30,8 @@ const searchBar = document.getElementById("searchBar");
 /** @type {HTMLElement} Container dove vengono mostrati i risultati della ricerca */
 const resultsContainer = document.getElementById("results-container");
 
+let searchPageCards;
+
 // ===============================
 // GESTIONE RICERCA PER NOME
 // ===============================
@@ -38,10 +41,19 @@ const resultsContainer = document.getElementById("results-container");
  * Gestisce ricerca per nome ricetta + aggiornamento URL per navigazione
  */
 searchBtn.addEventListener("click", async () => {
-    const array = createPreviewArray(await fetchByName(String(searchBar.value)));
-    history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
-    DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions);
-    // oldPopulatePreviewContainer(array, resultsContainer, RatingFunctions);
+    const response = await fetchByName(String(searchBar.value));
+    console.log(response);
+    if(response.meals){
+        const array = createPreviewArray(response);
+        history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
+        DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions);
+        cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
+    }else{
+        const paragraph = document.createElement("div");
+        paragraph.innerText = "La ricerca non ha prodotto risultati";
+        resultsContainer.innerHTML = "";
+        resultsContainer.appendChild(paragraph);
+    }
 });
 
 // ===============================
@@ -57,12 +69,20 @@ resultsContainer.addEventListener("click", (click) => {
     // Cattura evento click -> se il target è inserito in un elemento .card (o lo è) 
     // restituisce il primo elemento card incontrato nella gerarchia (event bubbling)
     const card = click.target.closest(".card");
+    const isBtn = click.target.matches(".fav-icon");
+    console.log(isBtn);
 
-    if(card){
+    if(card && !isBtn){
         // Naviga alla pagina dettagli passando l'ID della ricetta come query parameter
         window.location.href = `../../pages/recipe-details.html?id=${card.dataset.itemId}`;
-    }
+    };
+
+    if(isBtn){
+        updateUserFavourites(card.dataset.itemId);
+        favBtnDisplay(card.querySelector(".fav-icon"), Boolean(getLoggedUserId()), currentUserFavourite(card.dataset.itemId));
+    };
 });
+
 
 // ===============================
 // GESTIONE CARICAMENTO PAGINA
@@ -76,8 +96,6 @@ window.addEventListener("load", async () => {
     
     // Parsing manuale dell'URL query string (es. "?q=pasta" → ["q", "pasta"])
     const query = window.location.search.substring(1).split("=");
-
-    console.log(query[0], query[1]);
     
     if(query[0] === "q"){
         searchBar.value = query[1];
@@ -87,9 +105,12 @@ window.addEventListener("load", async () => {
     if(query[0] === "cat"){
         const array = createPreviewArray(await fetchByCategory(query[1]));
         DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions);
-        //oldPopulatePreviewContainer(array, resultsContainer, RatingFunctions);
+        cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
     }
+    
 });
+
+
 
 
 // ===============================

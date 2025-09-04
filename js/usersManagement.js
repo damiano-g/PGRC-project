@@ -557,13 +557,18 @@ export async function hashString(originalString) {
  *   return false; // User not logged in
  * }
  */
-export function isFavourite(recipeId){
+export function currentUserFavourite(recipeId){
     try {
         const loggedUserId = getLoggedUserId();
-        return loggedUserId && searchUserById(loggedUserId).favourites.some(element => element === recipeId);
+        return Boolean(loggedUserId && searchUserById(loggedUserId).favourites.some(element => element === recipeId));
     } catch (error) {
         throw error;
     }
+}
+
+export const UserStateInterface = {
+
+    
 }
 
 /**

@@ -14,7 +14,7 @@
 
 import { createPreviewArray } from "../data-models.js";
 import { fetchById } from "../recipesAPI.js";
-import { getStoredReviews, isReviewed, GlobalRatingFunctions, UserRatingFunctions } from "../reviewsManagement.js";
+import { getStoredReviews, isReviewedBy, GlobalRatingFunctions, UserRatingFunctions } from "../reviewsManagement.js";
 import { DisplayPreviews } from "../UI.js";
 import { getRegisteredUsers, getLoggedUserId, searchUserById } from "../usersManagement.js";
 
@@ -155,7 +155,7 @@ window.addEventListener("load", async () => {
      * Array filtrato di review dell'utente corrente per estrazione recipe IDs
      * @type {Array<Object>} 
      */
-    const currentUserRevsRecipesIds = getStoredReviews().filter(element => isReviewed(element.recipeId, currentUser.id));
+    const currentUserRevsRecipesIds = getStoredReviews().filter(element => isReviewedBy(element.recipeId, currentUser.id));
 
     // ============================================================================================
     // SEZIONE FAVOURITES

@@ -20,7 +20,8 @@
     display: inline-block;
 }
 
-.card .img-fluid{
+.card .img-fluid,
+#image-box .img-fluid{
     object-fit: cover;
     width: 100%;
 }
@@ -64,6 +65,7 @@
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-.bi-heart{
+.bi-heart,
+.bi-heart-fill{
     color: red;
 }

@@ -13,9 +13,9 @@
 
 import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
 import { FullRecipe } from "../data-models.js";          // Modello dati completo ricetta
-import { addNewUserNote, deleteUserNote, getLoggedUserId, getUserNotes, isFavourite, updateUserFavourites, } from "../usersManagement.js";
+import { addNewUserNote, deleteUserNote, getLoggedUserId, getUserNotes, currentUserFavourite, updateUserFavourites, } from "../usersManagement.js";
 import { favBtnDisplay, revBtnDisplay, populateNotesContainer } from "../UI.js";
-import { addReview, deleteReview, isReviewed, GlobalRatingFunctions } from "../reviewsManagement.js";
+import { addReview, deleteReview, isReviewedBy, GlobalRatingFunctions } from "../reviewsManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -46,7 +46,7 @@ const noteTextInput = document.getElementById("insert-note");
 const noteInsBtn = document.querySelector("form .btn");
 
 /** @type {HTMLButtonElement} Pulsante toggle preferiti */
-const favBtn = document.getElementById("favBtn");
+const detailsFavBtn = document.getElementById("favBtn");
 
 const revBtn = document.getElementById("revBtn");
 const revForm = document.querySelector(".modal .form");
@@ -69,11 +69,11 @@ const detailedRecipeId = window.location.search.substring(4);
  * Gestisce aggiunta/rimozione ricetta dai preferiti con controllo login
  * Try/catch gestisce errori storage e user feedback
  */
-favBtn.addEventListener("click", () => {
+detailsFavBtn.addEventListener("click", () => {
    try {
       if(getLoggedUserId()){
          updateUserFavourites(detailedRecipeId);
-         favBtnDisplay(favBtn, true, isFavourite(detailedRecipeId)); // Aggiornamento UI stato button
+         favBtnDisplay(detailsFavBtn, true, currentUserFavourite(detailedRecipeId)); // Aggiornamento UI stato button
       }else{
          window.location.href = "./login.html";
       }
@@ -95,7 +95,7 @@ revBtn.addEventListener("click", () => {
    try {
       const currentUserId = getLoggedUserId();
       if(currentUserId){
-         if(isReviewed(detailedRecipeId, currentUserId)){
+         if(isReviewedBy(detailedRecipeId, currentUserId)){
             revConfirmBtn.onclick = () => {
                deleteReview(detailedRecipeId, currentUserId);
                alert("Recensione eliminata");
@@ -217,8 +217,8 @@ window.addEventListener("load", async () => {
       recipeTitle.innerText = recipeDetails.name;
 
       // Configurazione pulsante preferiti basata su stato login e preferenze utente
-      favBtnDisplay(favBtn, currentUserId, isFavourite(detailedRecipeId, currentUserId));
-      revBtnDisplay(revBtn, currentUserId, isReviewed(detailedRecipeId, currentUserId)); // Da valutare unificazione funzione se gestione tramite icone
+      favBtnDisplay(detailsFavBtn, currentUserId, currentUserFavourite(detailedRecipeId, currentUserId));
+      revBtnDisplay(revBtn, currentUserId, isReviewedBy(detailedRecipeId, currentUserId)); // Da valutare unificazione funzione se gestione tramite icone
 
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
       if(currentUserId){
@@ -227,9 +227,11 @@ window.addEventListener("load", async () => {
       }
 
       // Inserisce l'immagine della ricetta nella pagina
-      imageBox.innerHTML = `
-         <img src="${recipeDetails.image}" alt="${recipeDetails.name}">
-      `;
+      const detailsImage = document.createElement("img");
+      detailsImage.src = recipeDetails.image;
+      detailsImage.alt = recipeDetails.name;
+      detailsImage.classList.add("img-fluid");
+      imageBox.appendChild(detailsImage);
 
       // Popola la lista degli ingredienti
       recipeDetails.ingredients.forEach(element => {

@@ -8,6 +8,9 @@
  * @requires data-models - ItemPreview objects per input standardizzato
  */
 
+import { RecipeState } from "./recipesManagement.js";
+import { currentUserFavourite } from "./usersManagement.js";
+
 // ================================================================================================
 // PRIVATE UTILITY FUNCTIONS
 // ================================================================================================
@@ -62,9 +65,9 @@ function createPreviewCard (itemPreviewObj, bodyElement = null) {
       cardBody.appendChild(bodyElement);
 
       const cardFavBtn = document.createElement("button");
-      cardFavBtn.classList.add("btn", "position-absolute", "bottom-0", "end-0");
+      cardFavBtn.classList.add("btn", "position-absolute", "bottom-0", "end-0", "fav-button");
       const cardFavIcon = document.createElement("i");
-      cardFavIcon.classList.add("bi", "bi-2x","bi-heart");
+      cardFavIcon.classList.add("bi", "bi-heart", "fav-icon");
       cardFavBtn.appendChild(cardFavIcon);
       cardBody.appendChild(cardFavBtn);
    }
@@ -132,8 +135,8 @@ function createCarouselItem(itemPreviewObj, ratingFunctions) {
    carouselItem.classList.add("carousel-item");
 
    // Data attribute per identificazione (conversione esplicita a stringa)
-   const tasteAvg = ratingFunctions.getTasteRate(itemPreviewObj.id);
-   const difficultyAvg = ratingFunctions.getDifficultyRate(itemPreviewObj.id);
+   const tasteAvg = ratingFunctions.taste(itemPreviewObj.id);
+   const difficultyAvg = ratingFunctions.difficulty(itemPreviewObj.id);
    carouselItem.dataset.itemId = String(itemPreviewObj.id);
 
    carouselItem.innerHTML = `
@@ -240,8 +243,8 @@ export const DisplayPreviews = {
       const bodyElementsArray = [];
 
       previewItemsArray.forEach(element => {
-         const taste = ratingFunctions.getTasteRate(element.id, userId);
-         const difficulty = ratingFunctions.getDifficultyRate(element.id, userId);
+         const taste = ratingFunctions.taste(element.id, userId);
+         const difficulty = ratingFunctions.difficulty(element.id, userId);
          
          const title = element.type === "meals" ? "Recensioni globali" : "La mia recensione";
          
@@ -442,9 +445,13 @@ export function populateNotesContainer(userNotesArray, container) {
  */
 export function favBtnDisplay(btn, userLogged, userFavourite) { 
    if(userLogged && userFavourite){
-      btn.innerText = "Rimuovi dai preferiti";
+      btn.classList.remove("bi-heart");
+      btn.classList.add("bi-heart-fill");
+      //btn.innerText = "Rimuovi dai preferiti";
    }else{
-      btn.innerText = "Aggiungi ai preferiti";
+      btn.classList.remove("bi-heart-fill");
+      btn.classList.add("bi-heart");
+      //btn.innerText = "Aggiungi ai preferiti";
    }
 };
 
@@ -476,6 +483,15 @@ export function revBtnDisplay(btn, userLogged, userReviewed) {
       btn.innerText = "Aggiungi recensione";
    }
 };
+
+
+export function cardsFavBtnsDisplay(isUserLogged){
+   const pageCards = document.querySelectorAll(".card");
+
+   pageCards.forEach(card => {
+      favBtnDisplay(card.querySelector(".fav-icon"), Boolean(isUserLogged), RecipeState.isFavourite(card.dataset.itemId));
+   });
+}
 
 // ================================================================================================
 // ARCHITECTURE NOTES

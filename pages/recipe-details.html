@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../bootstrap/node_modules/bootstrap-icons/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../recipeStyle.css">
     <title>Recipe <details></details></title>
     
@@ -37,7 +38,7 @@
         <h2 class="text-center">Dettaglio ricetta</h2>
         <div class="container" id="recipe-contents">
             <h1 class="text-center" id="recipe-title"></h1>
-            <button class="btn btn-secondary" id="favBtn"></button>
+            <button class="btn btn-secondary"></button>
             <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#reviewDialog" id="revBtn"></button>
             
             <div class="modal" id="reviewDialog">
@@ -69,7 +70,13 @@
                 </div>
             </div>
 
-            <div class="row" id="image-box"></div>
+            <div class="row" id="">
+                <div class="col position-relative" id="image-box">
+                    <button class="btn btn-lg position-absolute top-0 start-0 m-4">
+                        <i class="bi bi-heart" id="favBtn"></i>
+                    </button>
+                </div>
+            </div>
             <div class="row" id="ingredients-box">
                 <h3>Ingredienti</h3>
                 <ul id="ingredients-list"></ul>

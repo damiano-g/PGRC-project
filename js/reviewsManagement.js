@@ -360,7 +360,7 @@ export const GlobalRatingFunctions = {
      * 
      * @since 1.0.0
      */
-    getTasteRate: function(recipeId){
+    taste: function getTasteRate(recipeId){
         try {
             return recipeAvgRate(recipeId, "tasteRate");
         } catch (error) {
@@ -392,7 +392,7 @@ export const GlobalRatingFunctions = {
      * 
      * @since 1.0.0
      */
-    getDifficultyRate: function(recipeId){
+    difficulty: function getDifficultyRate(recipeId){
         try {
             return recipeAvgRate(recipeId, "difficultyRate");
         } catch (error) {
@@ -441,7 +441,7 @@ export const UserRatingFunctions = {
      * 
      * @since 1.0.0
      */
-    getTasteRate: function(recipeId, userId){
+    taste: function getTasteRate(recipeId, userId){
         try {
             return recipeUserRate(recipeId, userId, "tasteRate");
         } catch (error) {
@@ -468,7 +468,7 @@ export const UserRatingFunctions = {
      * 
      * @since 1.0.0
      */
-    getDifficultyRate: function(recipeId, userId){
+    difficulty: function getDifficultyRate(recipeId, userId){
         try {
             return recipeUserRate(recipeId, userId, "difficultyRate");
         } catch (error) {
@@ -509,7 +509,7 @@ export const UserRatingFunctions = {
  * 
  * @since 1.0.0
  */
-export function isReviewed(recipeId, userId){
+export function isReviewedBy(recipeId, userId){
     try {
         const loggedUserId = userId;
         const actualStoredReviews = getStoredReviews(); 
