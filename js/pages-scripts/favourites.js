@@ -127,19 +127,20 @@ window.addEventListener("load", async () => {
     // AUTHENTICATION CHECK
     // ============================================================================================
     
-    /** @type {Object} Oggetto utente corrente da localStorage */
-    const currentUser = searchUserById(getLoggedUserId());
+    const loggedUserId = getLoggedUserId();
     
     /**
      * Verifica autenticazione e redirect condizionale
      * @description Controlla se l'utente corrente esiste nel registro utenti
-     */
-    if(!getRegisteredUsers().some(item => item.id === currentUser.id)){
-        window.location.href = "./login.html"
+    */
+   if(!getRegisteredUsers().some(item => item.id === loggedUserId)){
+       window.location.href = "./login.html"
     }else{
         personalPageBody.classList.remove("d-none");
-    }
-
+    };
+    
+    /** @type {Object} Oggetto utente corrente da localStorage */
+    const currentUser = searchUserById(loggedUserId);
     // ============================================================================================
     // DATA LOADING & RENDERING
     // ============================================================================================
