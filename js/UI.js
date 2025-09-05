@@ -32,6 +32,7 @@ import { GlobalRatingFunctions, RecipeStatus, UserRatingFunctions, UserStatus } 
  * - Contenuto destro (col-7) con titolo e spazio per elementi aggiuntivi
  * - Data attribute per identificazione durante event delegation
  * - Compatibile con CSS Grid per layout affiancato automatico
+ * - Se bodyElement fornito, aggiunge button preferiti con icona Bootstrap
  * 
  * @example
  * const recipe = new ItemPreview({idMeal: "123", strMeal: "Pasta"});
@@ -118,11 +119,12 @@ function populatePreviewContainer (previewItemsArray, container, bodyElementsArr
  * @returns {HTMLElement} Elemento carousel-item pronto per carousel Bootstrap
  * 
  * @description
- * Factory per slide carousel con caption overlay e rating progress bars.
+ * Factory per slide carousel con caption overlay e icona preferiti.
  * - Immagine full-width responsive (d-block w-100)
  * - Caption overlay nascosta su mobile (d-none d-md-block)
- * - Progress bars per taste e difficulty rating
+ * - Icona preferiti Bootstrap (bi-heart) con stato dinamico
  * - Data attribute per event delegation
+ * - Progress bars per rating commentate nel codice
  * 
  * @example
  * const recipe = new ItemPreview({idMeal: "456", strMeal: "Pizza"});
@@ -232,23 +234,22 @@ export const DisplayPreviews = {
     * @memberof DisplayPreviews
     * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array ricette normalizzate
     * @param {HTMLElement} container - Container target per rendering
-    * @param {Object} ratingFunctions - Oggetto con getTasteRate e getDifficultyRate
-    * @param {string|null} [userId=null] - ID utente per rating personalizzati (null = globali)
     * @returns {void}
     * 
     * @description
     * Strategia display per ricette con visualizzazione rating via progress bars.
-    * - userId null → "Recensioni globali" con rating medi
-    * - userId fornito → "La mia recensione" con rating utente specifico
-    * - Fallback "Ancora nessuna recensione" per rating mancanti
+    * - element.type === "reviews" → "La mia recensione" con UserRatingFunctions
+    * - Altri casi → "Recensioni globali" con GlobalRatingFunctions
+    * - Fallback "Ancora nessuna recensione" per rating mancanti (taste/difficulty = 0)
     * - Progress bars HTML5 con max=5 e value dinamico
+    * - Container con classi Bootstrap (container, ps-4)
     * 
     * @example
-    * // Rating globali
-    * DisplayPreviews.displayWithRating(recipes, container, GlobalRatingFunctions);
+    * // Array con tipo meals → rating globali
+    * DisplayPreviews.displayWithRating(recipesArray, container);
     * 
-    * // Rating utente specifico
-    * DisplayPreviews.displayWithRating(recipes, container, UserRatingFunctions, "user123");
+    * // Array con tipo reviews → rating utente
+    * DisplayPreviews.displayWithRating(reviewsArray, container);
     * 
     * @todo Aggiungere validazione range rating (0-5)
     * @todo Implementare color coding per progress bars
@@ -367,11 +368,11 @@ export const DisplayPreviews = {
  * @returns {void}
  * 
  * @description
- * Popolamento completo carousel con slide e caption rating.
+ * Popolamento completo carousel con slide e caption.
  * - Reset completo carousel-inner
- * - Creazione slide sequenziale con rating caption
+ * - Creazione slide sequenziale con icone preferiti
  * - Compatibilità Bootstrap carousel controls/indicators
- * - Nessuna attivazione automatica primo slide
+ * - Nessuna attivazione automatica primo slide (da gestire esternamente)
  * 
  * @example
  * const randomRecipes = await get5RandomRecipes();
@@ -439,23 +440,24 @@ export function populateNotesContainer(userNotesArray, container) {
 // ================================================================================================
 
 /**
- * Aggiorna testo pulsante preferiti in base allo stato utente
+ * Aggiorna icona pulsante preferiti in base allo stato utente e ricetta
  * 
  * @function favBtnDisplay
- * @param {HTMLButtonElement} btn - Pulsante preferiti da aggiornare
- * @param {boolean} userLogged - Flag autenticazione utente
- * @param {boolean} userFavourite - Flag ricetta nei preferiti
+ * @param {HTMLElement} btn - Elemento icona Bootstrap (bi-heart/bi-heart-fill)
+ * @param {string} recipeId - ID ricetta per verifica stato
  * @returns {void}
  * 
  * @description
- * State management per pulsante toggle preferiti.
- * - userLogged && userFavourite → "Rimuovi dai preferiti"
- * - Altri casi → "Aggiungi ai preferiti"
+ * State management per icona toggle preferiti con classi Bootstrap Icons.
+ * - UserStatus.isLogged() && RecipeStatus.isFavourite(recipeId) → bi-heart-fill (pieno)
+ * - Altri casi → bi-heart (vuoto)
+ * - Gestione automatica aggiunta/rimozione classi CSS
  * 
  * @example
- * favBtnDisplay(favButton, true, isInFavourites(recipeId));
+ * favBtnDisplay(iconElement, "52772");
  * 
  * @todo Aggiungere state icons/loading indicators
+ * @todo Implementare animazioni transizioni stato
  * 
  * @since 1.0.0
  */
@@ -472,21 +474,20 @@ export function favBtnDisplay(btn, recipeId) {
 };
 
 /**
- * Aggiorna testo pulsante recensione in base allo stato utente
+ * Aggiorna testo pulsante recensione in base allo stato utente e ricetta
  * 
  * @function revBtnDisplay
  * @param {HTMLButtonElement} btn - Pulsante recensione da aggiornare
- * @param {boolean} userLogged - Flag autenticazione utente
- * @param {boolean} userReviewed - Flag ricetta già recensita
+ * @param {string} recipeId - ID ricetta per verifica stato recensione
  * @returns {void}
  * 
  * @description
  * State management per pulsante toggle recensione.
- * - userLogged && userReviewed → "Rimuovi recensione"
+ * - UserStatus.isLogged() && RecipeStatus.isReviewed(recipeId) → "Rimuovi recensione"
  * - Altri casi → "Aggiungi recensione"
  * 
  * @example
- * revBtnDisplay(reviewButton, true, hasUserReview(recipeId, userId));
+ * revBtnDisplay(reviewButton, "52772");
  * 
  * @todo Aggiungere preview rating nel button state
  * 
