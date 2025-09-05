@@ -11,7 +11,7 @@
  */
 
 import { handleUserError } from "../errorsManagement.js";
-import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, updateUserUsername, updateUserEmail, getRegisteredUsers } from "../usersManagement.js";
+import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, updateUserUsername, updateUserEmail, getRegisteredUsers } from "../business/usersManagement.js";
 import * as validate from "../validate.js";
 
 // ================================================================================================

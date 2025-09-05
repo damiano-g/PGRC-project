@@ -1,4 +1,4 @@
-import { updateLoggedUser, deleteLoggedUser, getLoggedUserId, getRegisteredUsers, } from "../usersManagement.js";
+import { updateLoggedUser, deleteUser, getLoggedUserId, getRegisteredUsers, } from "../business/usersManagement.js";
 import { handleUserError, } from "../errorsManagement.js";
 
 // Riferimenti agli elementi DOM della pagina landing
@@ -11,7 +11,7 @@ const confirmBtn = document.getElementById("confirmBtn");
 // Cancella l'utente corrente dal database - da valutare controllo password
 confirmBtn.addEventListener("click", () => {
     try {
-        deleteLoggedUser();
+        deleteUser();
         document.querySelector("body").classList.add("d-none");
         alert("Account eliminato");
         logoutBtn.click();

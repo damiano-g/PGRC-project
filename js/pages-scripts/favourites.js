@@ -14,10 +14,10 @@
 
 import { createPreviewArray } from "../data-models.js";
 import { fetchById } from "../recipesAPI.js";
-import { RecipeStatus } from "../recipesManagement.js";
-import { getStoredReviews, isReviewedBy, GlobalRatingFunctions, UserRatingFunctions } from "../reviewsManagement.js";
+import { RecipeStatus } from "../dbInterface.js";
+import { getStoredReviews, isReviewedBy, GlobalRatingFunctions, UserRatingFunctions } from "../business/reviewsManagement.js";
 import { DisplayPreviews, favBtnDisplay } from "../UI.js";
-import { getRegisteredUsers, getLoggedUserId, searchUserById, currentUserFavourite, updateUserFavourites } from "../usersManagement.js";
+import { getRegisteredUsers, getLoggedUserId, searchUserById, currentUserFavourite, updateUserFavourites } from "../business/usersManagement.js";
 
 // ================================================================================================
 // DOM ELEMENTS

@@ -1,4 +1,4 @@
-import { updateLoggedUser, searchUserbyName, admitUser, } from "../usersManagement.js"; 
+import { updateLoggedUser, searchUserbyName, admitUser, } from "../business/usersManagement.js"; 
 import { validateBtn, } from "../validate.js";
 import { handleUserError, } from "../errorsManagement.js";
 

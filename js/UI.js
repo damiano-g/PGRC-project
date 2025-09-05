@@ -8,7 +8,7 @@
  * @requires data-models - ItemPreview objects per input standardizzato
  */
 
-import { RecipeStatus } from "./recipesManagement.js";
+import { RecipeStatus } from "./dbInterface.js";
 
 // ================================================================================================
 // PRIVATE UTILITY FUNCTIONS

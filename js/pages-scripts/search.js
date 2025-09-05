@@ -14,8 +14,8 @@
 import { fetchByCategory, fetchByName, } from "../recipesAPI.js";        // Funzioni API per ricerca ricette
 import { ItemPreview, createPreviewArray } from "../data-models.js";     // Modelli dati e normalizzazione
 import { cardsFavBtnsDisplay, DisplayPreviews, favBtnDisplay } from "../UI.js";         // Componenti UI per rendering
-import { GlobalRatingFunctions } from "../reviewsManagement.js";
-import { getLoggedUserId, currentUserFavourite, searchUserById, updateUserFavourites } from "../usersManagement.js";
+import { GlobalRatingFunctions } from "../business/reviewsManagement.js";
+import { getLoggedUserId, currentUserFavourite, searchUserById, updateUserFavourites } from "../business/usersManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM

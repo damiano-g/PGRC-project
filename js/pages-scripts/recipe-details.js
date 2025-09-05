@@ -13,10 +13,10 @@
 
 import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
 import { FullRecipe } from "../data-models.js";          // Modello dati completo ricetta
-import { addNewUserNote, deleteUserNote, getLoggedUserId, getUserNotes, currentUserFavourite, updateUserFavourites, } from "../usersManagement.js";
+import { addNewUserNote, deleteUserNote, getLoggedUserId, getUserNotes, currentUserFavourite, updateUserFavourites, } from "../business/usersManagement.js";
 import { favBtnDisplay, revBtnDisplay, populateNotesContainer } from "../UI.js";
-import { addReview, deleteReview, isReviewedBy, GlobalRatingFunctions } from "../reviewsManagement.js";
-import { RecipeStatus } from "../recipesManagement.js";
+import { addReview, deleteReview, isReviewedBy, GlobalRatingFunctions } from "../business/reviewsManagement.js";
+import { RecipeStatus } from "../dbInterface.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM

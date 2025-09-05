@@ -1,7 +1,7 @@
 //Gestione eventi per pagina di registrazione
 
 import { handleUserError } from "../errorsManagement.js";
-import { addNewUser, } from "../usersManagement.js";
+import { addNewUser, } from "../business/usersManagement.js";
 import { validateUsername, validateEmail, validatePassword, validatePassConfirm, formatInputField, validateBtn } from "../validate.js";
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione

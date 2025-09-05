@@ -13,9 +13,9 @@
 
 import { ItemPreview, FullRecipe, createPreviewArray, } from "../data-models.js";     // Modelli dati e normalizzazione
 import { fetchAllCategories, rndFetch, } from "../recipesAPI.js";                     // API calls per dati iniziali
-import { GlobalRatingFunctions } from "../reviewsManagement.js";
+import { GlobalRatingFunctions } from "../business/reviewsManagement.js";
 import { populateCarousel, DisplayPreviews, favBtnDisplay } from "../UI.js";                       // Componenti UI per rendering
-import { currentUserFavourite, getLoggedUserId, updateUserFavourites } from "../usersManagement.js";
+import { currentUserFavourite, getLoggedUserId, updateUserFavourites } from "../business/usersManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
