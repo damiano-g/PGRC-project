@@ -16,7 +16,6 @@ import { FullRecipe } from "../data-models.js";          // Modello dati complet
 import { addNewUserNote, deleteUserNote, getLoggedUserId, getUserNotes, currentUserFavourite, updateUserFavourites, } from "../usersManagement.js";
 import { favBtnDisplay, revBtnDisplay, populateNotesContainer } from "../UI.js";
 import { addReview, deleteReview, isReviewedBy, GlobalRatingFunctions } from "../reviewsManagement.js";
-import { RecipeStatus } from "../recipesManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -96,7 +95,7 @@ revBtn.addEventListener("click", () => {
    try {
       const currentUserId = getLoggedUserId();
       if(currentUserId){
-         if(RecipeStatus.isReviewed(detailedRecipeId)){
+         if(isReviewedBy(detailedRecipeId, currentUserId)){
             revConfirmBtn.onclick = () => {
                deleteReview(detailedRecipeId, currentUserId);
                alert("Recensione eliminata");
@@ -219,7 +218,7 @@ window.addEventListener("load", async () => {
 
       // Configurazione pulsante preferiti basata su stato login e preferenze utente
       favBtnDisplay(detailsFavBtn, currentUserId, currentUserFavourite(detailedRecipeId, currentUserId));
-      revBtnDisplay(revBtn, currentUserId, RecipeStatus.isReviewed(detailedRecipeId)); // Da valutare unificazione funzione se gestione tramite icone
+      revBtnDisplay(revBtn, currentUserId, isReviewedBy(detailedRecipeId, currentUserId)); // Da valutare unificazione funzione se gestione tramite icone
 
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
       if(currentUserId){

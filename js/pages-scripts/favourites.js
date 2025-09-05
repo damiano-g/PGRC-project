@@ -14,10 +14,9 @@
 
 import { createPreviewArray } from "../data-models.js";
 import { fetchById } from "../recipesAPI.js";
-import { RecipeStatus } from "../recipesManagement.js";
 import { getStoredReviews, isReviewedBy, GlobalRatingFunctions, UserRatingFunctions } from "../reviewsManagement.js";
-import { DisplayPreviews, favBtnDisplay } from "../UI.js";
-import { getRegisteredUsers, getLoggedUserId, searchUserById, currentUserFavourite, updateUserFavourites } from "../usersManagement.js";
+import { DisplayPreviews } from "../UI.js";
+import { getRegisteredUsers, getLoggedUserId, searchUserById } from "../usersManagement.js";
 
 // ================================================================================================
 // DOM ELEMENTS
@@ -89,17 +88,11 @@ const personalPageBody = document.querySelector("body");
 personalPageBody.addEventListener("click", (click) => {
     /** @type {HTMLElement|null} Card element closest al target del click */
     const card = click.target.closest(".card");
-    const isBtn = click.target.matches(".fav-icon");
 
-    if(card && !isBtn){
+    if(card){
         // Naviga alla pagina dettagli passando l'ID della ricetta come query parameter
         window.location.href = `../../pages/recipe-details.html?id=${card.dataset.itemId}`;
-    };
-
-    if(isBtn){
-        updateUserFavourites(card.dataset.itemId);
-        favBtnDisplay(card.querySelector(".fav-icon"), Boolean(getLoggedUserId()), currentUserFavourite(card.dataset.itemId));
-    };
+    }
 });
 
 /**
@@ -162,7 +155,7 @@ window.addEventListener("load", async () => {
      * Array filtrato di review dell'utente corrente per estrazione recipe IDs
      * @type {Array<Object>} 
      */
-    const currentUserRevsRecipesIds = getStoredReviews().filter(element => RecipeStatus.isReviewed(element.recipeId));
+    const currentUserRevsRecipesIds = getStoredReviews().filter(element => isReviewedBy(element.recipeId, currentUser.id));
 
     // ============================================================================================
     // SEZIONE FAVOURITES

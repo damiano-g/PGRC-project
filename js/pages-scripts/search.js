@@ -70,6 +70,7 @@ resultsContainer.addEventListener("click", (click) => {
     // restituisce il primo elemento card incontrato nella gerarchia (event bubbling)
     const card = click.target.closest(".card");
     const isBtn = click.target.matches(".fav-icon");
+    console.log(isBtn);
 
     if(card && !isBtn){
         // Naviga alla pagina dettagli passando l'ID della ricetta come query parameter
