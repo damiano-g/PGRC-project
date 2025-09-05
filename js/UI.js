@@ -8,7 +8,7 @@
  * @requires data-models - ItemPreview objects per input standardizzato
  */
 
-import { RecipeState } from "./recipesManagement.js";
+import { RecipeStatus } from "./recipesManagement.js";
 import { currentUserFavourite } from "./usersManagement.js";
 
 // ================================================================================================
@@ -489,7 +489,7 @@ export function cardsFavBtnsDisplay(isUserLogged){
    const pageCards = document.querySelectorAll(".card");
 
    pageCards.forEach(card => {
-      favBtnDisplay(card.querySelector(".fav-icon"), Boolean(isUserLogged), RecipeState.isFavourite(card.dataset.itemId));
+      favBtnDisplay(card.querySelector(".fav-icon"), Boolean(isUserLogged), RecipeStatus.isFavourite(card.dataset.itemId));
    });
 }
 
