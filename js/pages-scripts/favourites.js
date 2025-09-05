@@ -12,12 +12,12 @@
  * @requires usersManagement - Autenticazione e gestione dati utente
  */
 
+import { getStoredReviews, } from "../business/reviewsManagement.js";
+import { updateUserFavourites } from "../business/usersManagement.js";
 import { createPreviewArray } from "../data-models.js";
+import { RecipeStatus, UserStatus } from "../dbInterface.js";
 import { fetchById } from "../recipesAPI.js";
-import { RecipeStatus } from "../dbInterface.js";
-import { getStoredReviews, isReviewedBy, GlobalRatingFunctions, UserRatingFunctions } from "../business/reviewsManagement.js";
 import { DisplayPreviews, favBtnDisplay } from "../UI.js";
-import { getRegisteredUsers, getLoggedUserId, searchUserById, currentUserFavourite, updateUserFavourites } from "../business/usersManagement.js";
 
 // ================================================================================================
 // DOM ELEMENTS
@@ -98,7 +98,7 @@ personalPageBody.addEventListener("click", (click) => {
 
     if(isBtn){
         updateUserFavourites(card.dataset.itemId);
-        favBtnDisplay(card.querySelector(".fav-icon"), Boolean(getLoggedUserId()), currentUserFavourite(card.dataset.itemId));
+        favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
     };
 });
 
@@ -134,20 +134,18 @@ window.addEventListener("load", async () => {
     // AUTHENTICATION CHECK
     // ============================================================================================
     
-    const loggedUserId = getLoggedUserId();
-    
     /**
      * Verifica autenticazione e redirect condizionale
      * @description Controlla se l'utente corrente esiste nel registro utenti
     */
-   if(!getRegisteredUsers().some(item => item.id === loggedUserId)){
+   if(!UserStatus.isLogged()){
        window.location.href = "./login.html"
     }else{
         personalPageBody.classList.remove("d-none");
     };
     
     /** @type {Object} Oggetto utente corrente da localStorage */
-    const currentUser = searchUserById(loggedUserId);
+    const currentUser = UserStatus.currentLoggedData();
     // ============================================================================================
     // DATA LOADING & RENDERING
     // ============================================================================================
@@ -184,7 +182,7 @@ window.addEventListener("load", async () => {
      * @param {HTMLElement} personalFavsContainer - Container target  
      * @param {Object} GlobalRatingFunctions - Funzioni rating medie globali
      */
-    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "meals"), personalFavsContainer, GlobalRatingFunctions, getLoggedUserId());
+    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "meals"), personalFavsContainer);
 
     /** @description Reset array per riutilizzo sezione successiva */
     tempArray.splice(0, tempArray.length);

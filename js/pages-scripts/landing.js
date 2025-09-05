@@ -1,4 +1,5 @@
-import { updateLoggedUser, deleteUser, getLoggedUserId, getRegisteredUsers, } from "../business/usersManagement.js";
+import { updateLoggedUser, deleteUser} from "../business/usersManagement.js";
+import { UserStatus } from "../dbInterface.js";
 import { handleUserError, } from "../errorsManagement.js";
 
 // Riferimenti agli elementi DOM della pagina landing
@@ -29,7 +30,7 @@ logoutBtn.addEventListener("click", () => {
 
 // Verifica l'autenticazione dell'utente al caricamento della pagina
 window.addEventListener("load", () => {
-    if(!getRegisteredUsers().some(item => item.id === getLoggedUserId())){
+    if(!UserStatus.isLogged()){
         window.location.href = "../../index.html"
     }else{
         document.querySelector("body").classList.remove("d-none");

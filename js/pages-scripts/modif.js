@@ -11,8 +11,9 @@
  */
 
 import { handleUserError } from "../errorsManagement.js";
-import { searchUserById, getLoggedUserId, admitUser, updateUserPassword, updateUserUsername, updateUserEmail, getRegisteredUsers } from "../business/usersManagement.js";
+import { searchUserById, admitUser, updateUserPassword, updateUserUsername, updateUserEmail } from "../business/usersManagement.js";
 import * as validate from "../validate.js";
+import { UserStatus } from "../dbInterface.js";
 
 // ================================================================================================
 // FORM INPUT OBJECTS - STRUTTURE DATI PER GESTIONE STATO
@@ -219,7 +220,7 @@ authModifBtn.addEventListener("click", async () => {
 
     // Verifica la password tramite autenticazione
     try {
-        if(await admitUser(getLoggedUserId(), providedPassword)){
+        if(await admitUser(UserStatus.currentLoggedData().id, providedPassword)){
             modifCurrentPassInput.inputStatus = 1;
             modifNewPassInput.DOMelement.disabled = false;
             modifNewPassInput.DOMelement.required = true;
@@ -463,11 +464,11 @@ modifSubBtn.addEventListener("click", async () => {
  * @since 1.0.0
  */
 window.addEventListener("load", () => {
-    if(!getRegisteredUsers().some(item => item.id === getLoggedUserId())){
+    if(!UserStatus.isLogged()){
         window.location.href = "./login.html"
     }else{
         try {
-            const currentUser = searchUserById(getLoggedUserId());
+            const currentUser = UserStatus.currentLoggedData();
             modifUsernameInput.defaultValue = currentUser.username;
             modifUsernameInput.DOMelement.value = modifUsernameInput.defaultValue
             modifEmailInput.defaultValue = currentUser.email;

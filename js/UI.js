@@ -8,7 +8,7 @@
  * @requires data-models - ItemPreview objects per input standardizzato
  */
 
-import { RecipeStatus } from "./dbInterface.js";
+import { GlobalRatingFunctions, RecipeStatus, UserRatingFunctions, UserStatus } from "./dbInterface.js";
 
 // ================================================================================================
 // PRIVATE UTILITY FUNCTIONS
@@ -40,7 +40,7 @@ import { RecipeStatus } from "./dbInterface.js";
  * 
  * @since 1.0.0
  */
-function createPreviewCard (itemPreviewObj, bodyElement = null, userLogged = false) { 
+function createPreviewCard (itemPreviewObj, bodyElement = null) { 
    const card = document.createElement("div");
    card.classList.add("card");
    card.classList.add("mb-1");
@@ -69,7 +69,7 @@ function createPreviewCard (itemPreviewObj, bodyElement = null, userLogged = fal
       cardFavIcon.classList.add("bi", "bi-heart", "fav-icon");
       cardFavBtn.appendChild(cardFavIcon);
       cardBody.appendChild(cardFavBtn);
-      favBtnDisplay(cardFavIcon, Boolean(userLogged), RecipeStatus.isFavourite(itemPreviewObj.id));
+      favBtnDisplay(cardFavIcon, itemPreviewObj.id);
    }
 
    return card;
@@ -96,7 +96,7 @@ function createPreviewCard (itemPreviewObj, bodyElement = null, userLogged = fal
  * 
  * @since 1.0.0
  */
-function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null, userLogged = false) { 
+function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null) { 
    container.innerHTML = "";
 
    for(let i=0; i < previewItemsArray.length; i++){
@@ -104,7 +104,7 @@ function populatePreviewContainer (previewItemsArray, container, bodyElementsArr
       if(bodyElementsArray){
          relatedBodyElement = bodyElementsArray[i];
       }
-      container.appendChild(createPreviewCard(previewItemsArray[i], relatedBodyElement, userLogged));
+      container.appendChild(createPreviewCard(previewItemsArray[i], relatedBodyElement));
    }
 }
 
@@ -130,13 +130,13 @@ function populatePreviewContainer (previewItemsArray, container, bodyElementsArr
  * 
  * @since 1.0.0
  */
-function createCarouselItem(itemPreviewObj, ratingFunctions, userLogged = false) { 
+function createCarouselItem(itemPreviewObj, ratingFunctions) { 
    const carouselItem = document.createElement("div");
    carouselItem.classList.add("carousel-item");
 
    // Data attribute per identificazione (conversione esplicita a stringa)
-   const tasteAvg = ratingFunctions.taste(itemPreviewObj.id);
-   const difficultyAvg = ratingFunctions.difficulty(itemPreviewObj.id);
+   const tasteAvg = GlobalRatingFunctions.taste(itemPreviewObj.id)
+   const difficultyAvg = GlobalRatingFunctions.difficulty(itemPreviewObj.id);
    carouselItem.dataset.itemId = String(itemPreviewObj.id);
 
    const image = document.createElement("img");
@@ -155,7 +155,7 @@ function createCarouselItem(itemPreviewObj, ratingFunctions, userLogged = false)
    captionContainer.appendChild(slideFavBtn);
    carouselItem.appendChild(captionContainer);
 
-   favBtnDisplay(slideFavBtn, Boolean(userLogged), RecipeStatus.isFavourite(itemPreviewObj.id));
+   favBtnDisplay(slideFavBtn, itemPreviewObj.id);
 
    // carouselItem.innerHTML = `
    //    <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
@@ -255,12 +255,12 @@ export const DisplayPreviews = {
     * 
     * @since 1.0.0
     */
-   displayWithRating: function (previewItemsArray, container, ratingFunctions, userId = null) { 
+   displayWithRating: function (previewItemsArray, container) { 
       const bodyElementsArray = [];
 
       previewItemsArray.forEach(element => {
-         const taste = ratingFunctions.taste(element.id, userId);
-         const difficulty = ratingFunctions.difficulty(element.id, userId);
+         const taste = previewItemsArray.type === "reviews" ? UserRatingFunctions.taste(previewItemsArray.id) : GlobalRatingFunctions.taste(previewItemsArray.id);
+         const difficulty = previewItemsArray.type === "reviews" ? UserRatingFunctions.difficulty(previewItemsArray.id) : GlobalRatingFunctions.difficulty(previewItemsArray.id);
          
          const title = element.type === "meals" ? "Recensioni globali" : "La mia recensione";
          
@@ -287,7 +287,7 @@ export const DisplayPreviews = {
          bodyElementsArray.push(reviews);
       });
       
-      populatePreviewContainer(previewItemsArray, container, bodyElementsArray, Boolean(userId));
+      populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
    },
 
    /**
@@ -324,7 +324,7 @@ export const DisplayPreviews = {
          bodyElementsArray.push(note);
       });
 
-      populatePreviewContainer(previewItemsArray, container, bodyElementsArray, true);
+      populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
    },
 
    /**
@@ -384,11 +384,11 @@ export const DisplayPreviews = {
  * 
  * @since 1.0.0
  */
-export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions, userLogged = false) { 
+export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions) { 
   carouselInner.innerHTML = "";
 
    itemPreviewArray.forEach(element => {
-      carouselInner.appendChild(createCarouselItem(element, ratingFunctions, userLogged));
+      carouselInner.appendChild(createCarouselItem(element, ratingFunctions));
    }); 
 };
 
@@ -459,8 +459,8 @@ export function populateNotesContainer(userNotesArray, container) {
  * 
  * @since 1.0.0
  */
-export function favBtnDisplay(btn, userLogged, userFavourite) { 
-   if(userLogged && userFavourite){
+export function favBtnDisplay(btn, recipeId) { 
+   if(UserStatus.isLogged() && RecipeStatus.isFavourite(recipeId)){
       btn.classList.remove("bi-heart");
       btn.classList.add("bi-heart-fill");
       //btn.innerText = "Rimuovi dai preferiti";
@@ -492,22 +492,14 @@ export function favBtnDisplay(btn, userLogged, userFavourite) {
  * 
  * @since 1.0.0
  */
-export function revBtnDisplay(btn, userLogged, userReviewed) { 
-   if(userLogged && userReviewed){
+export function revBtnDisplay(btn, recipeId) { 
+   if(UserStatus.isLogged() && RecipeStatus.isReviewed(recipeId)){
       btn.innerText = "Rimuovi recensione";
    }else{
       btn.innerText = "Aggiungi recensione";
    }
 };
 
-
-export function cardsFavBtnsDisplay(isUserLogged){
-   const pageCards = document.querySelectorAll(".card");
-
-   pageCards.forEach(card => {
-      favBtnDisplay(card.querySelector(".fav-icon"), Boolean(isUserLogged), RecipeStatus.isFavourite(card.dataset.itemId));
-   });
-}
 
 // ================================================================================================
 // ARCHITECTURE NOTES

@@ -11,11 +11,10 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { fetchByCategory, fetchByName, } from "../recipesAPI.js";        // Funzioni API per ricerca ricette
-import { ItemPreview, createPreviewArray } from "../data-models.js";     // Modelli dati e normalizzazione
-import { cardsFavBtnsDisplay, DisplayPreviews, favBtnDisplay } from "../UI.js";         // Componenti UI per rendering
-import { GlobalRatingFunctions } from "../business/reviewsManagement.js";
-import { getLoggedUserId, currentUserFavourite, searchUserById, updateUserFavourites } from "../business/usersManagement.js";
+import { updateUserFavourites } from "../business/usersManagement.js";
+import { createPreviewArray } from "../data-models.js"; // Modelli dati e normalizzazione
+import { fetchByCategory, fetchByName, } from "../recipesAPI.js"; // Funzioni API per ricerca ricette
+import { DisplayPreviews, favBtnDisplay } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -46,8 +45,7 @@ searchBtn.addEventListener("click", async () => {
     if(response.meals){
         const array = createPreviewArray(response);
         history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
-        DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions, getLoggedUserId());
-        // cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
+        DisplayPreviews.displayWithRating(array, resultsContainer)
     }else{
         const paragraph = document.createElement("div");
         paragraph.innerText = "La ricerca non ha prodotto risultati";
@@ -78,7 +76,7 @@ resultsContainer.addEventListener("click", (click) => {
 
     if(isBtn){
         updateUserFavourites(card.dataset.itemId);
-        favBtnDisplay(card.querySelector(".fav-icon"), Boolean(getLoggedUserId()), currentUserFavourite(card.dataset.itemId));
+        favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
     };
 });
 
@@ -103,7 +101,7 @@ window.addEventListener("load", async () => {
     
     if(query[0] === "cat"){
         const array = createPreviewArray(await fetchByCategory(query[1]));
-        DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions, getLoggedUserId());
+        DisplayPreviews.displayWithRating(array, resultsContainer);
         // cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
     }
     

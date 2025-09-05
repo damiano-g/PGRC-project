@@ -11,11 +11,10 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { ItemPreview, FullRecipe, createPreviewArray, } from "../data-models.js";     // Modelli dati e normalizzazione
-import { fetchAllCategories, rndFetch, } from "../recipesAPI.js";                     // API calls per dati iniziali
-import { GlobalRatingFunctions } from "../business/reviewsManagement.js";
-import { populateCarousel, DisplayPreviews, favBtnDisplay } from "../UI.js";                       // Componenti UI per rendering
-import { currentUserFavourite, getLoggedUserId, updateUserFavourites } from "../business/usersManagement.js";
+import { updateUserFavourites } from "../business/usersManagement.js";
+import { ItemPreview, createPreviewArray } from "../data-models.js"; // Modelli dati e normalizzazione
+import { fetchAllCategories, rndFetch, } from "../recipesAPI.js"; // API calls per dati iniziali
+import { DisplayPreviews, favBtnDisplay, populateCarousel } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -55,7 +54,7 @@ window.addEventListener("load", async () => {
     }
     console.log(recipesArray);
 
-    populateCarousel(recipesArray, slideshow, GlobalRatingFunctions, getLoggedUserId());
+    populateCarousel(recipesArray, slideshow);
 
     // Attiva il primo slide del carousel (Bootstrap requirement)
     document.querySelector(".carousel-inner .carousel-item").classList.add("active");
@@ -108,7 +107,7 @@ slideshow.addEventListener("click", (click) => {
 
     if(isBtn){
         updateUserFavourites(card.dataset.itemId);
-        favBtnDisplay(card.querySelector(".fav-icon"), Boolean(getLoggedUserId()), currentUserFavourite(card.dataset.itemId));
+        favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
     };
 });
 

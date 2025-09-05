@@ -11,12 +11,12 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { fetchById } from "../recipesAPI.js";            // API call per dettagli ricetta singola
-import { FullRecipe } from "../data-models.js";          // Modello dati completo ricetta
-import { addNewUserNote, deleteUserNote, getLoggedUserId, getUserNotes, currentUserFavourite, updateUserFavourites, } from "../business/usersManagement.js";
-import { favBtnDisplay, revBtnDisplay, populateNotesContainer } from "../UI.js";
-import { addReview, deleteReview, isReviewedBy, GlobalRatingFunctions } from "../business/reviewsManagement.js";
-import { RecipeStatus } from "../dbInterface.js";
+import { addReview, deleteReview } from "../business/reviewsManagement.js";
+import { addNewUserNote, deleteUserNote, getUserNotes, updateUserFavourites } from "../business/usersManagement.js";
+import { FullRecipe } from "../data-models.js"; // Modello dati completo ricetta
+import { RecipeStatus, UserStatus } from "../dbInterface.js";
+import { fetchById } from "../recipesAPI.js"; // API call per dettagli ricetta singola
+import { favBtnDisplay, populateNotesContainer, revBtnDisplay } from "../UI.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -72,9 +72,9 @@ const detailedRecipeId = window.location.search.substring(4);
  */
 detailsFavBtn.addEventListener("click", () => {
    try {
-      if(getLoggedUserId()){
+      if(UserStatus.isLogged()){
          updateUserFavourites(detailedRecipeId);
-         favBtnDisplay(detailsFavBtn, true, currentUserFavourite(detailedRecipeId)); // Aggiornamento UI stato button
+         favBtnDisplay(detailsFavBtn, detailedRecipeId); // Aggiornamento UI stato button
       }else{
          window.location.href = "./login.html";
       }
@@ -94,13 +94,13 @@ revFormInputs.forEach(input => input.addEventListener("change", () => {
 
 revBtn.addEventListener("click", () => {
    try {
-      const currentUserId = getLoggedUserId();
+      const currentUserId = UserStatus.currentLoggedData().id;
       if(currentUserId){
          if(RecipeStatus.isReviewed(detailedRecipeId)){
             revConfirmBtn.onclick = () => {
                deleteReview(detailedRecipeId, currentUserId);
                alert("Recensione eliminata");
-               revBtnDisplay(revBtn, true, false);
+               revBtnDisplay(revBtn, detailedRecipeId);
                revConfirmBtn.disabled = true;
             } 
             revForm.classList.add("d-none");
@@ -110,7 +110,7 @@ revBtn.addEventListener("click", () => {
             revConfirmBtn.onclick = () => {
                addReview(detailedRecipeId, currentUserId, tasteRateInput.value, difficultyRateInput.value);
                alert("Recensione aggiunta");
-               revBtnDisplay(revBtn, true, true);
+               revBtnDisplay(revBtn, detailedRecipeId);
                revConfirmBtn.disabled = true;
             }
             revForm.classList.remove("d-none");
@@ -208,7 +208,7 @@ window.addEventListener("load", async () => {
       const recipeDetails = new FullRecipe(APIresponse.meals[0]);
 
 
-      const currentUserId = getLoggedUserId();
+      const currentUserId = UserStatus.getLoggedUserId();
 
       // ===============================
       // POPOLAZIONE ELEMENTI UI
@@ -218,8 +218,8 @@ window.addEventListener("load", async () => {
       recipeTitle.innerText = recipeDetails.name;
 
       // Configurazione pulsante preferiti basata su stato login e preferenze utente
-      favBtnDisplay(detailsFavBtn, currentUserId, currentUserFavourite(detailedRecipeId, currentUserId));
-      revBtnDisplay(revBtn, currentUserId, RecipeStatus.isReviewed(detailedRecipeId)); // Da valutare unificazione funzione se gestione tramite icone
+      favBtnDisplay(detailsFavBtn, detailedRecipeId);
+      revBtnDisplay(revBtn, detailedRecipeId); // Da valutare unificazione funzione se gestione tramite icone
 
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
       if(currentUserId){
