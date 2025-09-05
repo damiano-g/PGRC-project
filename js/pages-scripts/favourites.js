@@ -13,10 +13,9 @@
  */
 
 import { getStoredReviews, } from "../business/reviewsManagement.js";
-import { updateUserFavourites } from "../business/usersManagement.js";
 import { createPreviewArray } from "../data-models.js";
-import { RecipeStatus, UserStatus } from "../dbInterface.js";
 import { fetchById } from "../recipesAPI.js";
+import { LoggedUser, RecipeStatus } from "../sessionControl.js";
 import { DisplayPreviews, favBtnDisplay } from "../UI.js";
 
 // ================================================================================================
@@ -97,7 +96,7 @@ personalPageBody.addEventListener("click", (click) => {
     };
 
     if(isBtn){
-        updateUserFavourites(card.dataset.itemId);
+        LoggedUser.updateFavourites(card.dataset.itemId);
         favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
     };
 });
@@ -138,14 +137,14 @@ window.addEventListener("load", async () => {
      * Verifica autenticazione e redirect condizionale
      * @description Controlla se l'utente corrente esiste nel registro utenti
     */
-   if(!UserStatus.isLogged()){
+   if(!LoggedUser.isLogged()){
        window.location.href = "./login.html"
     }else{
         personalPageBody.classList.remove("d-none");
     };
     
     /** @type {Object} Oggetto utente corrente da localStorage */
-    const currentUser = UserStatus.currentLoggedData();
+    const currentUser = LoggedUser.getData();
     // ============================================================================================
     // DATA LOADING & RENDERING
     // ============================================================================================

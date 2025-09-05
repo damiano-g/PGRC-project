@@ -8,7 +8,7 @@
  * @requires data-models - ItemPreview objects per input standardizzato
  */
 
-import { GlobalRatingFunctions, RecipeStatus, UserRatingFunctions, UserStatus } from "./dbInterface.js";
+import { LoggedUser, RecipeStatus } from "./sessionControl.js";
 
 // ================================================================================================
 // PRIVATE UTILITY FUNCTIONS
@@ -115,7 +115,6 @@ function populatePreviewContainer (previewItemsArray, container, bodyElementsArr
  * @function createCarouselItem
  * @private
  * @param {import('./data-models.js').ItemPreview} itemPreviewObj - Oggetto dati normalizzato
- * @param {Object} ratingFunctions - Oggetto con funzioni getTasteRate e getDifficultyRate
  * @returns {HTMLElement} Elemento carousel-item pronto per carousel Bootstrap
  * 
  * @description
@@ -132,13 +131,13 @@ function populatePreviewContainer (previewItemsArray, container, bodyElementsArr
  * 
  * @since 1.0.0
  */
-function createCarouselItem(itemPreviewObj, ratingFunctions) { 
+function createCarouselItem(itemPreviewObj) { 
    const carouselItem = document.createElement("div");
    carouselItem.classList.add("carousel-item");
 
    // Data attribute per identificazione (conversione esplicita a stringa)
-   const tasteAvg = GlobalRatingFunctions.taste(itemPreviewObj.id)
-   const difficultyAvg = GlobalRatingFunctions.difficulty(itemPreviewObj.id);
+   const tasteAvg = RecipeStatus.avgTasteRate(itemPreviewObj.id)
+   const difficultyAvg = RecipeStatus.avgDifficultyRate(itemPreviewObj.id);
    carouselItem.dataset.itemId = String(itemPreviewObj.id);
 
    const image = document.createElement("img");
@@ -260,8 +259,8 @@ export const DisplayPreviews = {
       const bodyElementsArray = [];
 
       previewItemsArray.forEach(element => {
-         const taste = previewItemsArray.type === "reviews" ? UserRatingFunctions.taste(previewItemsArray.id) : GlobalRatingFunctions.taste(previewItemsArray.id);
-         const difficulty = previewItemsArray.type === "reviews" ? UserRatingFunctions.difficulty(previewItemsArray.id) : GlobalRatingFunctions.difficulty(previewItemsArray.id);
+         const taste = previewItemsArray.type === "reviews" ? RecipeStatus.userTasteRate(previewItemsArray.id) : RecipeStatus.avgTasteRate(previewItemsArray.id);
+         const difficulty = previewItemsArray.type === "reviews" ? RecipeStatus.userDifficulyRate(previewItemsArray.id) : RecipeStatus.avgDifficultyRate(previewItemsArray.id);
          
          const title = element.type === "meals" ? "Recensioni globali" : "La mia recensione";
          
@@ -364,7 +363,6 @@ export const DisplayPreviews = {
  * @function populateCarousel
  * @param {Array<import('./data-models.js').ItemPreview>} itemPreviewArray - Array oggetti normalizzati
  * @param {HTMLElement} carouselInner - Elemento .carousel-inner di Bootstrap
- * @param {Object} ratingFunctions - Oggetto funzioni rating per caption
  * @returns {void}
  * 
  * @description
@@ -385,11 +383,11 @@ export const DisplayPreviews = {
  * 
  * @since 1.0.0
  */
-export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions) { 
+export function populateCarousel(itemPreviewArray, carouselInner) { 
   carouselInner.innerHTML = "";
 
    itemPreviewArray.forEach(element => {
-      carouselInner.appendChild(createCarouselItem(element, ratingFunctions));
+      carouselInner.appendChild(createCarouselItem(element));
    }); 
 };
 
@@ -462,7 +460,7 @@ export function populateNotesContainer(userNotesArray, container) {
  * @since 1.0.0
  */
 export function favBtnDisplay(btn, recipeId) { 
-   if(UserStatus.isLogged() && RecipeStatus.isFavourite(recipeId)){
+   if(LoggedUser.isLogged() && RecipeStatus.isFavourite(recipeId)){
       btn.classList.remove("bi-heart");
       btn.classList.add("bi-heart-fill");
       //btn.innerText = "Rimuovi dai preferiti";
@@ -494,7 +492,7 @@ export function favBtnDisplay(btn, recipeId) {
  * @since 1.0.0
  */
 export function revBtnDisplay(btn, recipeId) { 
-   if(UserStatus.isLogged() && RecipeStatus.isReviewed(recipeId)){
+   if(LoggedUser.isLogged() && RecipeStatus.isReviewed(recipeId)){
       btn.innerText = "Rimuovi recensione";
    }else{
       btn.innerText = "Aggiungi recensione";

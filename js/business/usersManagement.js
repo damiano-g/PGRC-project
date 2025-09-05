@@ -18,8 +18,7 @@ import { StorageManagement } from "./storageManagement.js";
 /** @type {string} Chiave localStorage per array utenti registrati */
 const USERS_DB_KEY = "users";
 
-/** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
-const LOGGED_USER_KEY = "loggedUser";
+
 
 // ============================================================================
 // VARIABILI DI STATO CACHE
@@ -32,10 +31,6 @@ const LOGGED_USER_KEY = "loggedUser";
  */
 let registeredUsers = [];
 
-/** 
- * @type {string} Cache locale ID utente loggato - sincronizzata con sessionStorage
- */
-let loggedUserId = "";
 
 // ============================================================================
 // API PUBBLICA - ACCESSO DATI E GESTIONE SESSIONE
@@ -65,37 +60,10 @@ export function getRegisteredUsers() {
 }
 
 /**
- * Recupera ID utente attualmente loggato con gestione errori automatica
- * API pubblica per controllo stato login cross-page
- * 
- * @returns {string} ID utente loggato o stringa vuota se non presente/errori
- * 
- * @example
- * // Check stato login
- * const currentUserId = getLoggedUserId();
- * if (currentUserId) {
- *   console.log("Utente loggato:", currentUserId);
- *   // Mostra UI autenticata
- * } else {
- *   // Redirect a login page
- *   window.location.href = "./login.html";
- * }
- */
-export function getLoggedUserId() {
-    try {
-        loggedUserId = StorageManagement.get(LOGGED_USER_KEY, {storageLocation: "session", dataType: "string"});
-        return loggedUserId;
-    } catch (error) {
-        console.error("Errore recupero sessione:", error);
-        loggedUserId = "";
-        throw error;
-    } 
-}
-
-/**
  * Aggiorna ID utente loggato nel sessionStorage per persistenza sessione
  * API pubblica per gestione stato login post-autenticazione
  * 
+ * @deprecated Da spostare in session control
  * @param {string} userId - ID univoco utente da impostare come loggato
  * @throws {UsersManagementError} Se errori di scrittura sessionStorage (tipo "STORAGE")
  * 
@@ -272,10 +240,10 @@ export function deleteUser(userId){
  *   showErrorMessage(error.message);
  * }
  */
-export async function updateUserUsername(newUsername){
+export async function updateUserUsername(userId, newUsername){
     try {
         authUsername(newUsername); // Validation duplicati
-        await updateUserData("username", newUsername);
+        await updateUserData(userId, "username", newUsername);
         return true;
     } catch (error) {
         console.error(error);
@@ -302,10 +270,10 @@ export async function updateUserUsername(newUsername){
  *   showErrorMessage(error.message);
  * }
  */
-export async function updateUserEmail(newEmail){
+export async function updateUserEmail(userId, newEmail){
     try {
         authEmail(newEmail); // Validation duplicati
-        await updateUserData("email", newEmail);
+        await updateUserData(userId, "email", newEmail);
         return true;
     } catch (error) {
         console.error(error);
@@ -333,9 +301,9 @@ export async function updateUserEmail(newEmail){
  *   showErrorMessage("Errore nell'aggiornamento password");
  * }
  */
-export async function updateUserPassword(newPassword){
+export async function updateUserPassword(userId, newPassword){
     try {
-        await updateUserData("password", newPassword, true); // needsHashing = true
+        await updateUserData(userId, "password", newPassword, true); // needsHashing = true
         return true;
     } catch (error) {
         console.error(error);
@@ -364,16 +332,16 @@ export async function updateUserPassword(newPassword){
  *   showErrorMessage("Errore nell'aggiornamento preferiti");
  * }
  */
-export async function updateUserFavourites(recipeId){
+export async function updateUserFavourites(userId, recipeId){
     try {
-        const userFavouritesArray = searchUserById(getLoggedUserId()).favourites;
+        const userFavouritesArray = searchUserById(userId).favourites;
         const index = userFavouritesArray.findIndex(element => element === recipeId);
         if(index < 0){
             userFavouritesArray.push(recipeId);
         }else{
             userFavouritesArray.splice(index, 1);
         }
-        await updateUserData("favourites", userFavouritesArray); 
+        await updateUserData(userId, "favourites", userFavouritesArray); 
         return true;
     } catch (error) {
         console.error(error);
@@ -382,70 +350,6 @@ export async function updateUserFavourites(recipeId){
     
 }
 
-// ============================================================================
-// API PUBBLICA - GESTIONE NOTE UTENTE
-// ============================================================================
-
-/**
- * Aggiunge nuova nota personale utente per ricetta specifica
- * API pubblica per creazione note con collegamento ricetta
- * 
- * @async
- * @param {string} recipeId - ID ricetta a cui collegare la nota
- * @param {string} text - Testo contenuto della nota
- * @returns {Promise<boolean>} true se operazione completata
- * @throws {UsersManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
- * @throws {Error} Se formato dati non valido
- * 
- * @example
- * // Aggiunta nota da form ricetta
- * try {
- *   await addNewUserNote("recipe_52772", "Ricetta ottima, aggiungere più sale");
- *   showSuccessMessage("Nota salvata!");
- *   refreshNotesDisplay();
- * } catch (error) {
- *   showErrorMessage("Errore nel salvataggio nota");
- * }
- */
-export async function addNewUserNote(recipeId, text){
-    try {
-        return updateUserNotes(recipeId, text);
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-}
-
-/**
- * Rimuove nota utente specifica tramite ID
- * API pubblica per eliminazione note esistenti
- * 
- * @async
- * @param {string} noteId - ID univoco nota da eliminare
- * @returns {Promise<boolean>} true se operazione completata
- * @throws {UsersManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
- * @throws {Error} Se formato dati non valido
- * 
- * @example
- * // Eliminazione nota da interfaccia
- * try {
- *   await deleteUserNote("note_456");
- *   removeNoteFromDisplay("note_456");
- *   showSuccessMessage("Nota eliminata!");
- * } catch (error) {
- *   showErrorMessage("Errore nell'eliminazione nota");
- * }
- */
-export async function deleteUserNote(noteId) {
-    try {
-        return updateUserNotes(null, null, noteId);
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-}
 
 // ============================================================================
 // API PUBBLICA - AUTENTICAZIONE
@@ -533,86 +437,6 @@ export async function hashString(originalString) {
         .join("");
 
     return hashPassword;
-}
-
-// ============================================================================
-// API PUBBLICA - QUERY E INTERROGAZIONE DATI
-// ============================================================================
-
-/**
- * Verifica se ricetta specifica è tra i preferiti dell'utente loggato
- * Query helper per stato UI preferiti
- * 
- * @param {string} recipeId - ID ricetta da verificare
- * @returns {boolean} true se ricetta è tra i preferiti, false altrimenti
- * 
- * @example
- * // Aggiornamento UI stato preferiti
- * const isFavorite = isFavourite("recipe_52772");
- * updateFavoriteButton(isFavorite ? "filled" : "outline");
- * 
- * @example
- * // Controllo permissions
- * if (!getLoggedUserId()) {
- *   return false; // User not logged in
- * }
- */
-export function currentUserFavourite(recipeId){
-    try {
-        const loggedUserId = getLoggedUserId();
-        return Boolean(loggedUserId && searchUserById(loggedUserId).favourites.some(element => element === recipeId));
-    } catch (error) {
-        throw error;
-    }
-}
-
-export const UserStateInterface = {
-
-    
-}
-
-/**
- * Recupera note utente con filtro opzionale per ricetta specifica
- * Query helper per visualizzazione note con deep copy safety
- * 
- * @param {string} [recipeId] - ID ricetta per filtro (opzionale)
- * @returns {Array<Note>} Array note filtrate per ricetta o tutte le note se recipeId non fornito
- * @throws {UsersManagementError} Se utente loggato non trovato o errori di lettura
- * 
- * @example
- * // Recupero tutte le note utente
- * const allNotes = getUserNotes();
- * displayNotesInSidebar(allNotes);
- * 
- * @example
- * // Recupero note per ricetta specifica
- * const recipeNotes = getUserNotes("recipe_52772");
- * displayNotesForRecipe(recipeNotes);
- * 
- * @example
- * // Gestione sicura con fallback
- * try {
- *   const notes = getUserNotes(currentRecipeId);
- *   if (notes.length > 0) {
- *     showNotesSection(notes);
- *   } else {
- *     showEmptyNotesMessage();
- *   }
- * } catch (error) {
- *   showNotesError("Impossibile caricare note");
- * }
- */
-export function getUserNotes(recipeId = null){
-    try{
-        const notesaArray = searchUserById(getLoggedUserId()).notes || [];
-        if(recipeId){
-            return notesaArray.filter(element => element.recipeId === recipeId) || [];
-        }
-        return notesaArray;
-    }catch(error){
-        console.error(error);
-        throw error;
-    }
 }
 
 // ============================================================================
@@ -721,11 +545,11 @@ function searchUser(searchField, searchValue){
  * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  */
-async function updateUserData(field, newValue, needsHashing = null) {
+async function updateUserData(userId, field, newValue, needsHashing = null) {
     try {
         // Atomic update operation
-        const actualRegUsersArray = getRegisteredUsers();
-        const currentUserId = getLoggedUserId();
+        const actualRegUsersArray = userId;
+        const currentUserId = userId;
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
@@ -765,9 +589,9 @@ async function updateUserData(field, newValue, needsHashing = null) {
  * // Uso interno per rimozione nota
  * await updateUserNotes(null, null, "note_456");
  */
-async function updateUserNotes(recipeId = null, text = null, noteId = null){
+export async function updateUserNotes(userId, recipeId = null, text = null, noteId = null){
     try {
-        const userNotesArray = searchUserById(getLoggedUserId()).notes;
+        const userNotesArray = searchUserById(userId).notes;
  
         if((text && recipeId) && !noteId){
             userNotesArray.push(new Note(recipeId, text));

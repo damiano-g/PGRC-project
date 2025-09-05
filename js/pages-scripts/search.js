@@ -11,9 +11,9 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { updateUserFavourites } from "../business/usersManagement.js";
 import { createPreviewArray } from "../data-models.js"; // Modelli dati e normalizzazione
 import { fetchByCategory, fetchByName, } from "../recipesAPI.js"; // Funzioni API per ricerca ricette
+import { LoggedUser } from "../sessionControl.js";
 import { DisplayPreviews, favBtnDisplay } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
@@ -41,7 +41,6 @@ let searchPageCards;
  */
 searchBtn.addEventListener("click", async () => {
     const response = await fetchByName(String(searchBar.value));
-    console.log(response);
     if(response.meals){
         const array = createPreviewArray(response);
         history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
@@ -75,7 +74,7 @@ resultsContainer.addEventListener("click", (click) => {
     };
 
     if(isBtn){
-        updateUserFavourites(card.dataset.itemId);
+        LoggedUser.updateFavourites(card.dataset.itemId);
         favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
     };
 });
@@ -103,8 +102,7 @@ window.addEventListener("load", async () => {
         const array = createPreviewArray(await fetchByCategory(query[1]));
         DisplayPreviews.displayWithRating(array, resultsContainer);
         // cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
-    }
-    
+    }  
 });
 
 

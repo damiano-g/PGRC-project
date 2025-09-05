@@ -11,11 +11,9 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { addReview, deleteReview } from "../business/reviewsManagement.js";
-import { addNewUserNote, deleteUserNote, getUserNotes, updateUserFavourites } from "../business/usersManagement.js";
 import { FullRecipe } from "../data-models.js"; // Modello dati completo ricetta
-import { RecipeStatus, UserStatus } from "../dbInterface.js";
 import { fetchById } from "../recipesAPI.js"; // API call per dettagli ricetta singola
+import { LoggedUser, RecipeStatus } from "../sessionControl.js";
 import { favBtnDisplay, populateNotesContainer, revBtnDisplay } from "../UI.js";
 
 // ===============================
@@ -72,8 +70,8 @@ const detailedRecipeId = window.location.search.substring(4);
  */
 detailsFavBtn.addEventListener("click", () => {
    try {
-      if(UserStatus.isLogged()){
-         updateUserFavourites(detailedRecipeId);
+      if(LoggedUser.isLogged()){
+         LoggedUser.updateFavourites(detailedRecipeId);
          favBtnDisplay(detailsFavBtn, detailedRecipeId); // Aggiornamento UI stato button
       }else{
          window.location.href = "./login.html";
@@ -94,11 +92,11 @@ revFormInputs.forEach(input => input.addEventListener("change", () => {
 
 revBtn.addEventListener("click", () => {
    try {
-      const currentUserId = UserStatus.currentLoggedData().id;
+      const currentUserId = LoggedUser.getData().id;
       if(currentUserId){
          if(RecipeStatus.isReviewed(detailedRecipeId)){
             revConfirmBtn.onclick = () => {
-               deleteReview(detailedRecipeId, currentUserId);
+               RecipeStatus.deleteUserReview(detailedRecipeId);
                alert("Recensione eliminata");
                revBtnDisplay(revBtn, detailedRecipeId);
                revConfirmBtn.disabled = true;
@@ -108,7 +106,7 @@ revBtn.addEventListener("click", () => {
             revConfirmBtn.disabled = false;
          }else{
             revConfirmBtn.onclick = () => {
-               addReview(detailedRecipeId, currentUserId, tasteRateInput.value, difficultyRateInput.value);
+               RecipeStatus.addUserReview(detailedRecipeId, tasteRateInput.value, difficultyRateInput.value);
                alert("Recensione aggiunta");
                revBtnDisplay(revBtn, detailedRecipeId);
                revConfirmBtn.disabled = true;
@@ -149,9 +147,9 @@ noteTextInput.addEventListener("input", () => {
 noteInsBtn.addEventListener("click", () => {
    try {
       noteInsBtn.disabled = true; // Previene doppi inserimenti
-      addNewUserNote(detailedRecipeId, noteTextInput.value); 
+      LoggedUser.addNote(detailedRecipeId, noteTextInput.value); 
       noteTextInput.value = "";
-      populateNotesContainer(getUserNotes(detailedRecipeId), userNotesContainer);
+      populateNotesContainer(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
       alert("Nota inserita");
    } catch (error) {
       noteInsBtn.disabled = false;
@@ -169,8 +167,8 @@ userNotesContainer.addEventListener("click", click => {
    const btn = click.target.closest("button");
    if(btn){
       try {
-         deleteUserNote(btn.dataset.noteId);
-         populateNotesContainer(getUserNotes(detailedRecipeId), userNotesContainer);
+         LoggedUser.deleteNote(btn.dataset.noteId);
+         populateNotesContainer(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
          alert("Nota rimossa");
       } catch (error) {
          console.error(error)
@@ -208,7 +206,7 @@ window.addEventListener("load", async () => {
       const recipeDetails = new FullRecipe(APIresponse.meals[0]);
 
 
-      const currentUserId = UserStatus.getLoggedUserId();
+      const currentUserId = LoggedUser.getLoggedUserId();
 
       // ===============================
       // POPOLAZIONE ELEMENTI UI
@@ -224,7 +222,7 @@ window.addEventListener("load", async () => {
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
       if(currentUserId){
          notesSection.classList.remove("d-none");
-         populateNotesContainer(getUserNotes(detailedRecipeId), userNotesContainer);
+         populateNotesContainer(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
       }
 
       // Inserisce l'immagine della ricetta nella pagina

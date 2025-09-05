@@ -10,10 +10,10 @@
  * @requires errorsManagement - Gestione errori tipizzati
  */
 
+import { admitUser, updateUserEmail, updateUserPassword, updateUserUsername } from "../business/usersManagement.js";
 import { handleUserError } from "../errorsManagement.js";
-import { searchUserById, admitUser, updateUserPassword, updateUserUsername, updateUserEmail } from "../business/usersManagement.js";
+import { LoggedUser } from "../sessionControl.js";
 import * as validate from "../validate.js";
-import { UserStatus } from "../dbInterface.js";
 
 // ================================================================================================
 // FORM INPUT OBJECTS - STRUTTURE DATI PER GESTIONE STATO
@@ -220,7 +220,7 @@ authModifBtn.addEventListener("click", async () => {
 
     // Verifica la password tramite autenticazione
     try {
-        if(await admitUser(UserStatus.currentLoggedData().id, providedPassword)){
+        if(await admitUser(LoggedUser.getData().id, providedPassword)){
             modifCurrentPassInput.inputStatus = 1;
             modifNewPassInput.DOMelement.disabled = false;
             modifNewPassInput.DOMelement.required = true;
@@ -378,7 +378,7 @@ modifSubBtn.addEventListener("click", async () => {
     // Prerequisito: l'utente deve aver superato l'autenticazione con password corrente
     if(modifNewPassInput.DOMelement.required){
         try {
-            await updateUserPassword(modifNewPassInput.DOMelement.value);
+            await LoggedUser.changePassword(modifNewPassInput.DOMelement.value);
             alert("Password aggiornata");
         } catch (error) {
             handleUserError(error);
@@ -392,7 +392,7 @@ modifSubBtn.addEventListener("click", async () => {
     // Sequenza: 1) Verifica disponibilità username, 2) Applica modifica al database
     if(modifUsernameInput.DOMelement.required){
         try {
-            updateUserUsername(modifUsernameInput.DOMelement.value);
+            LoggedUser.changeUsername(modifUsernameInput.DOMelement.value);
             alert("Nome utente aggiornato");
         } catch (error) {
             // Gestisce errori di validazione (username già in uso) o storage
@@ -408,7 +408,7 @@ modifSubBtn.addEventListener("click", async () => {
     if(modifEmailInput.DOMelement.required){
         try {
             // Se la validazione passa, procede con l'aggiornamento
-            updateUserEmail(modifEmailInput.DOMelement.value);
+            LoggedUser.changeEmail(modifEmailInput.DOMelement.value);
             alert("Email aggiornata");
         } catch (error) {
             // Gestisce errori di validazione (email già in uso) o storage
@@ -464,11 +464,11 @@ modifSubBtn.addEventListener("click", async () => {
  * @since 1.0.0
  */
 window.addEventListener("load", () => {
-    if(!UserStatus.isLogged()){
+    if(!LoggedUser.isLogged()){
         window.location.href = "./login.html"
     }else{
         try {
-            const currentUser = UserStatus.currentLoggedData();
+            const currentUser = LoggedUser.getData();
             modifUsernameInput.defaultValue = currentUser.username;
             modifUsernameInput.DOMelement.value = modifUsernameInput.defaultValue
             modifEmailInput.defaultValue = currentUser.email;

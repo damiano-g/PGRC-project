@@ -11,9 +11,9 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { updateUserFavourites } from "../business/usersManagement.js";
 import { ItemPreview, createPreviewArray } from "../data-models.js"; // Modelli dati e normalizzazione
 import { fetchAllCategories, rndFetch, } from "../recipesAPI.js"; // API calls per dati iniziali
+import { LoggedUser } from "../sessionControl.js";
 import { DisplayPreviews, favBtnDisplay, populateCarousel } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
@@ -106,7 +106,7 @@ slideshow.addEventListener("click", (click) => {
     };
 
     if(isBtn){
-        updateUserFavourites(card.dataset.itemId);
+        LoggedUser.updateFavourites(card.dataset.itemId);
         favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
     };
 });
