@@ -9,7 +9,6 @@
  */
 
 import { RecipeStatus } from "./recipesManagement.js";
-import { currentUserFavourite } from "./usersManagement.js";
 
 // ================================================================================================
 // PRIVATE UTILITY FUNCTIONS
@@ -41,7 +40,7 @@ import { currentUserFavourite } from "./usersManagement.js";
  * 
  * @since 1.0.0
  */
-function createPreviewCard (itemPreviewObj, bodyElement = null) { 
+function createPreviewCard (itemPreviewObj, bodyElement = null, userLogged = false) { 
    const card = document.createElement("div");
    card.classList.add("card");
    card.classList.add("mb-1");
@@ -70,6 +69,7 @@ function createPreviewCard (itemPreviewObj, bodyElement = null) {
       cardFavIcon.classList.add("bi", "bi-heart", "fav-icon");
       cardFavBtn.appendChild(cardFavIcon);
       cardBody.appendChild(cardFavBtn);
+      favBtnDisplay(cardFavIcon, Boolean(userLogged), RecipeStatus.isFavourite(itemPreviewObj.id));
    }
 
    return card;
@@ -96,7 +96,7 @@ function createPreviewCard (itemPreviewObj, bodyElement = null) {
  * 
  * @since 1.0.0
  */
-function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null) { 
+function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null, userLogged = false) { 
    container.innerHTML = "";
 
    for(let i=0; i < previewItemsArray.length; i++){
@@ -104,7 +104,7 @@ function populatePreviewContainer (previewItemsArray, container, bodyElementsArr
       if(bodyElementsArray){
          relatedBodyElement = bodyElementsArray[i];
       }
-      container.appendChild(createPreviewCard(previewItemsArray[i], relatedBodyElement));
+      container.appendChild(createPreviewCard(previewItemsArray[i], relatedBodyElement, userLogged));
    }
 }
 
@@ -130,7 +130,7 @@ function populatePreviewContainer (previewItemsArray, container, bodyElementsArr
  * 
  * @since 1.0.0
  */
-function createCarouselItem(itemPreviewObj, ratingFunctions) { 
+function createCarouselItem(itemPreviewObj, ratingFunctions, userLogged = false) { 
    const carouselItem = document.createElement("div");
    carouselItem.classList.add("carousel-item");
 
@@ -139,21 +139,37 @@ function createCarouselItem(itemPreviewObj, ratingFunctions) {
    const difficultyAvg = ratingFunctions.difficulty(itemPreviewObj.id);
    carouselItem.dataset.itemId = String(itemPreviewObj.id);
 
-   carouselItem.innerHTML = `
-      <div class="position-relative">
-         <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
-         <div class="carousel-caption d-none d-md-block"> <!-- d-none and d-md-block hides captions in smaller viewports -->
-            <h5>${itemPreviewObj.name}</h5>
-            <button class="btn btn-lg position-absolute top-0 end-0"><i class="bi bi-2x bi-heart"></i></button>
-            <div class="row">
-               <span>Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteAvg}"></progress></progress>
-            </div>
-            <div class="row">
-               <span>Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyAvg}"></progress></progress>
-            </div>
-         </div>
-      </div>
-   `;
+   const image = document.createElement("img");
+   image.src = itemPreviewObj.image;
+   image.alt = itemPreviewObj.name;
+   image.classList.add("d-block", "w-100");
+   carouselItem.appendChild(image);
+
+   const captionContainer = document.createElement("div");
+   captionContainer.classList.add("carousel-caption", "d-none", "d-md-block");
+   const recipeTitle = document.createElement("h5");
+   recipeTitle.innerText = itemPreviewObj.name;
+   captionContainer.appendChild(recipeTitle);
+   const slideFavBtn = document.createElement("i");
+   slideFavBtn.classList.add("bi", "bi-4x", "bi-heart", "fav-icon");
+   captionContainer.appendChild(slideFavBtn);
+   carouselItem.appendChild(captionContainer);
+
+   favBtnDisplay(slideFavBtn, Boolean(userLogged), RecipeStatus.isFavourite(itemPreviewObj.id));
+
+   // carouselItem.innerHTML = `
+   //    <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
+   //    <div class="carousel-caption d-none d-md-block"> <!-- d-none and d-md-block hides captions in smaller viewports -->
+   //       <h5>${itemPreviewObj.name}</h5>
+   //       <button class="btn btn-lg position-absolute top-0 end-0"><i class="bi bi-2x bi-heart"></i></button>
+   //       <div class="row">
+   //          <span>Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteAvg}"></progress>
+   //       </div>
+   //       <div class="row">
+   //          <span>Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyAvg}"></progress>
+   //       </div>
+   //    </div>
+   // `;
 
    return carouselItem;   
 };
@@ -271,7 +287,7 @@ export const DisplayPreviews = {
          bodyElementsArray.push(reviews);
       });
       
-      populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
+      populatePreviewContainer(previewItemsArray, container, bodyElementsArray, Boolean(userId));
    },
 
    /**
@@ -308,7 +324,7 @@ export const DisplayPreviews = {
          bodyElementsArray.push(note);
       });
 
-      populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
+      populatePreviewContainer(previewItemsArray, container, bodyElementsArray, true);
    },
 
    /**
@@ -368,11 +384,11 @@ export const DisplayPreviews = {
  * 
  * @since 1.0.0
  */
-export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions) { 
+export function populateCarousel(itemPreviewArray, carouselInner, ratingFunctions, userLogged = false) { 
   carouselInner.innerHTML = "";
 
    itemPreviewArray.forEach(element => {
-      carouselInner.appendChild(createCarouselItem(element, ratingFunctions));
+      carouselInner.appendChild(createCarouselItem(element, ratingFunctions, userLogged));
    }); 
 };
 

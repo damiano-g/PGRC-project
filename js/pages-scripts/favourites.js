@@ -184,7 +184,7 @@ window.addEventListener("load", async () => {
      * @param {HTMLElement} personalFavsContainer - Container target  
      * @param {Object} GlobalRatingFunctions - Funzioni rating medie globali
      */
-    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "meals"), personalFavsContainer, GlobalRatingFunctions);
+    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "meals"), personalFavsContainer, GlobalRatingFunctions, getLoggedUserId());
 
     /** @description Reset array per riutilizzo sezione successiva */
     tempArray.splice(0, tempArray.length);

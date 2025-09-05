@@ -46,8 +46,8 @@ searchBtn.addEventListener("click", async () => {
     if(response.meals){
         const array = createPreviewArray(response);
         history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
-        DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions);
-        cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
+        DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions, getLoggedUserId());
+        // cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
     }else{
         const paragraph = document.createElement("div");
         paragraph.innerText = "La ricerca non ha prodotto risultati";
@@ -103,8 +103,8 @@ window.addEventListener("load", async () => {
     
     if(query[0] === "cat"){
         const array = createPreviewArray(await fetchByCategory(query[1]));
-        DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions);
-        cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
+        DisplayPreviews.displayWithRating(array, resultsContainer, GlobalRatingFunctions, getLoggedUserId());
+        // cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
     }
     
 });

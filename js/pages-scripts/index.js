@@ -14,7 +14,8 @@
 import { ItemPreview, FullRecipe, createPreviewArray, } from "../data-models.js";     // Modelli dati e normalizzazione
 import { fetchAllCategories, rndFetch, } from "../recipesAPI.js";                     // API calls per dati iniziali
 import { GlobalRatingFunctions } from "../reviewsManagement.js";
-import { populateCarousel, DisplayPreviews } from "../UI.js";                       // Componenti UI per rendering
+import { populateCarousel, DisplayPreviews, favBtnDisplay } from "../UI.js";                       // Componenti UI per rendering
+import { currentUserFavourite, getLoggedUserId, updateUserFavourites } from "../usersManagement.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -54,7 +55,7 @@ window.addEventListener("load", async () => {
     }
     console.log(recipesArray);
 
-    populateCarousel(recipesArray, slideshow, GlobalRatingFunctions);
+    populateCarousel(recipesArray, slideshow, GlobalRatingFunctions, getLoggedUserId());
 
     // Attiva il primo slide del carousel (Bootstrap requirement)
     document.querySelector(".carousel-inner .carousel-item").classList.add("active");
@@ -91,23 +92,24 @@ catContainer.addEventListener("click", (click) => {
 // NAVIGAZIONE DA CAROUSEL
 // ===============================
 
-slideshow.addEventListener("click", (click) => {
-    const btn = click.target.closest(".btn");
-    if(btn){
-        window.location.href = `../../pages/favourites.html`;
-    }
-});
 
 /**
  * Event delegation per click su slide del carousel
  * Naviga direttamente ai dettagli della ricetta cliccata
  */
 slideshow.addEventListener("click", (click) => {
-    const slide = click.target.closest(".carousel-item");
-    const btn = click.target.closest(".btn");
-    if(slide && !btn){
-        window.location.href = `../../pages/recipe-details.html?id=${slide.dataset.itemId}`;
-    }
+    const card = click.target.closest(".carousel-item");
+    const isBtn = click.target.matches(".fav-icon");
+
+    if(card && !isBtn){
+        // Naviga alla pagina dettagli passando l'ID della ricetta come query parameter
+        window.location.href = `../../pages/recipe-details.html?id=${card.dataset.itemId}`;
+    };
+
+    if(isBtn){
+        updateUserFavourites(card.dataset.itemId);
+        favBtnDisplay(card.querySelector(".fav-icon"), Boolean(getLoggedUserId()), currentUserFavourite(card.dataset.itemId));
+    };
 });
 
 // ===============================
