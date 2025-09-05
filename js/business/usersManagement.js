@@ -230,15 +230,15 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
  *   handleUserError(error);
  * }
  */
-export function deleteLoggedUser(){
+export function deleteUser(userId){
 
     try {
         const actualRegUsersArray = getRegisteredUsers();
-        const currentUserId = getLoggedUserId();
+        const currentUserId = userId;
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            throw new UsersManagementError("NOT_FOUND", "Utente loggato non trovato per eliminazione");
+            throw new UsersManagementError("NOT_FOUND", "Utente non trovato per eliminazione");
         }
         
         actualRegUsersArray.splice(index, 1);
