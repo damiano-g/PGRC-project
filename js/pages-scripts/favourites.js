@@ -144,6 +144,7 @@ window.addEventListener("load", async () => {
     
     /** @type {Object} Oggetto utente corrente da localStorage */
     const currentUser = LoggedUser.getData();
+console.log(currentUser);
     // ============================================================================================
     // DATA LOADING & RENDERING
     // ============================================================================================
@@ -206,7 +207,7 @@ window.addEventListener("load", async () => {
      * @param {Object} UserRatingFunctions - Funzioni rating specifiche utente
      * @param {string} currentUser.id - ID utente per filter rating personalizzati
      */
-    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "reviews"), personalRevsContainer, UserRatingFunctions, currentUser.id);
+    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "reviews"), personalRevsContainer);
 
     /** @description Reset array per riutilizzo sezione successiva */
     tempArray.splice(0, tempArray.length);

@@ -125,7 +125,7 @@ export const LoggedUser = {
      */
     getData: () => {
         try {
-            UsersManagement.searchUserById(LoggedUser.getId());
+            return UsersManagement.searchUserById(LoggedUser.getId());
         } catch (error) {
             throw error;
         }
