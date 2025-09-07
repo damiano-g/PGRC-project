@@ -10,7 +10,6 @@
  * @requires errorsManagement - Gestione errori tipizzati
  */
 
-import { admitUser, updateUserEmail, updateUserPassword, updateUserUsername } from "../business/usersManagement.js";
 import { handleUserError } from "../errorsManagement.js";
 import { LoggedUser } from "../sessionControl.js";
 import * as validate from "../validate.js";
@@ -220,7 +219,7 @@ authModifBtn.addEventListener("click", async () => {
 
     // Verifica la password tramite autenticazione
     try {
-        if(await admitUser(LoggedUser.getData().id, providedPassword)){
+        if(await LoggedUser.authOperations(providedPassword)){
             modifCurrentPassInput.inputStatus = 1;
             modifNewPassInput.DOMelement.disabled = false;
             modifNewPassInput.DOMelement.required = true;

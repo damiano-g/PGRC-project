@@ -1,5 +1,5 @@
-import * as ReviewsManage from "./business/reviewsManagement.js";
-import * as UsersManage from "./business/usersManagement.js";
+import * as ReviewsManagement from "./business/reviewsManagement.js";
+import * as UsersManagement from "./business/usersManagement.js";
 import { StorageManagement } from "./storageManagement.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
@@ -16,56 +16,35 @@ function updateLoggedUser(userId){
     }
 }
 
-export function startSession(username, password) {
-    try {
-        const foundId = UsersManage.searchUserbyName(username).id;
-        const admitted = await admitUser(foundId, password);
+export const NewUser = {
 
-        if(admitted){
-            updateLoggedUser(foundId);
-            return true;
-        }else{
-            return false;
+    startSession: async (username, password) => {
+        try {
+            const foundId = UsersManagement.searchUserbyName(username).id;
+            const admitted = await UsersManagement.admitUser(foundId, password);
+
+            if(admitted){
+                updateLoggedUser(foundId);
+                return true;
+            }else{
+                return false;
+            };
+        } catch (error) {
+            throw error;
         };
-    } catch (error) {
-        throw error;
-    };
-};
+    },
 
-export function endSession() {
-    try{
-        StorageManagement.set(LOGGED_USER_KEY, "", {storageLocation: "session", dataType: "string"});
-        loggedUserId = userId; // Aggiorna cache locale
-        if(LoggedUser.getId === ""){
-            return true;
-        }else{
-            return false;
-        }
-    }catch(error){
-        throw new UsersManagementError("STORAGE", "Errore aggiornamento sessione", error);
+    addToDB: async (username, email, password) => { // Solo wrapper
+        try {
+            return await UsersManagement.addNewUser(username, email, password);
+        } catch (error) {
+            throw error;
+        };
     }
 };
 
-
 export const LoggedUser = {
     
-    /**
-     * Recupera ID utente attualmente loggato con gestione errori automatica
-     * API pubblica per controllo stato login cross-page
-     *
-     * @returns {string} ID utente loggato o stringa vuota se non presente/errori
-     * 
-     * @example
-     * // Check stato login
-     * const currentUserId = getLoggedUserId();
-     * if (currentUserId) {
-     *   console.log("Utente loggato:", currentUserId);
-     *   // Mostra UI autenticata
-     * } else {
-     *   // Redirect a login page
-     *   window.location.href = "./login.html";
-     * }
-    */
     getId: () => {
         try {
             loggedUserId = StorageManagement.get(LOGGED_USER_KEY, {storageLocation: "session", dataType: "string"});
@@ -80,17 +59,23 @@ export const LoggedUser = {
     isLogged: () => {
         try {
             const loggedUserId = LoggedUser.getId();
-            return Boolean(loggedUserId && UsersManage.getRegisteredUsers().some(item => item.id === loggedUserId));
+            return Boolean(loggedUserId && UsersManagement.getRegisteredUsers().some(item => item.id === loggedUserId));
         } catch (error) {
             throw error;
         };
     },
     
-    getData: () => UsersManage.searchUserById(LoggedUser.getId()),
+    getData: () => {
+        try {
+            UsersManagement.searchUserById(LoggedUser.getId());
+        } catch (error) {
+            throw error;
+        }
+    },
     
     getRecipeNotes: (recipeId) => {
         try{
-            const notesaArray = UsersManage.searchUserById(LoggedUser.getId()).notes || [];
+            const notesaArray = UsersManagement.searchUserById(LoggedUser.getId()).notes || [];
             if(recipeId){
                 notesaArray.filter(element => element.recipeId === recipeId) || [];
             }
@@ -100,10 +85,18 @@ export const LoggedUser = {
             throw error;
         }
     },
+
+    getReviews: () => {
+        try {
+            return getStoredReviews().filter(element => RecipeStatus.isReviewed(element.recipeId)) || [];      
+        } catch (error) {
+            throw error;
+        }
+    },
     
     changeUsername: (newUsername) => {
         try {
-            UsersManage.updateUserUsername(LoggedUser.getId(), newUsername);
+            UsersManagement.updateUserUsername(LoggedUser.getId(), newUsername);
         } catch (error) {
             throw error;
         };
@@ -111,7 +104,7 @@ export const LoggedUser = {
 
     changeEmail: (newEmail) => {
         try {
-            UsersManage.updateUserEmail(LoggedUser.getId(), newEmail);
+            UsersManagement.updateUserEmail(LoggedUser.getId(), newEmail);
         } catch (error) {
             throw error;
         };
@@ -119,7 +112,7 @@ export const LoggedUser = {
     
     changePassword: async (newPassword) => {
         try {
-            await UsersManage.updateUserPassword(LoggedUser.getId(), newPassword);
+            await UsersManagement.updateUserPassword(LoggedUser.getId(), newPassword);
             return true;
         } catch (error) {
             throw error;
@@ -128,7 +121,7 @@ export const LoggedUser = {
 
     updateFavourites: (recipeId) => {
         try {
-            UsersManage.updateUserFavourites(LoggedUser.getId(), recipeId);
+            UsersManagement.updateUserFavourites(LoggedUser.getId(), recipeId);
         } catch (error) {
             throw error;
         };
@@ -136,7 +129,7 @@ export const LoggedUser = {
 
     addNote: (recipeId, text) => {
         try {
-            UsersManage.updateUserNotes(LoggedUser.getId(), recipeId, text);
+            UsersManagement.updateUserNotes(LoggedUser.getId(), recipeId, text);
         } catch (error) {
             throw error;
         };
@@ -144,13 +137,41 @@ export const LoggedUser = {
 
     deleteNote: (recipeId, noteId) => {
         try {
-            UsersManage.updateUserNotes(LoggedUser.getId(), null, null, noteId);
+            UsersManagement.updateUserNotes(LoggedUser.getId(), null, null, noteId);
         } catch (error) {
             throw error;
         };
     },
 
-    deleteAccount: () => UsersManage.deleteUser(LoggedUser.getId()),
+    deleteAccount: () => {
+        try {
+            UsersManagement.deleteUser(LoggedUser.getId());
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    authOperations: async (password) => {
+        try {
+            return await UsersManagement.admitUser(LoggedUser.getData().id, providedPassword);
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    endSession: () => {
+        try{
+            StorageManagement.set(LOGGED_USER_KEY, "", {storageLocation: "session", dataType: "string"});
+            loggedUserId = userId; // Aggiorna cache locale
+            if(LoggedUser.getId === ""){
+                return true;
+            }else{
+                return false;
+            }
+        }catch(error){
+            throw new UsersManagementError("STORAGE", "Errore aggiornamento sessione", error);
+        }
+    }
 };
 
 
@@ -159,7 +180,7 @@ export const RecipeStatus = {
     isFavourite: (recipeId) => {
         try {
             const loggedUserId = LoggedUser.getId();
-            return Boolean(loggedUserId && UsersManage.searchUserById(loggedUserId).favourites.some(element => element === recipeId));
+            return Boolean(loggedUserId && UsersManagement.searchUserById(loggedUserId).favourites.some(element => element === recipeId));
         } catch (error) {
             throw error;
         }
@@ -168,7 +189,7 @@ export const RecipeStatus = {
     isReviewed: (recipeId) => {
         try {
             const loggedUserId = LoggedUser.getId();
-            const actualStoredReviews = ReviewsManage.getStoredReviews(); 
+            const actualStoredReviews = ReviewsManagement.getStoredReviews(); 
             return Boolean(loggedUserId && actualStoredReviews && actualStoredReviews.some(element => (element.userId === loggedUserId) && (element.recipeId === recipeId))); 
         } catch (error) {
             throw error;
@@ -177,7 +198,7 @@ export const RecipeStatus = {
     
     userTasteRate: (recipeId) => {
         try {
-            return ReviewsManage.recipeUserRate(recipeId, LoggedUser.getId(), "tasteRate");
+            return ReviewsManagement.recipeUserRate(recipeId, LoggedUser.getId(), "tasteRate");
         } catch (error) {
             console.error(error);
         };
@@ -185,7 +206,7 @@ export const RecipeStatus = {
 
     userDifficulyRate: (recipeId) => {
         try {
-            return recipeUserRate(recipeId, userId, "difficultyRate");
+            return ReviewsManagement.recipeUserRate(recipeId, userId, "difficultyRate");
         } catch (error) {
             console.error(error);
         }
@@ -193,7 +214,7 @@ export const RecipeStatus = {
 
     avgTasteRate: (recipeId) => {
         try {
-            return ReviewsManage.recipeAvgRate(recipeId, "tasteRate");
+            return ReviewsManagement.recipeAvgRate(recipeId, "tasteRate");
         } catch (error) {
             console.error(error);
             // @todo Valutare se rethrow errori critici
@@ -202,7 +223,7 @@ export const RecipeStatus = {
 
     avgDifficultyRate: (recipeId) => {
         try {
-            return ReviewsManage.recipeAvgRate(recipeId, "difficultyRate");
+            return ReviewsManagement.recipeAvgRate(recipeId, "difficultyRate");
         } catch (error) {
             console.error(error);
         }
@@ -210,7 +231,7 @@ export const RecipeStatus = {
 
     addUserReview: (recipeId, tasteRate, difficultyRate) => {
         try {
-            ReviewsManage.updateRecipeReviews(LoggedUser.getId(), recipeId, tasteRate, difficultyRate);
+            ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId, tasteRate, difficultyRate);
             return true;
         } catch (error) {
             console.error(error);
@@ -220,7 +241,7 @@ export const RecipeStatus = {
 
     deleteUserReview: (recipeId) => {
         try {
-            ReviewsManage.updateRecipeReviews(LoggedUser.getId(), recipeId)
+            ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId)
             // @todo Aggiungere return true esplicito
         } catch (error) {
             console.error(error);

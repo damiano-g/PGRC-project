@@ -1,5 +1,5 @@
-import { admitUser, searchUserbyName, updateLoggedUser, } from "../business/usersManagement.js";
 import { handleUserError, } from "../errorsManagement.js";
+import { NewUser } from "../sessionControl.js";
 import { validateBtn, } from "../validate.js";
 
 // Oggetti DOM per gli input del form di login con stato di validazione
@@ -69,22 +69,8 @@ loginSubBtn.addEventListener("click", async () => {
         // Estrae e memorizza le credenziali PRIMA di modificare l'interfaccia
         const currentUsername = loginUsernameInput.DOMelement.value;
         const currentPassword = loginPasswordInput.DOMelement.value;
-
-        // ========================================
-        // FASE 3: RICERCA UTENTE NEL DATABASE
-        // ========================================
-        // Cerca l'utente tramite username nel database
-        // searchUserbyName() lancia UserManagementError se utente non trovato
-        const foundId = searchUserbyName(currentUsername).id;
         
-        // ========================================
-        // FASE 6: VERIFICA PASSWORD
-        // ========================================
-        // Autentica l'utente usando i valori memorizzati
-        const admitted = await admitUser(foundId, currentPassword);
-        
-        if(admitted){
-            updateLoggedUser(foundId);
+        if(await NewUser.startSession(currentUsername, currentPassword)){
             alert("Login effettuato");
             window.location.href = "../../index.html";
         }else{

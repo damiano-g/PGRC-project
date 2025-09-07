@@ -1,8 +1,9 @@
 //Gestione eventi per pagina di registrazione
 
-import { handleUserError } from "../errorsManagement.js";
 import { addNewUser, } from "../business/usersManagement.js";
-import { validateUsername, validateEmail, validatePassword, validatePassConfirm, formatInputField, validateBtn } from "../validate.js";
+import { handleUserError } from "../errorsManagement.js";
+import { addUserToDB, NewUser } from "../sessionControl.js";
+import { formatInputField, validateBtn, validateEmail, validatePassConfirm, validatePassword, validateUsername } from "../validate.js";
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione
 const signinUsernameInput = {
@@ -99,7 +100,7 @@ signinSubBtn.addEventListener("click", async () => {
         // ========================================        
         // Aggiunge il nuovo utente al database (localStorage)
         // Può lanciare UserManagementError in caso di errori di storage, validazione username e email, passwordhashing
-        await addNewUser(currentUsername, currentEmail, currentPassword);
+        await NewUser.addToDB(currentUsername, currentEmail, currentPassword);
         
         alert("Utente registrato con successo");
         window.location.href = "../../index.html";

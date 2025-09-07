@@ -12,10 +12,9 @@
  * @requires usersManagement - Autenticazione e gestione dati utente
  */
 
-import { getStoredReviews, } from "../business/reviewsManagement.js";
 import { createPreviewArray } from "../data-models.js";
 import { fetchById } from "../recipesAPI.js";
-import { LoggedUser, RecipeStatus } from "../sessionControl.js";
+import { LoggedUser } from "../sessionControl.js";
 import { DisplayPreviews, favBtnDisplay } from "../UI.js";
 
 // ================================================================================================
@@ -159,7 +158,7 @@ window.addEventListener("load", async () => {
      * Array filtrato di review dell'utente corrente per estrazione recipe IDs
      * @type {Array<Object>} 
      */
-    const currentUserRevsRecipesIds = getStoredReviews().filter(element => RecipeStatus.isReviewed(element.recipeId));
+    const currentUserRevsRecipesIds = LoggedUser.getReviews();
 
     // ============================================================================================
     // SEZIONE FAVOURITES
