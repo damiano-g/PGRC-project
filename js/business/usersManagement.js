@@ -580,7 +580,7 @@ export async function updateUserNotes(userId, recipeId = null, text = null, note
             }
         }
         
-        await updateUserData("notes", userNotesArray);
+        await updateUserData(userId, "notes", userNotesArray);
         return true;
     } catch (error) {
         console.error(error);

@@ -238,7 +238,7 @@ export const LoggedUser = {
      * @param {string} noteId - ID nota da eliminare
      * @throws {Error} Se errore eliminazione
      */
-    deleteNote: (recipeId, noteId) => {
+    deleteNote: (noteId) => {
         try {
             UsersManagement.updateUserNotes(LoggedUser.getId(), null, null, noteId);
         } catch (error) {
