@@ -57,33 +57,7 @@ export function getRegisteredUsers() {
         registeredUsers = [];
         throw error;
     }
-}
-
-/**
- * Aggiorna ID utente loggato nel sessionStorage per persistenza sessione
- * API pubblica per gestione stato login post-autenticazione
- * 
- * @deprecated Da spostare in session control
- * @param {string} userId - ID univoco utente da impostare come loggato
- * @throws {UsersManagementError} Se errori di scrittura sessionStorage (tipo "STORAGE")
- * 
- * @example
- * // Post-login: imposta utente come loggato
- * try {
- *   updateLoggedUser("user_1703123456789_1234");
- *   window.location.href = "./pages/landing.html";
- * } catch (error) {
- *   handleUserError(error);
- * }
- */
-export function updateLoggedUser(userId){
-    try{
-        StorageManagement.set(LOGGED_USER_KEY, userId, {storageLocation: "session", dataType: "string"});
-        loggedUserId = userId; // Aggiorna cache locale
-    }catch(error){
-        throw new UsersManagementError("STORAGE", "Errore aggiornamento sessione", error);
-    }
-}
+};
 
 // ============================================================================
 // API PUBBLICA - RICERCA UTENTI
