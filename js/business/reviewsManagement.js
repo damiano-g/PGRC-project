@@ -10,9 +10,9 @@
  * @requires storageManagement - StorageManagement per persistenza localStorage
  */
 
-import { Review } from "./data-models.js";
-import { ReviewsManagementError } from "./errorsManagement.js";
-import { StorageManagement } from "./storageManagement.js";
+import { Review } from "../data-models.js";
+import { ReviewsManagementError } from "../errorsManagement.js";
+import { StorageManagement } from "../storageManagement.js";
 
 // ================================================================================================
 // STORAGE CONFIGURATION

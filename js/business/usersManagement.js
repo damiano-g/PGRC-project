@@ -7,9 +7,9 @@
  * @since 2025-08-28
  */
 
-import { UsersManagementError, } from "./errorsManagement.js";
-import { User, Note } from "./data-models.js";
-import { StorageManagement } from "./storageManagement.js";
+import { UsersManagementError, } from "../errorsManagement.js";
+import { User, Note } from "../data-models.js";
+import { StorageManagement } from "../storageManagement.js";
 
 // ============================================================================
 // CONFIGURAZIONE E COSTANTI
