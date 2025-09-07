@@ -74,8 +74,12 @@ resultsContainer.addEventListener("click", (click) => {
     };
 
     if(isBtn){
-        LoggedUser.updateFavourites(card.dataset.itemId);
-        favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
+        if(LoggedUser.isLogged()){
+            LoggedUser.updateFavourites(card.dataset.itemId);
+            favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
+        }else{
+            window.location.href = "./login.html";
+        };
     };
 });
 
