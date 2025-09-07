@@ -184,7 +184,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
  * 
  * @since 1.0.0
  */
-function recipeAvgRate (recipeId, ratingType) {
+export function recipeAvgRate (recipeId, ratingType) {
     try {
         let sum = 0;
         let totalReviews = 0;
