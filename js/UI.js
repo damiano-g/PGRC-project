@@ -258,11 +258,11 @@ export const DisplayPreviews = {
    displayWithRating: function (previewItemsArray, container) { 
       const bodyElementsArray = [];
 
-      previewItemsArray.forEach(element => {
-         const taste = previewItemsArray.type === "reviews" ? RecipeStatus.userTasteRate(previewItemsArray.id) : RecipeStatus.avgTasteRate(previewItemsArray.id);
-         const difficulty = previewItemsArray.type === "reviews" ? RecipeStatus.userDifficulyRate(previewItemsArray.id) : RecipeStatus.avgDifficultyRate(previewItemsArray.id);
+      previewItemsArray.forEach(item => {
+         const taste = item.type === "reviews" ? RecipeStatus.userTasteRate(item.id) : RecipeStatus.avgTasteRate(item.id);
+         const difficulty = item.type === "reviews" ? RecipeStatus.userDifficulyRate(item.id) : RecipeStatus.avgDifficultyRate(item.id);
          
-         const title = element.type === "meals" ? "Recensioni globali" : "La mia recensione";
+         const title = item.type === "meals" ? "Recensioni globali" : "La mia recensione";
          
          const reviews = document.createElement("div");
          reviews.classList.add("container");

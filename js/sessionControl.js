@@ -350,7 +350,7 @@ export const RecipeStatus = {
      */
     userDifficulyRate: (recipeId) => {
         try {
-            return ReviewsManagement.recipeUserRate(recipeId, userId, "difficultyRate");
+            return ReviewsManagement.recipeUserRate(recipeId, LoggedUser.getId(), "difficultyRate");
         } catch (error) {
             console.error(error);
         }

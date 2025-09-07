@@ -144,7 +144,7 @@ window.addEventListener("load", async () => {
     
     /** @type {Object} Oggetto utente corrente da localStorage */
     const currentUser = LoggedUser.getData();
-console.log(currentUser);
+    
     // ============================================================================================
     // DATA LOADING & RENDERING
     // ============================================================================================
