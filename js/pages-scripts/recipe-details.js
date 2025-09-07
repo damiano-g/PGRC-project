@@ -205,9 +205,8 @@ window.addEventListener("load", async () => {
       // Crea un oggetto ricetta completo a partire dalla risposta API
       const recipeDetails = new FullRecipe(APIresponse.meals[0]);
 
-
-      const currentUserId = LoggedUser.getLoggedUserId();
-
+      const currentUserId = LoggedUser.getId();
+      
       // ===============================
       // POPOLAZIONE ELEMENTI UI
       // ===============================
