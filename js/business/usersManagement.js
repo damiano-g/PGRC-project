@@ -310,6 +310,7 @@ export async function updateUserFavourites(userId, recipeId){
     try {
         const userFavouritesArray = searchUserById(userId).favourites;
         const index = userFavouritesArray.findIndex(element => element === recipeId);
+
         if(index < 0){
             userFavouritesArray.push(recipeId);
         }else{
@@ -522,7 +523,7 @@ function searchUser(searchField, searchValue){
 async function updateUserData(userId, field, newValue, needsHashing = null) {
     try {
         // Atomic update operation
-        const actualRegUsersArray = userId;
+        const actualRegUsersArray = getRegisteredUsers();
         const currentUserId = userId;
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
