@@ -1,6 +1,5 @@
-import { updateLoggedUser, deleteUser} from "../business/usersManagement.js";
-import { LoggedUser } from "../sessionControl.js";
 import { handleUserError, } from "../errorsManagement.js";
+import { LoggedUser } from "../sessionControl.js";
 
 // Riferimenti agli elementi DOM della pagina landing
 const logoutBtn = document.getElementById("logoutBtn");
@@ -12,7 +11,7 @@ const confirmBtn = document.getElementById("confirmBtn");
 // Cancella l'utente corrente dal database - da valutare controllo password
 confirmBtn.addEventListener("click", () => {
     try {
-        deleteUser();
+        LoggedUser.deleteAccount();
         document.querySelector("body").classList.add("d-none");
         alert("Account eliminato");
         logoutBtn.click();
@@ -24,7 +23,7 @@ confirmBtn.addEventListener("click", () => {
 
 // Gestisce il logout dell'utente e reindirizza alla pagina principale
 logoutBtn.addEventListener("click", () => {
-    updateLoggedUser("");
+    LoggedUser.endSession();
     window.location.href = "../../index.html";
 });
 
