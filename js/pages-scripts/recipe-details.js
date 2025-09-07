@@ -92,8 +92,7 @@ revFormInputs.forEach(input => input.addEventListener("change", () => {
 
 revBtn.addEventListener("click", () => {
    try {
-      const currentUserId = LoggedUser.getData().id;
-      if(currentUserId){
+      if(LoggedUser.isLogged()){
          if(RecipeStatus.isReviewed(detailedRecipeId)){
             revConfirmBtn.onclick = () => {
                RecipeStatus.deleteUserReview(detailedRecipeId);
