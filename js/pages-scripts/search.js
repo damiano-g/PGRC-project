@@ -11,10 +11,9 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { createPreviewArray } from "../data-models.js"; // Modelli dati e normalizzazione
 import { fetchByCategory, fetchByName, } from "../recipesAPI.js"; // Funzioni API per ricerca ricette
 import { LoggedUser } from "../sessionControl.js";
-import { DisplayPreviews, favBtnDisplay } from "../UI.js"; // Componenti UI per rendering
+import { displayCards, favBtnDisplay } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -42,9 +41,10 @@ let searchPageCards;
 searchBtn.addEventListener("click", async () => {
     const response = await fetchByName(String(searchBar.value));
     if(response.meals){
-        const array = createPreviewArray(response);
+        //const array = createPreviewArray(response);
         history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
-        DisplayPreviews.displayWithRating(array, resultsContainer)
+        displayCards(response, resultsContainer, "meals");
+        //CardDisplayStrategy.displayWithRating(array, resultsContainer)
     }else{
         const paragraph = document.createElement("div");
         paragraph.innerText = "La ricerca non ha prodotto risultati";
@@ -103,8 +103,9 @@ window.addEventListener("load", async () => {
     }
     
     if(query[0] === "cat"){
-        const array = createPreviewArray(await fetchByCategory(query[1]));
-        DisplayPreviews.displayWithRating(array, resultsContainer);
+        displayCards(await fetchByCategory(query[1]), resultsContainer, "meals");
+        //const array = createPreviewArray(await fetchByCategory(query[1]));
+        //CardDisplayStrategy.displayWithRating(array, resultsContainer);
         // cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
     }  
 });

@@ -11,10 +11,9 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { ItemPreview, createPreviewArray } from "../data-models.js"; // Modelli dati e normalizzazione
 import { fetchAllCategories, rndFetch, } from "../recipesAPI.js"; // API calls per dati iniziali
 import { LoggedUser } from "../sessionControl.js";
-import { DisplayPreviews, favBtnDisplay, populateCarousel } from "../UI.js"; // Componenti UI per rendering
+import { displayCards, favBtnDisplay, populateCarousel } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -46,15 +45,16 @@ window.addEventListener("load", async () => {
     // POPOLAZIONE CAROUSEL RICETTE CASUALI
     // ===============================
     
-    /** @type {Array<ItemPreview>} Array per accumulo 5 ricette casuali */
-    const recipesArray = [];
+    /**Array per accumulo 5 ricette casuali */
+    const recipesObjAccumulator = await rndFetch();
 
-    for(let i=1; i<=5; i++){
-        recipesArray.push(createPreviewArray(await rndFetch())[0]);
+    for(let i=1; i < 5; i++){
+        const singleRecipeObj = await rndFetch();
+        recipesObjAccumulator.meals.push(singleRecipeObj.meals[0]);
     }
-    console.log(recipesArray);
+    console.log(recipesObjAccumulator);
 
-    populateCarousel(recipesArray, slideshow);
+    populateCarousel(recipesObjAccumulator, slideshow);
 
     // Attiva il primo slide del carousel (Bootstrap requirement)
     document.querySelector(".carousel-inner .carousel-item").classList.add("active");
@@ -62,8 +62,9 @@ window.addEventListener("load", async () => {
     // ===============================
     // POPOLAZIONE GRIGLIA CATEGORIE
     // ===============================
-    const categoriesArray = createPreviewArray(await fetchAllCategories());
-    DisplayPreviews.displayCategories(categoriesArray, catContainer);
+    displayCards(await fetchAllCategories(), catContainer, "categories");
+    //const categoriesArray = createPreviewArray(await fetchAllCategories());
+    //CardDisplayStrategy.displayCategories(categoriesArray, catContainer);
 });
 
 

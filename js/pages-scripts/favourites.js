@@ -12,10 +12,9 @@
  * @requires usersManagement - Autenticazione e gestione dati utente
  */
 
-import { createPreviewArray } from "../data-models.js";
 import { fetchById } from "../recipesAPI.js";
 import { LoggedUser } from "../sessionControl.js";
-import { DisplayPreviews, favBtnDisplay } from "../UI.js";
+import { displayCards, favBtnDisplay } from "../UI.js";
 
 // ================================================================================================
 // DOM ELEMENTS
@@ -181,7 +180,8 @@ window.addEventListener("load", async () => {
      * @param {HTMLElement} personalFavsContainer - Container target  
      * @param {Object} GlobalRatingFunctions - Funzioni rating medie globali
      */
-    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "meals"), personalFavsContainer);
+    displayCards(tempArray, personalFavsContainer, "meals");
+    //CardDisplayStrategy.displayWithRating(createPreviewArray(tempArray, "meals"), personalFavsContainer);
 
     /** @description Reset array per riutilizzo sezione successiva */
     tempArray.splice(0, tempArray.length);
@@ -207,7 +207,8 @@ window.addEventListener("load", async () => {
      * @param {Object} UserRatingFunctions - Funzioni rating specifiche utente
      * @param {string} currentUser.id - ID utente per filter rating personalizzati
      */
-    DisplayPreviews.displayWithRating(createPreviewArray(tempArray, "reviews"), personalRevsContainer);
+    displayCards(tempArray, personalRevsContainer, "reviews");
+    //CardDisplayStrategy.displayWithRating(createPreviewArray(tempArray, "reviews"), personalRevsContainer);
 
     /** @description Reset array per riutilizzo sezione successiva */
     tempArray.splice(0, tempArray.length);
@@ -232,5 +233,6 @@ window.addEventListener("load", async () => {
      * @param {HTMLElement} personalNotesContainer - Container target
      * @param {Array<Object>} currentUser.notes - Array notes utente per display contenuto
      */
-    DisplayPreviews.displayWithNote(createPreviewArray(tempArray, "notes"), personalNotesContainer, currentUser.notes);
+    displayCards(tempArray, personalNotesContainer, "notes");
+    //CardDisplayStrategy.displayWithNote(createPreviewArray(tempArray, "notes"), personalNotesContainer, currentUser.notes);
 });

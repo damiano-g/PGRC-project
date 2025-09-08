@@ -8,6 +8,7 @@
  * @requires data-models - ItemPreview objects per input standardizzato
  */
 
+import { createPreviewArray } from "./data-models.js";
 import { LoggedUser, RecipeStatus } from "./sessionControl.js";
 
 // ================================================================================================
@@ -214,6 +215,26 @@ function createNoteCard(userNote) {
 // PUBLIC API - DISPLAY STRATEGIES
 // ================================================================================================
 
+export function displayCards(itemsObj, displayContainer, itemsType){
+
+   switch(itemsType){
+      case "meals":
+         CardDisplayStrategy.displayWithRating(createPreviewArray(itemsObj, itemsType), displayContainer);
+         break;
+      case "reviews":
+         CardDisplayStrategy.displayWithRating(createPreviewArray(itemsObj, itemsType), displayContainer);
+         break;
+      case "notes":
+         CardDisplayStrategy.displayWithNote(createPreviewArray(itemsObj, itemsType), displayContainer);
+         break;
+      case "categories":
+         CardDisplayStrategy.displayCategories(createPreviewArray(itemsObj, itemsType), displayContainer);
+         break;
+      default:
+         throw new Error("Wrong data format");
+   }
+}
+
 /**
  * Namespace per strategie di display specializzate per diversi tipi di contenuto
  * 
@@ -224,7 +245,7 @@ function createNoteCard(userNote) {
  * 
  * @since 1.0.0
  */
-export const DisplayPreviews = {
+export const CardDisplayStrategy = {
 
    /**
     * Display preview con rating progress bars (globali o utente)
@@ -315,13 +336,13 @@ export const DisplayPreviews = {
     * 
     * @since 1.0.0
     */
-   displayWithNote: function (previewItemsArray, container, userNotesArray) { 
+   displayWithNote: function (previewItemsArray, container, userNotesArray = null) { 
       const bodyElementsArray = [];
 
-      userNotesArray.forEach(element => {
-         const note = document.createElement("p");
-         note.innerText = element.text;
-         bodyElementsArray.push(note);
+      LoggedUser.getData().notes.forEach(note => {
+         const noteDOMObj = document.createElement("p");
+         noteDOMObj.innerText = note.text;
+         bodyElementsArray.push(noteDOMObj);
       });
 
       populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
@@ -361,7 +382,7 @@ export const DisplayPreviews = {
  * Popola carousel Bootstrap con array di slide da ItemPreview
  * 
  * @function populateCarousel
- * @param {Array<import('./data-models.js').ItemPreview>} itemPreviewArray - Array oggetti normalizzati
+ * @param {Array<import('./data-models.js').ItemPreview>} itemsObj - Array oggetti normalizzati
  * @param {HTMLElement} carouselInner - Elemento .carousel-inner di Bootstrap
  * @returns {void}
  * 
@@ -383,10 +404,12 @@ export const DisplayPreviews = {
  * 
  * @since 1.0.0
  */
-export function populateCarousel(itemPreviewArray, carouselInner) { 
+export function populateCarousel(itemsObj, carouselInner) { 
   carouselInner.innerHTML = "";
 
-   itemPreviewArray.forEach(element => {
+  const previewsArray = createPreviewArray(itemsObj, Object.keys(itemsObj));
+
+   previewsArray.forEach(element => {
       carouselInner.appendChild(createCarouselItem(element));
    }); 
 };

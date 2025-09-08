@@ -421,21 +421,21 @@ FullRecipe.prototype.getIngredients = function (rawRecipeObj){
  * 
  * @since 1.0.0
  */
-export function createPreviewArray(itemsObj, itemsType = null){
+export function createPreviewArray(itemsObj, itemsType){
     
     /** @type {Array<ItemPreview>} Array accumulator per oggetti preview */
     const previewArray = [];
     
     /** @type {string} Nome della prima chiave nell'oggetto response (es. "meals", "categories") o tipo esplicito */
-    const arrayType = Array.isArray(itemsObj) && itemsType ? itemsType : Object.keys(itemsObj)[0];
+    //const arrayType = Array.isArray(itemsObj) && itemsType ? itemsType : Object.keys(itemsObj)[0];
     
     /** @type {Array} Array effettivo da processare (estratto da response o diretto) */
-    const originalArray = Array.isArray(itemsObj) && itemsType ? itemsObj : itemsObj[arrayType];
+    const originalArray = Array.isArray(itemsObj) ? itemsObj : itemsObj[itemsType];
 
     // Itera sull'array contenuto nella risposta API
     originalArray.forEach(element => {
         /** @type {ItemPreview} Oggetto preview normalizzato dall'elemento raw */
-        const item = new ItemPreview(element, arrayType);
+        const item = new ItemPreview(element, itemsType);
         previewArray.push(item);
     });
 
