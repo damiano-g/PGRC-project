@@ -178,30 +178,14 @@ userNotesContainer.addEventListener("click", click => {
 // CARICAMENTO E RENDERING RICETTA
 // ===============================
 
-/**
- * Event listener per caricamento iniziale della pagina dettagli
- * Orchestrazione completa: URL parsing → API call → data processing → UI population
- * Gestisce sia contenuto ricetta che features user-specific (preferiti/note)
- */
 window.addEventListener("load", async () => {
    try {
-      // ===============================
-      // ESTRAZIONE PARAMETRO URL
-      // ===============================
-
-      // Estrae l'id della ricetta dalla query string dell'URL (?id=...)
-      //detailedRecipeId = window.location.search.substring(4);
 
       // ===============================
       // FETCH E NORMALIZZAZIONE DATI
       // ===============================
 
       const recipeDetails = await Recipe.getFullData(detailedRecipeId);
-      // // Effettua la fetch dei dettagli ricetta tramite l'ID
-      // const APIresponse = await fetchById(detailedRecipeId);
-
-      // // Crea un oggetto ricetta completo a partire dalla risposta API
-      // const recipeDetails = new FullRecipe(APIresponse.meals[0]);
 
       
       // ===============================

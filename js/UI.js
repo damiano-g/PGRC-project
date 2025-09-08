@@ -97,12 +97,33 @@ function createPreviewCard (itemPreviewObj, bodyElement = null) {
  * 
  * @since 1.0.0
  */
-function populatePreviewContainer (previewItemsArray, container, bodyElementsArray = null) { 
+export function populatePreviewContainer (previewItemsArray, container) { 
+   
+   const itemsType = itemsPreviewArray[0].type;
+
+   let bodyElementsArray = [];
+
+   switch(itemsType){
+      case "meals":
+         bodyElementsArray = CardDisplayStrategy.displayWithRating(itemsPreviewArray, displayContainer);
+         break;
+      case "reviews":
+         bodyElementsArray = CardDisplayStrategy.displayWithRating(itemsPreviewArray, displayContainer);
+         break;
+      case "notes":
+         bodyElementsArray = CardDisplayStrategy.displayWithNote(itemsPreviewArray, displayContainer);
+         break;
+      case "categories":
+         break;
+      default:
+         throw new Error("Wrong data format");
+   }
+
    container.innerHTML = "";
 
    for(let i=0; i < previewItemsArray.length; i++){
       let relatedBodyElement = null;
-      if(bodyElementsArray){
+      if(bodyElementsArray.length > 0){
          relatedBodyElement = bodyElementsArray[i];
       }
       container.appendChild(createPreviewCard(previewItemsArray[i], relatedBodyElement));
@@ -214,39 +235,18 @@ function createNoteCard(userNote) {
 // PUBLIC API - DISPLAY STRATEGIES
 // ================================================================================================
 
-export function displayCards(itemsPreviewArray, displayContainer){
-
-   const itemsType = itemsPreviewArray[0].type;
-
-   switch(itemsType){
-      case "meals":
-         CardDisplayStrategy.displayWithRating(itemsPreviewArray, displayContainer);
-         break;
-      case "reviews":
-         CardDisplayStrategy.displayWithRating(itemsPreviewArray, displayContainer);
-         break;
-      case "notes":
-         CardDisplayStrategy.displayWithNote(itemsPreviewArray, displayContainer);
-         break;
-      case "categories":
-         CardDisplayStrategy.displayCategories(itemsPreviewArray, displayContainer);
-         break;
-      default:
-         throw new Error("Wrong data format");
-   }
-}
 
 /**
  * Namespace per strategie di display specializzate per diversi tipi di contenuto
  * 
- * @namespace DisplayPreviews
+ * @namespace CardDisplayStrategy
  * @description
  * Raccolta di metodi specializzati per rendering preview con contenuto aggiuntivo.
  * Ogni metodo implementa una strategia specifica per tipo di dati e layout.
  * 
  * @since 1.0.0
  */
-export const CardDisplayStrategy = {
+const CardDisplayStrategy = {
 
    /**
     * Display preview con rating progress bars (globali o utente)
@@ -277,7 +277,7 @@ export const CardDisplayStrategy = {
     * 
     * @since 1.0.0
     */
-   displayWithRating: function (itemsPreviewArray, container) { 
+   displayWithRating: function (itemsPreviewArray) { 
       const bodyElementsArray = [];
 
       itemsPreviewArray.forEach(item => {
@@ -309,7 +309,7 @@ export const CardDisplayStrategy = {
          bodyElementsArray.push(reviews);
       });
       
-      populatePreviewContainer(itemsPreviewArray, container, bodyElementsArray);
+      return bodyElementsArray;
    },
 
    /**
@@ -337,7 +337,7 @@ export const CardDisplayStrategy = {
     * 
     * @since 1.0.0
     */
-   displayWithNote: function (itemsPreviewArray, container) { 
+   displayWithNote: function (itemsPreviewArray) { 
       const bodyElementsArray = [];
 
       LoggedUser.getData().notes.forEach(note => {
@@ -346,12 +346,12 @@ export const CardDisplayStrategy = {
          bodyElementsArray.push(noteDOMObj);
       });
 
-      populatePreviewContainer(itemsPreviewArray, container, bodyElementsArray);
+      return bodyElementsArray;
    },
 
    /**
     * Display semplice preview senza contenuto aggiuntivo
-    * 
+    * @deprecated
     * @function displayCategories
     * @memberof DisplayPreviews
     * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array categorie normalizzate
@@ -370,8 +370,8 @@ export const CardDisplayStrategy = {
     * 
     * @since 1.0.0
     */
-   displayCategories: function (itemsPreviewArray, container) { 
-      populatePreviewContainer(itemsPreviewArray, container);
+   displayCategories: function (itemsPreviewArray) { 
+      return [];
    }
 };
 

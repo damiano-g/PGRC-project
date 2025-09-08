@@ -12,7 +12,7 @@
 // ===============================
 
 import { LoggedUser, PreviewArray } from "../sessionControl.js";
-import { displayCards, favBtnDisplay, populateCarousel } from "../UI.js"; // Componenti UI per rendering
+import { favBtnDisplay, populateCarousel, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -61,7 +61,7 @@ window.addEventListener("load", async () => {
     // ===============================
     // POPOLAZIONE GRIGLIA CATEGORIE
     // ===============================
-    displayCards(await PreviewArray.categories(), catContainer, "categories");
+    populatePreviewContainer(await PreviewArray.categories(), catContainer);
     //const categoriesArray = createPreviewArray(await fetchAllCategories());
     //CardDisplayStrategy.displayCategories(categoriesArray, catContainer);
 });

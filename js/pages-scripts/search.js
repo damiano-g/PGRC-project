@@ -12,7 +12,7 @@
 // ===============================
 
 import { LoggedUser, PreviewArray } from "../sessionControl.js";
-import { displayCards, favBtnDisplay } from "../UI.js"; // Componenti UI per rendering
+import { favBtnDisplay, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -42,7 +42,7 @@ searchBtn.addEventListener("click", async () => {
     if(recipesPreviewArray.meals){
         //const array = createPreviewArray(response);
         history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
-        displayCards(recipesPreviewArray, resultsContainer, "meals");
+        populatePreviewContainer(recipesPreviewArray, resultsContainer);
         //CardDisplayStrategy.displayWithRating(array, resultsContainer)
     }else{
         const paragraph = document.createElement("div");
@@ -102,10 +102,7 @@ window.addEventListener("load", async () => {
     }
     
     if(query[0] === "cat"){
-        displayCards(await PreviewArray.mealsByCategory(query[1]), resultsContainer);
-        //const array = createPreviewArray(await fetchByCategory(query[1]));
-        //CardDisplayStrategy.displayWithRating(array, resultsContainer);
-        // cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
+        populatePreviewContainer(await PreviewArray.mealsByCategory(query[1]), resultsContainer);
     }  
 });
 
