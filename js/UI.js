@@ -8,8 +8,7 @@
  * @requires data-models - ItemPreview objects per input standardizzato
  */
 
-import { createPreviewArray } from "./data-models.js";
-import { LoggedUser, RecipeStatus } from "./sessionControl.js";
+import { LoggedUser, Recipe } from "./sessionControl.js";
 
 // ================================================================================================
 // PRIVATE UTILITY FUNCTIONS
@@ -137,8 +136,8 @@ function createCarouselItem(itemPreviewObj) {
    carouselItem.classList.add("carousel-item");
 
    // Data attribute per identificazione (conversione esplicita a stringa)
-   const tasteAvg = RecipeStatus.avgTasteRate(itemPreviewObj.id)
-   const difficultyAvg = RecipeStatus.avgDifficultyRate(itemPreviewObj.id);
+   const tasteAvg = Recipe.avgTasteRate(itemPreviewObj.id)
+   const difficultyAvg = Recipe.avgDifficultyRate(itemPreviewObj.id);
    carouselItem.dataset.itemId = String(itemPreviewObj.id);
 
    const image = document.createElement("img");
@@ -215,20 +214,22 @@ function createNoteCard(userNote) {
 // PUBLIC API - DISPLAY STRATEGIES
 // ================================================================================================
 
-export function displayCards(itemsObj, displayContainer, itemsType){
+export function displayCards(itemsPreviewArray, displayContainer){
+
+   const itemsType = itemsPreviewArray[0].type;
 
    switch(itemsType){
       case "meals":
-         CardDisplayStrategy.displayWithRating(createPreviewArray(itemsObj, itemsType), displayContainer);
+         CardDisplayStrategy.displayWithRating(itemsPreviewArray, displayContainer);
          break;
       case "reviews":
-         CardDisplayStrategy.displayWithRating(createPreviewArray(itemsObj, itemsType), displayContainer);
+         CardDisplayStrategy.displayWithRating(itemsPreviewArray, displayContainer);
          break;
       case "notes":
-         CardDisplayStrategy.displayWithNote(createPreviewArray(itemsObj, itemsType), displayContainer);
+         CardDisplayStrategy.displayWithNote(itemsPreviewArray, displayContainer);
          break;
       case "categories":
-         CardDisplayStrategy.displayCategories(createPreviewArray(itemsObj, itemsType), displayContainer);
+         CardDisplayStrategy.displayCategories(itemsPreviewArray, displayContainer);
          break;
       default:
          throw new Error("Wrong data format");
@@ -252,7 +253,7 @@ export const CardDisplayStrategy = {
     * 
     * @function displayWithRating
     * @memberof DisplayPreviews
-    * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array ricette normalizzate
+    * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array ricette normalizzate
     * @param {HTMLElement} container - Container target per rendering
     * @returns {void}
     * 
@@ -276,12 +277,12 @@ export const CardDisplayStrategy = {
     * 
     * @since 1.0.0
     */
-   displayWithRating: function (previewItemsArray, container) { 
+   displayWithRating: function (itemsPreviewArray, container) { 
       const bodyElementsArray = [];
 
-      previewItemsArray.forEach(item => {
-         const taste = item.type === "reviews" ? RecipeStatus.userTasteRate(item.id) : RecipeStatus.avgTasteRate(item.id);
-         const difficulty = item.type === "reviews" ? RecipeStatus.userDifficulyRate(item.id) : RecipeStatus.avgDifficultyRate(item.id);
+      itemsPreviewArray.forEach(item => {
+         const taste = item.type === "reviews" ? Recipe.userTasteRate(item.id) : Recipe.avgTasteRate(item.id);
+         const difficulty = item.type === "reviews" ? Recipe.userDifficulyRate(item.id) : Recipe.avgDifficultyRate(item.id);
          
          const title = item.type === "meals" ? "Recensioni globali" : "La mia recensione";
          
@@ -308,7 +309,7 @@ export const CardDisplayStrategy = {
          bodyElementsArray.push(reviews);
       });
       
-      populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
+      populatePreviewContainer(itemsPreviewArray, container, bodyElementsArray);
    },
 
    /**
@@ -316,7 +317,7 @@ export const CardDisplayStrategy = {
     * 
     * @function displayWithNote
     * @memberof DisplayPreviews
-    * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array ricette normalizzate
+    * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array ricette normalizzate
     * @param {HTMLElement} container - Container target per rendering
     * @param {Array<Object>} userNotesArray - Array note utente con text property
     * @returns {void}
@@ -336,7 +337,7 @@ export const CardDisplayStrategy = {
     * 
     * @since 1.0.0
     */
-   displayWithNote: function (previewItemsArray, container, userNotesArray = null) { 
+   displayWithNote: function (itemsPreviewArray, container) { 
       const bodyElementsArray = [];
 
       LoggedUser.getData().notes.forEach(note => {
@@ -345,7 +346,7 @@ export const CardDisplayStrategy = {
          bodyElementsArray.push(noteDOMObj);
       });
 
-      populatePreviewContainer(previewItemsArray, container, bodyElementsArray);
+      populatePreviewContainer(itemsPreviewArray, container, bodyElementsArray);
    },
 
    /**
@@ -353,7 +354,7 @@ export const CardDisplayStrategy = {
     * 
     * @function displayCategories
     * @memberof DisplayPreviews
-    * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array categorie normalizzate
+    * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array categorie normalizzate
     * @param {HTMLElement} container - Container target per rendering
     * @returns {void}
     * 
@@ -369,8 +370,8 @@ export const CardDisplayStrategy = {
     * 
     * @since 1.0.0
     */
-   displayCategories: function (previewItemsArray, container) { 
-      populatePreviewContainer(previewItemsArray, container);
+   displayCategories: function (itemsPreviewArray, container) { 
+      populatePreviewContainer(itemsPreviewArray, container);
    }
 };
 
@@ -382,7 +383,7 @@ export const CardDisplayStrategy = {
  * Popola carousel Bootstrap con array di slide da ItemPreview
  * 
  * @function populateCarousel
- * @param {Array<import('./data-models.js').ItemPreview>} itemsObj - Array oggetti normalizzati
+ * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array oggetti normalizzati
  * @param {HTMLElement} carouselInner - Elemento .carousel-inner di Bootstrap
  * @returns {void}
  * 
@@ -404,12 +405,10 @@ export const CardDisplayStrategy = {
  * 
  * @since 1.0.0
  */
-export function populateCarousel(itemsObj, carouselInner) { 
-  carouselInner.innerHTML = "";
+export function populateCarousel(itemsPreviewArray, carouselInner) { 
+   carouselInner.innerHTML = "";
 
-  const previewsArray = createPreviewArray(itemsObj, Object.keys(itemsObj));
-
-   previewsArray.forEach(element => {
+   itemsPreviewArray.forEach(element => {
       carouselInner.appendChild(createCarouselItem(element));
    }); 
 };
@@ -483,7 +482,7 @@ export function populateNotesContainer(userNotesArray, container) {
  * @since 1.0.0
  */
 export function favBtnDisplay(btn, recipeId) { 
-   if(LoggedUser.isLogged() && RecipeStatus.isFavourite(recipeId)){
+   if(LoggedUser.isLogged() && Recipe.isFavourite(recipeId)){
       btn.classList.remove("bi-heart");
       btn.classList.add("bi-heart-fill");
       //btn.innerText = "Rimuovi dai preferiti";
@@ -515,7 +514,7 @@ export function favBtnDisplay(btn, recipeId) {
  * @since 1.0.0
  */
 export function revBtnDisplay(btn, recipeId) { 
-   if(LoggedUser.isLogged() && RecipeStatus.isReviewed(recipeId)){
+   if(LoggedUser.isLogged() && Recipe.isReviewed(recipeId)){
       btn.innerText = "Rimuovi recensione";
    }else{
       btn.innerText = "Aggiungi recensione";

@@ -12,6 +12,8 @@
 
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
+import { createPreviewArray, FullRecipe } from "./data-models.js";
+import { fetchAllCategories, fetchByCategory, fetchById, fetchByName, rndFetch } from "./recipesAPI.js";
 import { StorageManagement } from "./storageManagement.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
@@ -31,6 +33,20 @@ function updateLoggedUser(userId){
         loggedUserId = userId; // Aggiorna cache locale
     }catch(error){
         throw new UsersManagementError("STORAGE", "Errore aggiornamento sessione", error);
+    }
+}
+
+async function recipesAccumulator(idsArray){
+    try {
+        const accumulatorArray = [];
+
+        for(let i=0; i < idsArray.length; i++){
+            const APIresponse = await fetchById(idsArray[i]); 
+            accumulatorArray.push(APIresponse.meals[0]);
+        }
+        return accumulatorArray;
+    } catch (error) {
+        throw error;
     }
 }
 
@@ -157,7 +173,7 @@ export const LoggedUser = {
      */
     getReviews: () => {
         try {
-            return ReviewsManagement.getStoredReviews().filter(element => RecipeStatus.isReviewed(element.recipeId)) || [];      
+            return ReviewsManagement.getStoredReviews().filter(element => Recipe.isReviewed(element.recipeId)) || [];      
         } catch (error) {
             throw error;
         }
@@ -295,9 +311,9 @@ export const LoggedUser = {
 
 /**
  * Namespace per query stato ricette
- * @namespace RecipeStatus
+ * @namespace Recipe
  */
-export const RecipeStatus = {
+export const Recipe = {
 
     /**
      * Verifica se ricetta è nei preferiti utente
@@ -414,5 +430,87 @@ export const RecipeStatus = {
             console.error(error);
             throw error;
         }
+    },
+
+    getFullData: async (recipeId) => {
+        try {
+            const APIresponse = await fetchById(recipeId);
+            return new FullRecipe(APIresponse.meals[0]);
+        } catch (error) {
+            throw error;
+        }
     }
 };
+
+export const PreviewArray = {
+    categories: async () => {
+        try {
+            return createPreviewArray(await fetchAllCategories(), "categories");
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    mealsByName: async (searchedName) => {
+        try {
+            return createPreviewArray(await fetchByName(searchedName), "meals");
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    mealsByCategory: async (category) => {
+        try {
+            return createPreviewArray(await fetchByCategory(category), "meals");
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    rndMeals: async (quantity) => {
+        try {
+            const recipesObjAccumulator = await rndFetch();
+            for(let i=1; i < quantity; i++){
+                const singleRecipeObj = await rndFetch();
+                recipesObjAccumulator.meals.push(singleRecipeObj.meals[0]);
+            }
+
+            return createPreviewArray(recipesObjAccumulator, "meals");
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    personalReviews: async () => {
+        try {
+            const recipesIdsArray = [];
+
+            LoggedUser.getReviews().forEach(review => recipesIdsArray.push(review.recipeId));
+
+            return createPreviewArray(await recipesAccumulator(recipesIdsArray), "reviews");
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    personalFavourites: async () => {
+        try {
+            return createPreviewArray(await recipesAccumulator(LoggedUser.getData().favourites), "meals");
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    allPersonalNotes: async () => {
+        try {
+            const recipesIdsArray = [];
+
+            LoggedUser.getData().notes.forEach(note => recipesIdsArray.push(note.recipeId));
+
+            return createPreviewArray(await recipesAccumulator(recipesIdsArray), "notes");
+        } catch (error) {
+            throw error;
+        }
+    }
+}
+

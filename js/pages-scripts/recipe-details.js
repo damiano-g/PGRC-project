@@ -11,9 +11,7 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { FullRecipe } from "../data-models.js"; // Modello dati completo ricetta
-import { fetchById } from "../recipesAPI.js"; // API call per dettagli ricetta singola
-import { LoggedUser, RecipeStatus } from "../sessionControl.js";
+import { LoggedUser, Recipe } from "../sessionControl.js";
 import { favBtnDisplay, populateNotesContainer, revBtnDisplay } from "../UI.js";
 
 // ===============================
@@ -93,9 +91,9 @@ revFormInputs.forEach(input => input.addEventListener("change", () => {
 revBtn.addEventListener("click", () => {
    try {
       if(LoggedUser.isLogged()){
-         if(RecipeStatus.isReviewed(detailedRecipeId)){
+         if(Recipe.isReviewed(detailedRecipeId)){
             revConfirmBtn.onclick = () => {
-               RecipeStatus.deleteUserReview(detailedRecipeId);
+               Recipe.deleteUserReview(detailedRecipeId);
                alert("Recensione eliminata");
                revBtnDisplay(revBtn, detailedRecipeId);
                revConfirmBtn.disabled = true;
@@ -105,7 +103,7 @@ revBtn.addEventListener("click", () => {
             revConfirmBtn.disabled = false;
          }else{
             revConfirmBtn.onclick = () => {
-               RecipeStatus.addUserReview(detailedRecipeId, tasteRateInput.value, difficultyRateInput.value);
+               Recipe.addUserReview(detailedRecipeId, tasteRateInput.value, difficultyRateInput.value);
                alert("Recensione aggiunta");
                revBtnDisplay(revBtn, detailedRecipeId);
                revConfirmBtn.disabled = true;
@@ -198,13 +196,13 @@ window.addEventListener("load", async () => {
       // FETCH E NORMALIZZAZIONE DATI
       // ===============================
 
-      // Effettua la fetch dei dettagli ricetta tramite l'ID
-      const APIresponse = await fetchById(detailedRecipeId);
+      const recipeDetails = await Recipe.getFullData(detailedRecipeId);
+      // // Effettua la fetch dei dettagli ricetta tramite l'ID
+      // const APIresponse = await fetchById(detailedRecipeId);
 
-      // Crea un oggetto ricetta completo a partire dalla risposta API
-      const recipeDetails = new FullRecipe(APIresponse.meals[0]);
+      // // Crea un oggetto ricetta completo a partire dalla risposta API
+      // const recipeDetails = new FullRecipe(APIresponse.meals[0]);
 
-      const currentUserId = LoggedUser.getId();
       
       // ===============================
       // POPOLAZIONE ELEMENTI UI
@@ -218,7 +216,7 @@ window.addEventListener("load", async () => {
       revBtnDisplay(revBtn, detailedRecipeId); // Da valutare unificazione funzione se gestione tramite icone
 
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
-      if(currentUserId){
+      if(LoggedUser.isLogged()){
          notesSection.classList.remove("d-none");
          populateNotesContainer(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
       }

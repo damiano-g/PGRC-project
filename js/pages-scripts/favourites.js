@@ -12,8 +12,7 @@
  * @requires usersManagement - Autenticazione e gestione dati utente
  */
 
-import { fetchById } from "../recipesAPI.js";
-import { LoggedUser } from "../sessionControl.js";
+import { LoggedUser, PreviewArray } from "../sessionControl.js";
 import { displayCards, favBtnDisplay } from "../UI.js";
 
 // ================================================================================================
@@ -152,27 +151,27 @@ window.addEventListener("load", async () => {
      * Array temporaneo riutilizzabile per accumulare oggetti ricetta raw
      * @type {Array<Object>} 
      */
-    const tempArray = [];
+    // const tempArray = [];
 
-    /** 
-     * Array filtrato di review dell'utente corrente per estrazione recipe IDs
-     * @type {Array<Object>} 
-     */
-    const currentUserRevsRecipesIds = LoggedUser.getReviews();
+    // /** 
+    //  * Array filtrato di review dell'utente corrente per estrazione recipe IDs
+    //  * @type {Array<Object>} 
+    //  */
+    // const currentUserRevsRecipesIds = LoggedUser.getReviews();
 
-    // ============================================================================================
-    // SEZIONE FAVOURITES
-    // ============================================================================================
+    // // ============================================================================================
+    // // SEZIONE FAVOURITES
+    // // ============================================================================================
 
-    /**
-     * @description Fetch sequenziale ricette preferite dell'utente
-     * @todo Sostituire con Promise.all per performance migliori
-     */
-    for(let i=0; i < currentUser.favourites.length; i++){
-        /** @type {Object} Response object da TheMealDB API */
-        const response = await fetchById(currentUser.favourites[i]);
-        tempArray.push(response.meals[0]);
-    }
+    // /**
+    //  * @description Fetch sequenziale ricette preferite dell'utente
+    //  * @todo Sostituire con Promise.all per performance migliori
+    //  */
+    // for(let i=0; i < currentUser.favourites.length; i++){
+    //     /** @type {Object} Response object da TheMealDB API */
+    //     const response = await fetchById(currentUser.favourites[i]);
+    //     tempArray.push(response.meals[0]);
+    // }
 
     /**
      * @description Rendering sezione favourites con rating globali
@@ -180,11 +179,11 @@ window.addEventListener("load", async () => {
      * @param {HTMLElement} personalFavsContainer - Container target  
      * @param {Object} GlobalRatingFunctions - Funzioni rating medie globali
      */
-    displayCards(tempArray, personalFavsContainer, "meals");
+    displayCards(await PreviewArray.personalFavourites(), personalFavsContainer);
     //CardDisplayStrategy.displayWithRating(createPreviewArray(tempArray, "meals"), personalFavsContainer);
 
     /** @description Reset array per riutilizzo sezione successiva */
-    tempArray.splice(0, tempArray.length);
+    // tempArray.splice(0, tempArray.length);
 
     // ============================================================================================
     // SEZIONE REVIEWS
@@ -194,11 +193,11 @@ window.addEventListener("load", async () => {
      * @description Fetch sequenziale ricette recensite dall'utente
      * @todo Sostituire con Promise.all per performance migliori
      */
-    for(let i=0; i < currentUserRevsRecipesIds.length; i++){
-        /** @type {Object} Response object da TheMealDB API */
-        const response = await fetchById(currentUserRevsRecipesIds[i].recipeId);
-        tempArray.push(response.meals[0]);
-    }
+    // for(let i=0; i < currentUserRevsRecipesIds.length; i++){
+    //     /** @type {Object} Response object da TheMealDB API */
+    //     const response = await fetchById(currentUserRevsRecipesIds[i].recipeId);
+    //     tempArray.push(response.meals[0]);
+    // }
 
     /**
      * @description Rendering sezione reviews con rating utente specifici
@@ -207,11 +206,11 @@ window.addEventListener("load", async () => {
      * @param {Object} UserRatingFunctions - Funzioni rating specifiche utente
      * @param {string} currentUser.id - ID utente per filter rating personalizzati
      */
-    displayCards(tempArray, personalRevsContainer, "reviews");
+    displayCards(await PreviewArray.personalReviews(), personalRevsContainer);
     //CardDisplayStrategy.displayWithRating(createPreviewArray(tempArray, "reviews"), personalRevsContainer);
 
     /** @description Reset array per riutilizzo sezione successiva */
-    tempArray.splice(0, tempArray.length);
+    // tempArray.splice(0, tempArray.length);
 
     // ============================================================================================
     // SEZIONE NOTES
@@ -221,11 +220,11 @@ window.addEventListener("load", async () => {
      * @description Fetch sequenziale ricette annotate dall'utente
      * @todo Sostituire con Promise.all per performance migliori
      */
-    for(let i=0; i < currentUser.notes.length; i++){
-        /** @type {Object} Response object da TheMealDB API */
-        const response = await fetchById(currentUser.notes[i].recipeId);
-        tempArray.push(response.meals[0]);
-    }
+    // for(let i=0; i < currentUser.notes.length; i++){
+    //     /** @type {Object} Response object da TheMealDB API */
+    //     const response = await fetchById(currentUser.notes[i].recipeId);
+    //     tempArray.push(response.meals[0]);
+    // }
 
     /**
      * @description Rendering sezione notes con display specializzato per annotazioni
@@ -233,6 +232,6 @@ window.addEventListener("load", async () => {
      * @param {HTMLElement} personalNotesContainer - Container target
      * @param {Array<Object>} currentUser.notes - Array notes utente per display contenuto
      */
-    displayCards(tempArray, personalNotesContainer, "notes");
+    displayCards(await PreviewArray.allPersonalNotes(), personalNotesContainer);
     //CardDisplayStrategy.displayWithNote(createPreviewArray(tempArray, "notes"), personalNotesContainer, currentUser.notes);
 });

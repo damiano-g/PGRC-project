@@ -11,8 +11,7 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { fetchAllCategories, rndFetch, } from "../recipesAPI.js"; // API calls per dati iniziali
-import { LoggedUser } from "../sessionControl.js";
+import { LoggedUser, PreviewArray } from "../sessionControl.js";
 import { displayCards, favBtnDisplay, populateCarousel } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
@@ -46,15 +45,15 @@ window.addEventListener("load", async () => {
     // ===============================
     
     /**Array per accumulo 5 ricette casuali */
-    const recipesObjAccumulator = await rndFetch();
+    // const recipesObjAccumulator = await rndFetch();
 
-    for(let i=1; i < 5; i++){
-        const singleRecipeObj = await rndFetch();
-        recipesObjAccumulator.meals.push(singleRecipeObj.meals[0]);
-    }
-    console.log(recipesObjAccumulator);
+    // for(let i=1; i < 5; i++){
+    //     const singleRecipeObj = await rndFetch();
+    //     recipesObjAccumulator.meals.push(singleRecipeObj.meals[0]);
+    // }
+    // console.log(recipesObjAccumulator);
 
-    populateCarousel(recipesObjAccumulator, slideshow);
+    populateCarousel(await PreviewArray.rndMeals(5), slideshow);
 
     // Attiva il primo slide del carousel (Bootstrap requirement)
     document.querySelector(".carousel-inner .carousel-item").classList.add("active");
@@ -62,7 +61,7 @@ window.addEventListener("load", async () => {
     // ===============================
     // POPOLAZIONE GRIGLIA CATEGORIE
     // ===============================
-    displayCards(await fetchAllCategories(), catContainer, "categories");
+    displayCards(await PreviewArray.categories(), catContainer, "categories");
     //const categoriesArray = createPreviewArray(await fetchAllCategories());
     //CardDisplayStrategy.displayCategories(categoriesArray, catContainer);
 });

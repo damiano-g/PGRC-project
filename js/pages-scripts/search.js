@@ -11,8 +11,7 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { fetchByCategory, fetchByName, } from "../recipesAPI.js"; // Funzioni API per ricerca ricette
-import { LoggedUser } from "../sessionControl.js";
+import { LoggedUser, PreviewArray } from "../sessionControl.js";
 import { displayCards, favBtnDisplay } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
@@ -39,11 +38,11 @@ let searchPageCards;
  * Gestisce ricerca per nome ricetta + aggiornamento URL per navigazione
  */
 searchBtn.addEventListener("click", async () => {
-    const response = await fetchByName(String(searchBar.value));
-    if(response.meals){
+    const recipesPreviewArray = await PreviewArray.mealsByName(String(searchBar.value));
+    if(recipesPreviewArray.meals){
         //const array = createPreviewArray(response);
         history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
-        displayCards(response, resultsContainer, "meals");
+        displayCards(recipesPreviewArray, resultsContainer, "meals");
         //CardDisplayStrategy.displayWithRating(array, resultsContainer)
     }else{
         const paragraph = document.createElement("div");
@@ -103,7 +102,7 @@ window.addEventListener("load", async () => {
     }
     
     if(query[0] === "cat"){
-        displayCards(await fetchByCategory(query[1]), resultsContainer, "meals");
+        displayCards(await PreviewArray.mealsByCategory(query[1]), resultsContainer);
         //const array = createPreviewArray(await fetchByCategory(query[1]));
         //CardDisplayStrategy.displayWithRating(array, resultsContainer);
         // cardsFavBtnsDisplay(Boolean(getLoggedUserId()));
