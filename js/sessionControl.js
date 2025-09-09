@@ -155,11 +155,7 @@ export const LoggedUser = {
      */
     getRecipeNotes: (recipeId) => {
         try{
-            const notesaArray = UsersManagement.searchUserById(LoggedUser.getId()).notes || [];
-            if(recipeId){
-                notesaArray.filter(element => element.recipeId === recipeId) || [];
-            }
-            return notesaArray;
+            return UsersManagement.searchUserById(LoggedUser.getId()).notes.filter(note => note.recipeId === recipeId) || [];
         }catch(error){
             console.error(error);
             throw error;
@@ -467,6 +463,14 @@ export const PreviewArray = {
         }
     },
 
+    mealsById: async (idsArray) => {
+        try {
+            return createPreviewArray(await recipesAccumulator(idsArray), "meals");
+        } catch (error) {
+            throw error;
+        }
+    },
+
     rndMeals: async (quantity) => {
         try {
             const recipesObjAccumulator = await rndFetch();
@@ -481,7 +485,7 @@ export const PreviewArray = {
         }
     },
 
-    personalReviews: async () => {
+    fromUserReviews: async () => {
         try {
             const recipesIdsArray = [];
 
@@ -493,7 +497,7 @@ export const PreviewArray = {
         }
     },
 
-    personalFavourites: async () => {
+    fromUserFavourites: async () => {
         try {
             return createPreviewArray(await recipesAccumulator(LoggedUser.getData().favourites), "meals");
         } catch (error) {
@@ -501,7 +505,7 @@ export const PreviewArray = {
         }
     },
 
-    allPersonalNotes: async () => {
+    fromAllUserNotes: async () => {
         try {
             const recipesIdsArray = [];
 

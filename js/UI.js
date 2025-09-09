@@ -81,8 +81,8 @@ function createPreviewCard (itemPreviewObj, bodyElement = null) {
  * 
  * @function populatePreviewContainer
  * @private
- * @param {Array<import('./data-models.js').ItemPreview>} previewItemsArray - Array oggetti normalizzati
- * @param {HTMLElement} container - Container target per inserimento card
+ * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array oggetti normalizzati
+ * @param {HTMLElement} displayContainer - Container target per inserimento card
  * @param {Array<HTMLElement>|null} [bodyElementsArray=null] - Array elementi body opzionali
  * @returns {void}
  * 
@@ -97,7 +97,7 @@ function createPreviewCard (itemPreviewObj, bodyElement = null) {
  * 
  * @since 1.0.0
  */
-export function populatePreviewContainer (previewItemsArray, container) { 
+export function populatePreviewContainer (itemsPreviewArray, displayContainer, action = null) { 
    
    const itemsType = itemsPreviewArray[0].type;
 
@@ -105,13 +105,13 @@ export function populatePreviewContainer (previewItemsArray, container) {
 
    switch(itemsType){
       case "meals":
-         bodyElementsArray = CardDisplayStrategy.displayWithRating(itemsPreviewArray, displayContainer);
+         bodyElementsArray = CardDisplayStrategy.displayWithRating(itemsPreviewArray);
          break;
       case "reviews":
-         bodyElementsArray = CardDisplayStrategy.displayWithRating(itemsPreviewArray, displayContainer);
+         bodyElementsArray = CardDisplayStrategy.displayWithRating(itemsPreviewArray);
          break;
       case "notes":
-         bodyElementsArray = CardDisplayStrategy.displayWithNote(itemsPreviewArray, displayContainer);
+         bodyElementsArray = CardDisplayStrategy.displayWithNote(itemsPreviewArray);
          break;
       case "categories":
          break;
@@ -119,16 +119,36 @@ export function populatePreviewContainer (previewItemsArray, container) {
          throw new Error("Wrong data format");
    }
 
-   container.innerHTML = "";
-
-   for(let i=0; i < previewItemsArray.length; i++){
-      let relatedBodyElement = null;
-      if(bodyElementsArray.length > 0){
-         relatedBodyElement = bodyElementsArray[i];
+   if(action != "remove"){
+      if(action != "add"){
+         displayContainer.innerHTML = "";
       }
-      container.appendChild(createPreviewCard(previewItemsArray[i], relatedBodyElement));
+      
+      for(let i=0; i < itemsPreviewArray.length; i++){
+         let relatedBodyElement = null;
+         if(bodyElementsArray.length > 0){
+            relatedBodyElement = bodyElementsArray[i];
+         }
+         displayContainer.appendChild(createPreviewCard(itemsPreviewArray[i], relatedBodyElement));
+      }
+   }else{
+      const allCards = displayContainer.querySelectorAll(".card");
+      allCards.forEach(card => {
+         if(itemsPreviewArray.some(preview => preview.id === card.dataset.itemId)){
+            displayContainer.removeChild(card);
+         };
+      });
    }
 }
+
+export function addPreviewToContainer(itemsPreviewArray, displayContainer){
+   populatePreviewContainer(itemsPreviewArray, displayContainer, "add");
+};
+
+export function removePreviewFromArray(itemsPreviewArray, displayContainer){
+   populatePreviewContainer(itemsPreviewArray, displayContainer, "remove");
+};
+
 
 /**
  * Crea elemento slide per carousel Bootstrap da oggetto ItemPreview
@@ -295,10 +315,10 @@ const CardDisplayStrategy = {
          if(Number(taste) > 0 && Number(difficulty) > 0){
             content += `
             <div class="row">
-            <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${taste}"></progress></progress>
+               <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${taste}"></progress></progress>
             </div>
             <div class="row">
-            <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficulty}"></progress></progress>
+               <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficulty}"></progress></progress>
             </div>
             `;
          }else{
@@ -443,7 +463,7 @@ export function populateCarousel(itemsPreviewArray, carouselInner) {
  * 
  * @since 1.0.0
  */
-export function populateNotesContainer(userNotesArray, container) { 
+export function populateRecipeNotes(userNotesArray, container) { 
    container.innerHTML = "";
    if(userNotesArray.length > 0){
       userNotesArray.forEach(element => {

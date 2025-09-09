@@ -12,7 +12,7 @@
 // ===============================
 
 import { LoggedUser, Recipe } from "../sessionControl.js";
-import { favBtnDisplay, populateNotesContainer, revBtnDisplay } from "../UI.js";
+import { favBtnDisplay, populateRecipeNotes, revBtnDisplay } from "../UI.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -146,7 +146,7 @@ noteInsBtn.addEventListener("click", () => {
       noteInsBtn.disabled = true; // Previene doppi inserimenti
       LoggedUser.addNote(detailedRecipeId, noteTextInput.value); 
       noteTextInput.value = "";
-      populateNotesContainer(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
+      populateRecipeNotes(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
       alert("Nota inserita");
    } catch (error) {
       noteInsBtn.disabled = false;
@@ -165,7 +165,7 @@ userNotesContainer.addEventListener("click", click => {
    if(btn){
       try {
          LoggedUser.deleteNote(btn.dataset.noteId);
-         populateNotesContainer(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
+         populateRecipeNotes(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
          alert("Nota rimossa");
       } catch (error) {
          console.error(error)
@@ -202,7 +202,7 @@ window.addEventListener("load", async () => {
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
       if(LoggedUser.isLogged()){
          notesSection.classList.remove("d-none");
-         populateNotesContainer(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
+         populateRecipeNotes(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
       }
 
       // Inserisce l'immagine della ricetta nella pagina
