@@ -39,7 +39,8 @@ let searchPageCards;
  */
 searchBtn.addEventListener("click", async () => {
     const recipesPreviewArray = await PreviewArray.mealsByName(String(searchBar.value));
-    if(recipesPreviewArray.meals){
+    console.log(recipesPreviewArray);
+    if(recipesPreviewArray){
         //const array = createPreviewArray(response);
         history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
         populatePreviewContainer(recipesPreviewArray, resultsContainer);

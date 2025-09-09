@@ -26,12 +26,17 @@
     width: 100%;
 }
 
-#search-page .img-fluid{
-    height: 150px;
+#search-page .img-fluid,
+#fav-page .img-fluid{
+    height: 300px;
 }
 
-#index-page .img-fluid,
+#search-page .img-fluid,
 #fav-page .img-fluid{
+    height: 300px;
+}
+
+#index-page .img-fluid{
     height: 75px;
 }
 
@@ -57,12 +62,16 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-#categories,
+#categories{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
 #fav-recipes,
 #rev-recipes,
 #noted-recipes{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
 }
 
 .bi-heart,
