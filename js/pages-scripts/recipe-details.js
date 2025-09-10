@@ -206,11 +206,13 @@ window.addEventListener("load", async () => {
       }
 
       // Inserisce l'immagine della ricetta nella pagina
-      const detailsImage = document.createElement("img");
-      detailsImage.src = recipeDetails.image;
-      detailsImage.alt = recipeDetails.name;
-      detailsImage.classList.add("img-fluid");
-      imageBox.appendChild(detailsImage);
+      // const detailsImage = document.createElement("img");
+      // detailsImage.src = recipeDetails.image;
+      // detailsImage.alt = recipeDetails.name;
+      // detailsImage.classList.add("img-fluid");
+      // imageBox.appendChild(detailsImage);
+
+      const detailsContent = document
 
       // Popola la lista degli ingredienti
       recipeDetails.ingredients.forEach(element => {

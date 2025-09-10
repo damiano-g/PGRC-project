@@ -19,7 +19,7 @@ import { LoggedUser, Recipe } from "./sessionControl.js";
  * 
  * @function createPreviewCard
  * @private
- * @param {import('./data-models.js').ItemPreview} itemPreviewObj - Oggetto dati normalizzato
+ * @param {import('./data-models.js').ItemPreview} itemObj - Oggetto dati normalizzato
  * @param {string} itemPreviewObj.id - ID univoco per data attribute
  * @param {string} itemPreviewObj.name - Nome da mostrare nel titolo
  * @param {string} itemPreviewObj.image - URL immagine per card
@@ -41,21 +41,21 @@ import { LoggedUser, Recipe } from "./sessionControl.js";
  * 
  * @since 1.0.0
  */
-function createPreviewCard (itemPreviewObj, bodyElement = null) { 
+function createPreviewCard (itemObj, bodyElement = null) { 
    const card = document.createElement("div");
    card.classList.add("card");
    card.classList.add("mb-1");
    card.classList.add("mt-1");
 
    // Aggiunge data attribute per identificazione durante event delegation
-   card.dataset.itemId = itemPreviewObj.id;
+   card.dataset.itemId = itemObj.id;
    card.innerHTML = `
       <div class="row g-0">
          <div class="col-5">
-               <img src="${itemPreviewObj.image}" alt="${itemPreviewObj.name}" class="img-fluid">
+               <img src="${itemObj.image}" alt="${itemObj.name}" class="img-fluid">
          </div>
          <div class="col-7 card-body">
-            <h5 class="card-title mb-3">${itemPreviewObj.name}</h5>
+            <h5 class="card-title mb-3">${itemObj.name}</h5>
          </div>
       </div>
    `;
@@ -70,10 +70,36 @@ function createPreviewCard (itemPreviewObj, bodyElement = null) {
       cardFavIcon.classList.add("bi", "bi-heart", "fav-icon");
       cardFavBtn.appendChild(cardFavIcon);
       cardBody.appendChild(cardFavBtn);
-      favBtnDisplay(cardFavIcon, itemPreviewObj.id);
+      favBtnDisplay(cardFavIcon, itemObj.id);
    }
 
    return card;
+ };
+
+ function cardRatingContent(tasteRate, difficultyRate, title) {
+   const reviews = document.createElement("div");
+      
+   reviews.classList.add("container");
+   reviews.classList.add("ps-4");
+   
+   let content = `<h6>${title}</h6>`;
+   
+   if(Number(tasteRate) > 0 && Number(difficultyRate) > 0){
+      content += `
+      <div class="row">
+         <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteRate}"></progress></progress>
+      </div>
+      <div class="row">
+         <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyRate}"></progress></progress>
+      </div>
+      `;
+   }else{
+      content += "Ancora nessuna recensione";
+   }
+   
+   reviews.innerHTML = content;
+   
+   return reviews;
  }
 
 /**
@@ -105,13 +131,13 @@ export function populatePreviewContainer (itemsPreviewArray, displayContainer, a
 
    switch(itemsType){
       case "meals":
-         bodyElementsArray = CardDisplayStrategy.displayWithRating(itemsPreviewArray);
+         bodyElementsArray = CardDisplayStrategy.withRating(itemsPreviewArray);
          break;
       case "reviews":
-         bodyElementsArray = CardDisplayStrategy.displayWithRating(itemsPreviewArray);
+         bodyElementsArray = CardDisplayStrategy.withRating(itemsPreviewArray);
          break;
       case "notes":
-         bodyElementsArray = CardDisplayStrategy.displayWithNote(itemsPreviewArray);
+         bodyElementsArray = CardDisplayStrategy.withNote(itemsPreviewArray);
          break;
       case "categories":
          break;
@@ -129,6 +155,43 @@ export function populatePreviewContainer (itemsPreviewArray, displayContainer, a
          if(bodyElementsArray.length > 0){
             relatedBodyElement = bodyElementsArray[i];
          }
+         displayContainer.appendChild(createPreviewCard(itemsPreviewArray[i], relatedBodyElement));
+      }
+   }else{
+      const allCards = displayContainer.querySelectorAll(".card");
+      allCards.forEach(card => {
+         if(itemsPreviewArray.some(preview => preview.id === card.dataset.itemId)){
+            displayContainer.removeChild(card);
+         };
+      });
+   }
+};
+
+function populatePreviewContainerNew (itemsPreviewArray, displayContainer, action = null) {
+   if(action != "remove"){
+      if(action != "add"){
+         displayContainer.innerHTML = "";
+      }
+      
+      for(let i=0; i < itemsPreviewArray.length; i++){
+         let relatedBodyElement = null;
+
+         switch(itemsPreviewArray[i].type){
+            case "meals":
+               relatedBodyElement = CardDisplayStrategy.withGlobalRating(itemsPreviewArray[i]);
+               break;
+            case "reviews":
+               relatedBodyElement = CardDisplayStrategy.withUserRating(itemsPreviewArray[i]);
+               break;
+            case "notes":
+               relatedBodyElement = CardDisplayStrategy.withNote(itemsPreviewArray[i]);
+               break;
+            case "categories":
+               break;
+            default:
+            throw new Error("Wrong data format");
+         }
+         
          displayContainer.appendChild(createPreviewCard(itemsPreviewArray[i], relatedBodyElement));
       }
    }else{
@@ -259,7 +322,7 @@ function createNoteCard(userNote) {
 /**
  * Namespace per strategie di display specializzate per diversi tipi di contenuto
  * 
- * @namespace CardDisplayStrategy
+ * @namespace PreviewDisplayStrategy
  * @description
  * Raccolta di metodi specializzati per rendering preview con contenuto aggiuntivo.
  * Ogni metodo implementa una strategia specifica per tipo di dati e layout.
@@ -270,7 +333,7 @@ const CardDisplayStrategy = {
 
    /**
     * Display preview con rating progress bars (globali o utente)
-    * 
+    * @deprecated
     * @function displayWithRating
     * @memberof DisplayPreviews
     * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array ricette normalizzate
@@ -297,7 +360,7 @@ const CardDisplayStrategy = {
     * 
     * @since 1.0.0
     */
-   displayWithRating: function (itemsPreviewArray) { 
+   withRating: function (itemsPreviewArray) { 
       const bodyElementsArray = [];
 
       itemsPreviewArray.forEach(item => {
@@ -332,12 +395,21 @@ const CardDisplayStrategy = {
       return bodyElementsArray;
    },
 
+   withGlobalRating: function (itemObj) {
+      return cardRatingContent(Recipe.avgTasteRate(itemObj.id), Recipe.avgTasteRate(itemObj.id), "Valutazioni globali");
+   },
+
+   withUserRating: function (itemObj) {
+      return cardRatingContent(Recipe.userTasteRate(itemObj.id), Recipe.userDifficulyRate(itemObj.id), "La mia valutazione");
+   },
+
+
    /**
     * Display preview con note testuali utente
     * 
     * @function displayWithNote
     * @memberof DisplayPreviews
-    * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array ricette normalizzate
+    * @param {Array<import('./data-models.js').ItemPreview>} itemObj - Array ricette normalizzate
     * @param {HTMLElement} container - Container target per rendering
     * @param {Array<Object>} userNotesArray - Array note utente con text property
     * @returns {void}
@@ -357,41 +429,17 @@ const CardDisplayStrategy = {
     * 
     * @since 1.0.0
     */
-   displayWithNote: function (itemsPreviewArray) { 
+   withNote: function (itemObj) { 
       const bodyElementsArray = [];
 
       LoggedUser.getData().notes.forEach(note => {
          const noteDOMObj = document.createElement("p");
+         noteDOMObj.classList.add("text-truncate");
          noteDOMObj.innerText = note.text;
          bodyElementsArray.push(noteDOMObj);
       });
 
       return bodyElementsArray;
-   },
-
-   /**
-    * Display semplice preview senza contenuto aggiuntivo
-    * @deprecated
-    * @function displayCategories
-    * @memberof DisplayPreviews
-    * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array categorie normalizzate
-    * @param {HTMLElement} container - Container target per rendering
-    * @returns {void}
-    * 
-    * @description
-    * Strategia display minimale per categorie o contenuto senza metadati.
-    * - Solo card base con immagine e titolo
-    * - Nessun contenuto aggiuntivo nel card-body
-    * - Layout ottimizzato per griglie di navigazione
-    * 
-    * @example
-    * // Display categorie ricette
-    * DisplayPreviews.displayCategories(categories, categoriesContainer);
-    * 
-    * @since 1.0.0
-    */
-   displayCategories: function (itemsPreviewArray) { 
-      return [];
    }
 };
 
