@@ -123,51 +123,7 @@ function createPreviewCard (itemObj, bodyElement = null) {
  * 
  * @since 1.0.0
  */
-export function populatePreviewContainer (itemsPreviewArray, displayContainer, action = null) { 
-   
-   const itemsType = itemsPreviewArray[0].type;
-
-   let bodyElementsArray = [];
-
-   switch(itemsType){
-      case "meals":
-         bodyElementsArray = CardDisplayStrategy.withRating(itemsPreviewArray);
-         break;
-      case "reviews":
-         bodyElementsArray = CardDisplayStrategy.withRating(itemsPreviewArray);
-         break;
-      case "notes":
-         bodyElementsArray = CardDisplayStrategy.withNote(itemsPreviewArray);
-         break;
-      case "categories":
-         break;
-      default:
-         throw new Error("Wrong data format");
-   }
-
-   if(action != "remove"){
-      if(action != "add"){
-         displayContainer.innerHTML = "";
-      }
-      
-      for(let i=0; i < itemsPreviewArray.length; i++){
-         let relatedBodyElement = null;
-         if(bodyElementsArray.length > 0){
-            relatedBodyElement = bodyElementsArray[i];
-         }
-         displayContainer.appendChild(createPreviewCard(itemsPreviewArray[i], relatedBodyElement));
-      }
-   }else{
-      const allCards = displayContainer.querySelectorAll(".card");
-      allCards.forEach(card => {
-         if(itemsPreviewArray.some(preview => preview.id === card.dataset.itemId)){
-            displayContainer.removeChild(card);
-         };
-      });
-   }
-};
-
-function populatePreviewContainerNew (itemsPreviewArray, displayContainer, action = null) {
+export function populatePreviewContainer (itemsPreviewArray, displayContainer, action = null) {
    if(action != "remove"){
       if(action != "add"){
          displayContainer.innerHTML = "";
@@ -184,7 +140,7 @@ function populatePreviewContainerNew (itemsPreviewArray, displayContainer, actio
                relatedBodyElement = CardDisplayStrategy.withUserRating(itemsPreviewArray[i]);
                break;
             case "notes":
-               relatedBodyElement = CardDisplayStrategy.withNote(itemsPreviewArray[i]);
+               relatedBodyElement = CardDisplayStrategy.withNotes(itemsPreviewArray[i]);
                break;
             case "categories":
                break;
@@ -429,17 +385,19 @@ const CardDisplayStrategy = {
     * 
     * @since 1.0.0
     */
-   withNote: function (itemObj) { 
-      const bodyElementsArray = [];
+   withNotes: function (itemObj) {
+      const notesContainer = document.createElement("div");
+      
+      notesContainer.classList.add("container", "ps-4");
 
-      LoggedUser.getData().notes.forEach(note => {
+      LoggedUser.getRecipeNotes(itemObj.id).forEach(note => {
          const noteDOMObj = document.createElement("p");
          noteDOMObj.classList.add("text-truncate");
          noteDOMObj.innerText = note.text;
-         bodyElementsArray.push(noteDOMObj);
+         notesContainer.appendChild(noteDOMObj);
       });
 
-      return bodyElementsArray;
+      return notesContainer;
    }
 };
 

@@ -509,7 +509,11 @@ export const PreviewArray = {
         try {
             const recipesIdsArray = [];
 
-            LoggedUser.getData().notes.forEach(note => recipesIdsArray.push(note.recipeId));
+            LoggedUser.getData().notes.forEach(note => {
+                if(!recipesIdsArray.includes(note.recipeId)){
+                    recipesIdsArray.push(note.recipeId);
+                }
+            });
 
             return createPreviewArray(await recipesAccumulator(recipesIdsArray), "notes");
         } catch (error) {
