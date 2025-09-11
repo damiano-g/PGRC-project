@@ -12,7 +12,7 @@
 // ===============================
 
 import { LoggedUser, Recipe } from "../sessionControl.js";
-import { createRecipeOverview, favBtnDisplay, populateRecipeNotes, revBtnDisplay } from "../UI.js";
+import { createRecipeOverview, favBtnDisplay, populateRecipeNotes } from "../UI.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM

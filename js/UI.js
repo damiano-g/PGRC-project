@@ -446,11 +446,9 @@ export function favBtnDisplay(btn, recipeId) {
    if(LoggedUser.isLogged() && Recipe.isFavourite(recipeId)){
       btn.classList.remove("bi-heart");
       btn.classList.add("bi-heart-fill");
-      //btn.innerText = "Rimuovi dai preferiti";
    }else{
       btn.classList.remove("bi-heart-fill");
       btn.classList.add("bi-heart");
-      //btn.innerText = "Aggiungi ai preferiti";
    }
 };
 
