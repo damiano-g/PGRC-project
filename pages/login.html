@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../usersStyle.css">
+    <link rel="stylesheet" href="../recipeStyle.css">
     <title>Log in page</title>
 </head>
 
@@ -16,10 +16,10 @@
                 <span class="navbar-brand font-size-sm">Menu</span>
             </button>
             <ul class="dropdown-menu">
-                <div id="home-link">
-                    <li><a href="../index.html" class="dropdown-item">Homepage</a></li>
+                <li id="home-link">
+                    <div class="dropdown-item">Homepage</div>
                     <div class="dropdown-divider"></div>
-                </div>
+                </li>
                 <li><span class="dropdown-item d-none" id="personal-page-link">Il mio ricettario</span></li>
                 <li><span class="dropdown-item d-none" id="account-settings-link">Impostazioni account</span></li>
                 <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
@@ -27,33 +27,35 @@
                 <li><span class="dropdown-item d-none" id="signin-link">Registrati</span></li>
             </ul>
             <form class="input-group w-50">
-                <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-sm btn-outline-light" type="submit" id="searchBtn">Search</button>
+                <input class="form-control" type="search" placeholder="Search" id="searchBar">
+                <button class="btn btn-sm btn-outline-light" type="button" id="searchBtn">Search</button>
             </form>
         </div>
     </nav>
 
-    <div class="fluid-container pt-5 mt-3">
-
-        <h2>Entra</h2>
+    <div class="centered-content">
+        <div class="container w-75">
     
-        <form class="needs-validation">
-            <div class="mb-3 mt-3">
-                <label class="form-label" for="username">Inserisci lo username</label>
-                <input class="form-control" type="text" id="username" placeholder="Username" required>
-                <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
-            </div>
-            <div class="mb-3 mt-3">
-                <label class="form-label" for="password">Inserisci la password</label>
-                <input class="form-control" type="password" id="password" placeholder="Scegli password" required>
-                <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
-                    <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+            <h2>Entra</h2>
+        
+            <form class="needs-validation">
+                <div class="mb-3 mt-3">
+                    <label class="form-label" for="username">Inserisci lo username</label>
+                    <input class="form-control" type="text" id="username" placeholder="Username" required>
+                    <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
                 </div>
-            </div>
-            <button class="brn btn-secondary mb-3 mt-3" type="button" id="gotoSign"><a href="./signin.html">Registrati</a></button>
-            <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
-            <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Entra</button>
-        </form>
+                <div class="mb-3 mt-3">
+                    <label class="form-label" for="password">Inserisci la password</label>
+                    <input class="form-control" type="password" id="password" placeholder="Scegli password" required>
+                    <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
+                        <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+                    </div>
+                </div>
+                <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoSign">Registrati</button>
+                <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
+                <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Entra</button>
+            </form>
+        </div>
     </div>
 
     

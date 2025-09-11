@@ -12,7 +12,7 @@
 // ===============================
 
 import { LoggedUser, PreviewArray } from "../sessionControl.js";
-import { favBtnDisplay, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
+import { favBtnDisplay, populatePreviewContainer, initializeNavbar } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -121,6 +121,8 @@ window.addEventListener("load", async () => {
 window.addEventListener("popstate", () => {
     window.location.reload();
 });
+
+document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 
 // ===============================
 // FLUSSO DI ESECUZIONE TIPICO

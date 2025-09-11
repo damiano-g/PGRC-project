@@ -12,7 +12,7 @@
 // ===============================
 
 import { LoggedUser, Recipe } from "../sessionControl.js";
-import { createRecipeOverview, favBtnDisplay, populateRecipeNotes } from "../UI.js";
+import { createRecipeOverview, favBtnDisplay, initializeNavbar, populateRecipeNotes } from "../UI.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -40,7 +40,7 @@ const userNotesContainer = document.getElementById("user-notes");
 const noteTextInput = document.getElementById("insert-note");
 
 /** @type {HTMLButtonElement} Pulsante inserimento nota */
-const noteInsBtn = document.querySelector("form .btn");
+const noteInsBtn = document.querySelector("#notes form .btn");
 
 /** @type {HTMLButtonElement} Pulsante toggle preferiti */
 const detailsFavBtn = document.getElementById("favBtn");
@@ -216,6 +216,8 @@ window.addEventListener("load", async () => {
    }
    
 });
+
+document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 
 // ===============================
 // FLUSSO DI ESECUZIONE DOCUMENTATO

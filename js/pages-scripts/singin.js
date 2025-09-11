@@ -2,6 +2,7 @@
 
 import { handleUserError } from "../errorsManagement.js";
 import { NewUser } from "../sessionControl.js";
+import { initializeNavbar } from "../UI.js";
 import { formatInputField, validateBtn, validateEmail, validatePassConfirm, validatePassword, validateUsername } from "../validate.js";
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione
@@ -28,6 +29,7 @@ const signinConfPassInput = {
 // Riferimenti ai pulsanti del form di registrazione
 const signinClearBtn = document.getElementById("clear");
 const signinSubBtn = document.getElementById("submit");
+const signinGotoLogBtn = document.getElementById("gotoLog");
 
 // Array di tutti gli input richiesti per la validazione del form
 const requiredInputFields = [signinUsernameInput, signinEmailInput, signinPasswordInput, signinConfPassInput];
@@ -126,3 +128,8 @@ signinSubBtn.addEventListener("click", async () => {
         signinClearBtn.click();
     }
 });
+
+document.addEventListener("DOMContentLoaded", initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
+
+signinGotoLogBtn.addEventListener("click", () => window.location.href = "./login.html");
+

@@ -84,7 +84,7 @@ catContainer.addEventListener("click", (click) => {
 
     if(card){
         // Naviga a search.html con parametro categoria per filtro automatico
-        window.location.href = `../../pages/search.html?cat=${card.dataset.itemId}`;
+        window.location.href = `./pages/search.html?cat=${card.dataset.itemId}`;
     }
 });
 
@@ -126,45 +126,7 @@ slideshow.addEventListener("click", (click) => {
  */
 homeSearchBtn.addEventListener("click", () => {
     // Naviga a search.html con parametro query per ricerca automatica
-    window.location.href = `../../pages/search.html?q=${String(homeSearchBar.value)}`
+    window.location.href = `./pages/search.html?q=${String(homeSearchBar.value)}`
 });
 
 
-// ===============================
-// FLUSSI DI NAVIGAZIONE
-// ===============================
-
-/*
-FLUSSO 1 - Caricamento dashboard:
-1. window.load triggera inizializzazione
-2. 5 chiamate rndFetch() per ricette casuali (sequenziali)
-3. fetchAllCategories() per lista categorie (parallelo)
-4. populateCarousel() + populateContainer() per rendering
-5. Primo slide carousel attivato per Bootstrap
-
-FLUSSO 2 - Click su categoria:
-1. Utente clicka su card categoria nella griglia
-2. Event bubbling trova .card più vicino
-3. Estrae card.dataset.itemId (nome categoria)
-4. Naviga a search.html?cat=NomeCategoria
-5. Pagina search rileverà parametro e filtrerà automaticamente
-
-FLUSSO 3 - Click su ricetta carousel:
-1. Utente clicca su slide nel carousel
-2. Event bubbling trova .carousel-item più vicino
-3. Estrae slide.dataset.itemId (ID ricetta)
-4. Naviga direttamente a recipe-details.html?id=123
-5. Pagina dettagli caricherà ricetta specifica
-
-FLUSSO 4 - Ricerca dalla home:
-1. Utente digita termine e clicca pulsante
-2. String(homeSearchBar.value) estrae valore input
-3. Naviga a search.html?q=termine
-4. Pagina search rileverà parametro e cercherà automaticamente
-
-PATTERN COMUNI:
-- Event delegation con .closest() per robustezza
-- URL parameters per state passing tra pagine
-- createPreviewArray() per normalizzazione dati API
-- populateContainer/populateCarousel per rendering unificato
-*/

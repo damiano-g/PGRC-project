@@ -9,7 +9,7 @@
  */
 
 import { LoggedUser, PreviewArray, Recipe } from "../sessionControl.js";
-import { addPreviewToContainer, favBtnDisplay, populatePreviewContainer, removePreviewFromArray } from "../UI.js";
+import { addPreviewToContainer, favBtnDisplay, initializeNavbar, populatePreviewContainer, removePreviewFromArray } from "../UI.js";
 
 // ================================================================================================
 // DOM ELEMENTS
@@ -93,3 +93,6 @@ window.addEventListener("load", async () => {
     populatePreviewContainer(await PreviewArray.fromAllUserNotes(), personalNotesContainer);
     console.log(await PreviewArray.fromAllUserNotes());
 });
+
+
+document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));

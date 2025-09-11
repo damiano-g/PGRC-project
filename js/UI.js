@@ -520,7 +520,7 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
       homepageLink.addEventListener("click", () => window.location.href = "../index.html");      
    }
 
-   if(bodyDOMObject.id != "personal-page"){
+   if(bodyDOMObject.id != "personal-page" && bodyDOMObject.id != "login-page"){
       const personalpageLink = navBarDOMObject.querySelector("#personal-page-link");
       if(userLogged){
          personalpageLink.addEventListener("click", () => window.location.href = linkPrefix + "favourites.html"); 
@@ -542,7 +542,7 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
       loginPageLink.classList.remove("d-none");
    }
 
-   if(bodyDOMObject.id != "signin-page" || !userLogged){
+   if(bodyDOMObject.id != "signin-page" && !userLogged){
       const signinPageLink = navBarDOMObject.querySelector("#signin-link");
       signinPageLink.addEventListener("click", () => window.location.href = linkPrefix + "signin.html");
       signinPageLink.classList.remove("d-none");

@@ -1,5 +1,6 @@
 import { handleUserError, } from "../errorsManagement.js";
 import { NewUser } from "../sessionControl.js";
+import { initializeNavbar } from "../UI.js";
 import { validateBtn, } from "../validate.js";
 
 // Oggetti DOM per gli input del form di login con stato di validazione
@@ -19,8 +20,11 @@ const loginRequiredInputs = [loginUsernameInput, loginPasswordInput];
 // Riferimenti ai pulsanti del form di login
 const loginCLearBtn = document.getElementById("clear");
 const loginSubBtn = document.getElementById("submit");
+const loginGotosignBtn = document.getElementById("gotoSign");
 
+document.addEventListener("DOMContentLoaded", initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 
+loginGotosignBtn.addEventListener("click", () => window.location.href = "./signin.html");
 
 // Gestione eventi degli input e validazione form
 
@@ -72,7 +76,7 @@ loginSubBtn.addEventListener("click", async () => {
         
         if(await NewUser.startSession(currentUsername, currentPassword)){
             alert("Login effettuato");
-            window.location.href = "../../index.html";
+            window.location.href = "./favourites.html";
         }else{
             alert("Password errata");
         }

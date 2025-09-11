@@ -85,3 +85,15 @@ nav li{
 .bi-heart-fill{
     color: red;
 }
+
+.valid-text{
+    color: green;
+}
+
+.centered-content {
+    min-height: 100vh;
+    /* padding: 70px; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

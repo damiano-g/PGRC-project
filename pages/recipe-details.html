@@ -17,10 +17,10 @@
                 <span class="navbar-brand font-size-sm">Menu</span>
             </button>
             <ul class="dropdown-menu">
-                <div id="home-link">
-                    <li><a href="../index.html" class="dropdown-item">Homepage</a></li>
+                <li id="home-link">
+                    <div class="dropdown-item">Homepage</div>
                     <div class="dropdown-divider"></div>
-                </div>
+                </li>
                 <li><span class="dropdown-item d-none" id="personal-page-link">Il mio ricettario</span></li>
                 <li><span class="dropdown-item d-none" id="account-settings-link">Impostazioni account</span></li>
                 <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
@@ -28,16 +28,16 @@
                 <li><span class="dropdown-item d-none" id="signin-link">Registrati</span></li>
             </ul>
             <form class="input-group w-50">
-                <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-sm btn-outline-light" type="submit" id="searchBtn">Search</button>
+                <input class="form-control" type="search" placeholder="Search" id="searchBar">
+                <button class="btn btn-sm btn-outline-light" type="button" id="searchBtn">Search</button>
             </form>
         </div>
     </nav>
 
-    <div class="container-fluid pt-5 mt-3">
+    <div class="container pt-5 mt-3">
 
         <h2 class="text-center">Dettaglio ricetta</h2>
-        <div class="container" id="recipe-contents">
+        <div id="recipe-contents">
             <h1 class="text-center" id="recipe-title"></h1>
             <!-- <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#reviewDialog" id="revBtn"></button> -->
             
@@ -80,7 +80,7 @@
                 <p id="instructions-steps"></p>
             </div>
         </div>
-        <div class="container mb-4 mt-4 d-none" id="notes">
+        <div class="mb-4 mt-4 d-none" id="notes">
             <h4>Note</h4>
             <form>
                 <textarea maxlength="200" name="insert-note" id="insert-note" class="form-control" placeholder="Inserisci una nota personale..."></textarea>
