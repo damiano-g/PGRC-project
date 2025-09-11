@@ -12,7 +12,7 @@
 // ===============================
 
 import { LoggedUser, PreviewArray } from "../sessionControl.js";
-import { favBtnDisplay, populateCarousel, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
+import { favBtnDisplay, initializeNavbar, populateCarousel, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -30,6 +30,7 @@ const homeSearchBtn = document.getElementById("searchBtn");
 /** @type {HTMLInputElement} Campo input ricerca nella home */
 const homeSearchBar = document.getElementById("searchBar");
 
+document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 // ===============================
 // INIZIALIZZAZIONE DASHBOARD
 // ===============================

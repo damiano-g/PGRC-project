@@ -31,13 +31,20 @@
     height: 300px;
 }
 
-#search-page .img-fluid,
-#fav-page .img-fluid{
+#search-page .img-fluid{
     height: 300px;
+}
+
+#fav-page .img-fluid{
+    height: 200px;
 }
 
 #index-page .img-fluid{
     height: 75px;
+}
+
+nav li{
+    cursor: pointer;
 }
 
 #results-container .card,

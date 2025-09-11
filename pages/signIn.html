@@ -7,37 +7,64 @@
     <link rel="stylesheet" href="../usersStyle.css">
     <title>Sign in page</title>
 </head>
-<body>
+<body id="signin-page">
     
-    <h2>Registrati</h2>
+    <nav class="navbar navbar-dark bg-secondary fixed-top">
+        <div class="container-fluid">
+            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
+                <span class="navbar-brand font-size-sm">Menu</span>
+            </button>
+            <ul class="dropdown-menu">
+                <div id="home-link">
+                    <li><a href="../index.html" class="dropdown-item">Homepage</a></li>
+                    <div class="dropdown-divider"></div>
+                </div>
+                <li><span class="dropdown-item d-none" id="personal-page-link">Il mio ricettario</span></li>
+                <li><span class="dropdown-item d-none" id="account-settings-link">Impostazioni account</span></li>
+                <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
+                <li><span class="dropdown-item d-none" id="login-link">Accedi</span></li>
+                <li><span class="dropdown-item d-none" id="signin-link">Registrati</span></li>
+            </ul>
+            <form class="input-group w-50">
+                <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-sm btn-outline-light" type="submit" id="searchBtn">Search</button>
+            </form>
+        </div>
+    </nav>
 
-    <form class="needs-validation">
-        <div class="mb-3 mt-3">
-            <label class="form-label" for="username">Scegli username</label>
-            <input class="form-control" type="text" id="username" placeholder="Username" required>
-            <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
-        </div>
-        <div class="mb-3 mt-3">
-            <label class="form-label" for="email">Inserisci email</label>
-            <input class="form-control" type="email" id="email" placeholder="Email" required>
-            <div class="invalid-feedback">Formato non valido</div>
-        </div>
-        <div class="mb-3 mt-3">
-            <label class="form-label" for="password">Scegli una password</label>
-            <input class="form-control" type="password" id="password" placeholder="Scegli password" required>
-            <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
-                <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+
+    <div class="fluid-container pt-3 mt-3">
+
+        <h2>Registrati</h2>
+    
+        <form class="needs-validation">
+            <div class="mb-3 mt-3">
+                <label class="form-label" for="username">Scegli username</label>
+                <input class="form-control" type="text" id="username" placeholder="Username" required>
+                <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
             </div>
-        </div>
-        <div class="mb-3 mt-3">
-            <label class="form-label" for="confirmPassword">Conferma password</label>
-            <input class="form-control" type="password" id="confirmPassword" placeholder="Conferma password" required disabled>
-            <div class="invalid-feedback">Le password non corrispondono</div>
-        </div>
-        <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoLog"><a href="./login.html">Vai a login</a></button>
-        <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
-        <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Registrati</button>
-    </form>
+            <div class="mb-3 mt-3">
+                <label class="form-label" for="email">Inserisci email</label>
+                <input class="form-control" type="email" id="email" placeholder="Email" required>
+                <div class="invalid-feedback">Formato non valido</div>
+            </div>
+            <div class="mb-3 mt-3">
+                <label class="form-label" for="password">Scegli una password</label>
+                <input class="form-control" type="password" id="password" placeholder="Scegli password" required>
+                <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
+                    <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+                </div>
+            </div>
+            <div class="mb-3 mt-3">
+                <label class="form-label" for="confirmPassword">Conferma password</label>
+                <input class="form-control" type="password" id="confirmPassword" placeholder="Conferma password" required disabled>
+                <div class="invalid-feedback">Le password non corrispondono</div>
+            </div>
+            <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoLog"><a href="./login.html">Vai a login</a></button>
+            <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
+            <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Registrati</button>
+        </form>
+    </div>
 
     <script type="module" src="../js/pages-scripts/singin.js"></script>
     <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>

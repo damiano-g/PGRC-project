@@ -10,29 +10,31 @@
     
 </head>
 <body id="search-page">
-    <div class="fluid-container">
-        <nav class="navbar navbar-expand-md">
-            <div class="container-fluid">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown">
-                            Area personale
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a href="./login.html" class="dropdown-item">Accedi</a></li>
-                            <li><a href="./signIn.html" class="dropdown-item">Registrati</a></li>
-                            <li><a href="./favourites.html" class="dropdown-item">Preferiti</a></li>
-                            <li><a href="./modifUser.html" class="dropdown-item">Impostazioni</a></li>
-                        </ul>
-                    </li>
+    
+    <nav class="navbar navbar-dark bg-secondary fixed-top">
+        <div class="container-fluid">
+            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
+                <span class="navbar-brand font-size-sm">Menu</span>
+            </button>
+            <ul class="dropdown-menu">
+                <div id="home-link">
                     <li><a href="../index.html" class="dropdown-item">Homepage</a></li>
-                </ul>
-            </div>
-            <div class="input-group">
-                <input type="text" class="form-control" id="searchBar" placeholder="Cerca la tua prossima ricetta">
-                <button class="btn btn-outline-secondary" type="button" id="searchBtn">Cerca</button>
-            </div>
-        </nav>
+                    <div class="dropdown-divider"></div>
+                </div>
+                <li><span class="dropdown-item d-none" id="personal-page-link">Il mio ricettario</span></li>
+                <li><span class="dropdown-item d-none" id="account-settings-link">Impostazioni account</span></li>
+                <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
+                <li><span class="dropdown-item d-none" id="login-link">Accedi</span></li>
+                <li><span class="dropdown-item d-none" id="signin-link">Registrati</span></li>
+            </ul>
+            <form class="input-group w-50">
+                <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-sm btn-outline-light" type="submit" id="searchBtn">Search</button>
+            </form>
+        </div>
+    </nav>
+    
+    <div class="fluid-container pt-5 mt-3">
 
         <h2 class="mx-auto text-center px-4 py-2">Risultati della ricerca</h2>
 

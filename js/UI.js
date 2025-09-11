@@ -506,6 +506,62 @@ export function createRecipeOverview(recipeObj) {
    return overviewCard;
 };
 
+export function initializeNavbar(bodyDOMObject, navBarDOMObject){
+   let linkPrefix = "./";
+   const userLogged = LoggedUser.isLogged();
+
+   const homepageLink = navBarDOMObject.querySelector("#home-link");
+
+   
+   if(bodyDOMObject.id === "index-page"){
+      linkPrefix += "pages/";
+      homepageLink.classList.add("d-none");
+   }else{
+      homepageLink.addEventListener("click", () => window.location.href = "../index.html");      
+   }
+
+   if(bodyDOMObject.id != "personal-page"){
+      const personalpageLink = navBarDOMObject.querySelector("#personal-page-link");
+      if(userLogged){
+         personalpageLink.addEventListener("click", () => window.location.href = linkPrefix + "favourites.html"); 
+      }else{
+         personalpageLink.addEventListener("click", () => window.location.href = linkPrefix + "login.html");
+      }
+      personalpageLink.classList.remove("d-none");
+   }
+
+   if(bodyDOMObject.id != "settings-page" && userLogged){
+      const settingPageLink = navBarDOMObject.querySelector("#account-settings-link");
+      settingPageLink.addEventListener("click", () => window.location.href = linkPrefix + "modifUser.html");
+      settingPageLink.classList.remove("d-none");
+   }
+
+   if(bodyDOMObject.id != "login-page" && !userLogged){
+      const loginPageLink = navBarDOMObject.querySelector("#login-link");
+      loginPageLink.addEventListener("click", () => window.location.href = linkPrefix + "login.html");
+      loginPageLink.classList.remove("d-none");
+   }
+
+   if(bodyDOMObject.id != "signin-page" || !userLogged){
+      const signinPageLink = navBarDOMObject.querySelector("#signin-link");
+      signinPageLink.addEventListener("click", () => window.location.href = linkPrefix + "signin.html");
+      signinPageLink.classList.remove("d-none");
+   }
+
+   if(userLogged){
+      const logoutLink = navBarDOMObject.querySelector("#logout-link"); 
+      logoutLink.addEventListener("click", () => {
+         LoggedUser.endSession();
+         if(bodyDOMObject.id != "index-page" && bodyDOMObject.id != "search-page"){
+            window.location.href = "../index.html";
+         }else{
+            window.location.reload();
+         }
+      });
+      logoutLink.classList.remove("d-none");
+   }
+};
+
 
 // ================================================================================================
 // ARCHITECTURE NOTES

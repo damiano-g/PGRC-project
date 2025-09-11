@@ -293,14 +293,14 @@ export const LoggedUser = {
     endSession: () => {
         try{
             StorageManagement.set(LOGGED_USER_KEY, "", {storageLocation: "session", dataType: "string"});
-            loggedUserId = userId; // Aggiorna cache locale
+            loggedUserId = LoggedUser.getId(); // Aggiorna cache locale
             if(LoggedUser.getId === ""){
                 return true;
             }else{
                 return false;
             }
         }catch(error){
-            throw new UsersManagementError("STORAGE", "Errore aggiornamento sessione", error);
+            throw new Error("Errore aggiornamento sessione");
         }
     }
 };
