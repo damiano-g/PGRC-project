@@ -12,7 +12,7 @@
 // ===============================
 
 import { LoggedUser, Recipe } from "../sessionControl.js";
-import { favBtnDisplay, populateRecipeNotes, revBtnDisplay } from "../UI.js";
+import { createRecipeOverview, favBtnDisplay, populateRecipeNotes, revBtnDisplay } from "../UI.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -53,31 +53,63 @@ const revFormInputs = document.querySelectorAll(".modal .form input");
 const tasteRateInput = document.getElementById("tasteRate");
 const difficultyRateInput = document.getElementById("difficultyRate");
 
+const recipeOverviewContainer = document.getElementById("recipe-overview");
+
 /** @type {string} ID ricetta corrente estratto da URL */
 const detailedRecipeId = window.location.search.substring(4);
 
 
 // ===============================
-// EVENT LISTENERS - GESTIONE PREFERITI
+// EVENT LISTENERS - GESTIONE PREFERITI E RECENSIONI
 // ===============================
 
-/**
- * Event listener per toggle preferiti
- * Gestisce aggiunta/rimozione ricetta dai preferiti con controllo login
- * Try/catch gestisce errori storage e user feedback
- */
-detailsFavBtn.addEventListener("click", () => {
-   try {
+recipeOverviewContainer.addEventListener("click", async click => {
+   
+   const card = click.target.closest(".card");
+   
+   if(click.target.matches(".fav-icon")){
       if(LoggedUser.isLogged()){
-         LoggedUser.updateFavourites(detailedRecipeId);
-         favBtnDisplay(detailsFavBtn, detailedRecipeId); // Aggiornamento UI stato button
+         LoggedUser.updateFavourites(card.dataset.itemId);
+         favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
       }else{
          window.location.href = "./login.html";
-      }
-   } catch (error) {
-      console.error(error); //Da implementare meglio il comportamento in caso di errore
-      alert("Errore: preferiti non aggiornati");
-   }
+      };
+   };
+
+   if(click.target.matches("#revBtn")){
+      try {
+         if(LoggedUser.isLogged()){
+            if(Recipe.isReviewed(detailedRecipeId)){
+               revConfirmBtn.onclick = async () => {
+                  Recipe.deleteUserReview(detailedRecipeId);
+                  alert("Recensione eliminata");
+                  recipeOverviewContainer.replaceChild(createRecipeOverview(await Recipe.getFullData(detailedRecipeId)), card);
+                  // revBtnDisplay(card.querySelector("#revBtn"), detailedRecipeId);
+                  revConfirmBtn.disabled = true;
+               } 
+               revForm.classList.add("d-none");
+               revAlertText.classList.remove("d-none");
+               revConfirmBtn.disabled = false;
+            }else{
+               revConfirmBtn.onclick = async () => {
+                  Recipe.addUserReview(detailedRecipeId, tasteRateInput.value, difficultyRateInput.value);
+                  alert("Recensione aggiunta");
+                  recipeOverviewContainer.replaceChild(createRecipeOverview(await Recipe.getFullData(detailedRecipeId)), card);
+                  // revBtnDisplay(card.querySelector("#revBtn"), detailedRecipeId);
+                  revConfirmBtn.disabled = true;
+               }
+               revForm.classList.remove("d-none");
+               revAlertText.classList.add("d-none");
+            }
+         }else{
+            window.location.href = "./login.html";
+         }
+      } catch (error) {
+         console.error(error);
+         alert("Recensioni non aggiornate");
+      };   
+   };
+
 });
 
 revFormInputs.forEach(input => input.addEventListener("change", () => {
@@ -87,38 +119,6 @@ revFormInputs.forEach(input => input.addEventListener("change", () => {
       revConfirmBtn.disabled = true;
    }
 }));
-
-revBtn.addEventListener("click", () => {
-   try {
-      if(LoggedUser.isLogged()){
-         if(Recipe.isReviewed(detailedRecipeId)){
-            revConfirmBtn.onclick = () => {
-               Recipe.deleteUserReview(detailedRecipeId);
-               alert("Recensione eliminata");
-               revBtnDisplay(revBtn, detailedRecipeId);
-               revConfirmBtn.disabled = true;
-            } 
-            revForm.classList.add("d-none");
-            revAlertText.classList.remove("d-none");
-            revConfirmBtn.disabled = false;
-         }else{
-            revConfirmBtn.onclick = () => {
-               Recipe.addUserReview(detailedRecipeId, tasteRateInput.value, difficultyRateInput.value);
-               alert("Recensione aggiunta");
-               revBtnDisplay(revBtn, detailedRecipeId);
-               revConfirmBtn.disabled = true;
-            }
-            revForm.classList.remove("d-none");
-            revAlertText.classList.add("d-none");
-         }
-      }else{
-         window.location.href = "./login.html";
-      }
-   } catch (error) {
-      console.error(error);
-      alert("Recensioni non aggiornate");
-   };
-});
 
 // ===============================
 // EVENT LISTENERS - GESTIONE NOTE
@@ -185,50 +185,36 @@ window.addEventListener("load", async () => {
       // FETCH E NORMALIZZAZIONE DATI
       // ===============================
 
-      const recipeDetails = await Recipe.getFullData(detailedRecipeId);
+      const fullRecipeObj = await Recipe.getFullData(detailedRecipeId);
 
       
       // ===============================
       // POPOLAZIONE ELEMENTI UI
       // ===============================
-
-      // Inserisce il titolo della ricetta nella pagina
-      recipeTitle.innerText = recipeDetails.name;
-
-      // Configurazione pulsante preferiti basata su stato login e preferenze utente
-      favBtnDisplay(detailsFavBtn, detailedRecipeId);
-      revBtnDisplay(revBtn, detailedRecipeId); // Da valutare unificazione funzione se gestione tramite icone
-
+      
+      recipeOverviewContainer.appendChild(createRecipeOverview(fullRecipeObj)); 
+      
+      // Popola la lista degli ingredienti
+      fullRecipeObj.ingredients.forEach(element => {
+         const listItem = document.createElement("li");
+         listItem.innerText = element.name+": "+element.measure;
+         ingredientsList.appendChild(listItem);
+      });
+      
+      // Inserisce le istruzioni di preparazione
+      instructionsSteps.innerText = fullRecipeObj.instructions;
+      
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
       if(LoggedUser.isLogged()){
          notesSection.classList.remove("d-none");
          populateRecipeNotes(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
       }
-
-      // Inserisce l'immagine della ricetta nella pagina
-      // const detailsImage = document.createElement("img");
-      // detailsImage.src = recipeDetails.image;
-      // detailsImage.alt = recipeDetails.name;
-      // detailsImage.classList.add("img-fluid");
-      // imageBox.appendChild(detailsImage);
-
-      const detailsContent = document
-
-      // Popola la lista degli ingredienti
-      recipeDetails.ingredients.forEach(element => {
-            const listItem = document.createElement("li");
-            listItem.innerText = element.name+": "+element.measure;
-            ingredientsList.appendChild(listItem);
-      });
-
-      // Inserisce le istruzioni di preparazione
-      instructionsSteps.innerText = recipeDetails.instructions;
    } catch (error) {
       console.error(error);
       alert("Errore nel caricamento della pagina: si prega di riprovare");
       window.history.back();
    }
-    
+   
 });
 
 // ===============================

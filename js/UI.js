@@ -79,8 +79,7 @@ function createPreviewCard (itemObj, bodyElement = null) {
  function cardRatingContent(tasteRate, difficultyRate, title) {
    const reviews = document.createElement("div");
       
-   reviews.classList.add("container");
-   reviews.classList.add("ps-4");
+   reviews.classList.add("container", "ps-4", "rate-container");
    
    let content = `<h6>${title}</h6>`;
    
@@ -287,70 +286,6 @@ function createNoteCard(userNote) {
  */
 const CardDisplayStrategy = {
 
-   /**
-    * Display preview con rating progress bars (globali o utente)
-    * @deprecated
-    * @function displayWithRating
-    * @memberof DisplayPreviews
-    * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array ricette normalizzate
-    * @param {HTMLElement} container - Container target per rendering
-    * @returns {void}
-    * 
-    * @description
-    * Strategia display per ricette con visualizzazione rating via progress bars.
-    * - element.type === "reviews" → "La mia recensione" con UserRatingFunctions
-    * - Altri casi → "Recensioni globali" con GlobalRatingFunctions
-    * - Fallback "Ancora nessuna recensione" per rating mancanti (taste/difficulty = 0)
-    * - Progress bars HTML5 con max=5 e value dinamico
-    * - Container con classi Bootstrap (container, ps-4)
-    * 
-    * @example
-    * // Array con tipo meals → rating globali
-    * DisplayPreviews.displayWithRating(recipesArray, container);
-    * 
-    * // Array con tipo reviews → rating utente
-    * DisplayPreviews.displayWithRating(reviewsArray, container);
-    * 
-    * @todo Aggiungere validazione range rating (0-5)
-    * @todo Implementare color coding per progress bars
-    * 
-    * @since 1.0.0
-    */
-   withRating: function (itemsPreviewArray) { 
-      const bodyElementsArray = [];
-
-      itemsPreviewArray.forEach(item => {
-         const taste = item.type === "reviews" ? Recipe.userTasteRate(item.id) : Recipe.avgTasteRate(item.id);
-         const difficulty = item.type === "reviews" ? Recipe.userDifficulyRate(item.id) : Recipe.avgDifficultyRate(item.id);
-         
-         const title = item.type === "meals" ? "Recensioni globali" : "La mia recensione";
-         
-         const reviews = document.createElement("div");
-         reviews.classList.add("container");
-         reviews.classList.add("ps-4");
-         
-         let content = `<h6>${title}</h6>`;
-         
-         if(Number(taste) > 0 && Number(difficulty) > 0){
-            content += `
-            <div class="row">
-               <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${taste}"></progress></progress>
-            </div>
-            <div class="row">
-               <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficulty}"></progress></progress>
-            </div>
-            `;
-         }else{
-            content += "Ancora nessuna recensione";
-         }
-         
-         reviews.innerHTML = content; 
-         bodyElementsArray.push(reviews);
-      });
-      
-      return bodyElementsArray;
-   },
-
    withGlobalRating: function (itemObj) {
       return cardRatingContent(Recipe.avgTasteRate(itemObj.id), Recipe.avgTasteRate(itemObj.id), "Valutazioni globali");
    },
@@ -545,6 +480,32 @@ export function revBtnDisplay(btn, recipeId) {
    }else{
       btn.innerText = "Aggiungi recensione";
    }
+};
+
+
+export function createRecipeOverview(recipeObj) {
+   
+   const bodyElement = document.createElement("div");
+
+   bodyElement.appendChild(CardDisplayStrategy.withGlobalRating(recipeObj));
+
+   if(LoggedUser.isLogged()){
+      bodyElement.appendChild(CardDisplayStrategy.withUserRating(recipeObj));
+   }
+
+   const overviewCard = createPreviewCard(recipeObj, bodyElement);
+   const cardRevBtn = document.createElement("button");
+   cardRevBtn.classList.add("btn", "btn-secondary", "position-absolute", "bottom-0");
+   cardRevBtn.type = "button";
+   cardRevBtn.id = "revBtn";
+   cardRevBtn.dataset.bsToggle = "modal";
+   cardRevBtn.dataset.bsTarget = "#reviewDialog";
+
+   overviewCard.appendChild(cardRevBtn);
+
+   revBtnDisplay(cardRevBtn, recipeObj.id);
+
+   return overviewCard;
 };
 
 
