@@ -20,23 +20,22 @@
     display: inline-block;
 }
 
-.card .img-fluid,
+/* .card .img-fluid,
 #image-box .img-fluid{
     object-fit: cover;
-    width: 100%;
-}
+    height: 100%;
+} */
 
-#search-page .img-fluid,
-#fav-page .img-fluid{
-    height: 300px;
+#search-page .card,
+#personal-page .card{
+    height: 150px; /* Altezza fissa per uniformità */
+    overflow: hidden; /* Nasconde contenuto in eccesso */
+    display: flex;
+    flex-direction: column; /* Mantiene struttura verticale */
 }
 
 #search-page .img-fluid{
     height: 300px;
-}
-
-#fav-page .img-fluid{
-    height: 200px;
 }
 
 #index-page .img-fluid{
@@ -78,7 +77,8 @@ nav li{
 #rev-recipes,
 #noted-recipes{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 10px;
 }
 
 .bi-heart,

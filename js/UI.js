@@ -43,16 +43,14 @@ import { LoggedUser, Recipe } from "./sessionControl.js";
  */
 function createPreviewCard (itemObj, bodyElement = null) { 
    const card = document.createElement("div");
-   card.classList.add("card");
-   card.classList.add("mb-1");
-   card.classList.add("mt-1");
+   card.classList.add("card", "p-0");
 
    // Aggiunge data attribute per identificazione durante event delegation
    card.dataset.itemId = itemObj.id;
    card.innerHTML = `
       <div class="row g-0">
          <div class="col-5">
-               <img src="${itemObj.image}" alt="${itemObj.name}" class="img-fluid">
+               <img src="${itemObj.image}" alt="${itemObj.name}" class="img-fluid rounded-start">
          </div>
          <div class="col-7 card-body">
             <h5 class="card-title mb-3">${itemObj.name}</h5>
@@ -86,10 +84,12 @@ function createPreviewCard (itemObj, bodyElement = null) {
    if(Number(tasteRate) > 0 && Number(difficultyRate) > 0){
       content += `
       <div class="row">
-         <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteRate}"></progress></progress>
-      </div>
-      <div class="row">
-         <span class="ps-0">Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyRate}"></progress></progress>
+         <div class="col>
+            <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteRate}"></progress></progress>
+         </div>
+         <div class="col>
+            <span class="ps-0">Difficoltà</span><progress class="w-50 mb-1" max="5" value="${difficultyRate}"></progress></progress>
+         </div>
       </div>
       `;
    }else{
