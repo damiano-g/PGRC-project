@@ -5,6 +5,9 @@
  * @version 1.0.0
  */
 
+import { createPreviewArray, FullRecipe } from "./data-models.js";
+import { StorageManagement } from "./storageManagement.js";
+
 // ===============================
 // CONFIGURAZIONE ENDPOINT API
 // ===============================
@@ -18,9 +21,6 @@ const fetchByNameURL = 'https://www.themealdb.com/api/json/v1/1/search.php?s=' ;
 /** @constant {string} URL base per filtro ricette per categoria */
 const fetchByCategoryURL = 'https://www.themealdb.com/api/json/v1/1/filter.php?c=';
 
-/** @constant {string} URL base per filtro ricette per ingrediente principale */
-const fetchByIngredientURL = 'https://www.themealdb.com/api/json/v1/1/filter.php?i=';
-
 /** @constant {string} URL base per ottenere dettagli ricetta tramite ID */
 const fetchByIdURL = 'https://www.themealdb.com/api/json/v1/1/lookup.php?i=';
 
@@ -28,8 +28,7 @@ const fetchByIdURL = 'https://www.themealdb.com/api/json/v1/1/lookup.php?i=';
 /** @constant {string} URL per ottenere lista completa categorie disponibili */
 const fetchAllCategoriesURL = 'https://www.themealdb.com/api/json/v1/1/categories.php';
 
-/** @constant {string} URL per ottenere lista completa ingredienti disponibili */
-const fetchAllIngredientsURL = 'https://www.themealdb.com/api/json/v1/1/list.php?i=list';
+const fetchByFirstLetterURL = 'https://www.themealdb.com/api/json/v1/1/search.php?f=';
 
 /**
  * @constant {Object} Opzioni standard per tutte le richieste fetch
@@ -40,6 +39,11 @@ const fetchOptions = {
     method: 'GET',
     redirect: 'follow',
 }
+
+const RECIPES_DB_KEY = "recipes";
+const CATEGORIES_DB_KEY = "categories";
+
+let storedRecipes = [];
 
 // ===============================
 // FUNZIONE CORE FETCH
@@ -91,6 +95,7 @@ async function fetchRecipes(URL, options, specifier = null){
  * Restituisce tutti i dati inclusi ingredienti, misure, istruzioni
  * 
  * @async
+ * @deprecated
  * @function rndFetch
  * @returns {Promise<Object>} Oggetto contenente array 'meals' con una ricetta casuale
  * @throws {Error} Se la richiesta API fallisce
@@ -109,6 +114,7 @@ export async function rndFetch() {
  * Restituisce tutti i dati inclusi ingredienti, misure, istruzioni
  *  
  * @async
+ * @deprecated
  * @function fetchByName  
  * @param {string} recipeName - Nome o parte del nome della ricetta da cercare
  * @returns {Promise<Object>} Oggetto contenente array 'meals' con risultati ricerca
@@ -127,6 +133,7 @@ export async function fetchByName(recipeName){
  * Restituisce tutti i dati inclusi ingredienti, misure, istruzioni
  * 
  * @async
+ * @deprecated
  * @function fetchById
  * @param {string|number} recipeId - ID univoco della ricetta su TheMealDB
  * @returns {Promise<Object>} Oggetto contenente array 'meals' con dettagli ricetta completi
@@ -146,6 +153,7 @@ export async function fetchById(recipeId){
  * Restituisce lista parziale (no ingredienti/istruzioni) per performance
  * 
  * @async
+ * @deprecated
  * @function fetchByCategory
  * @param {string} categoryId - Nome della categoria (es. "Seafood", "Vegetarian")
  * @returns {Promise<Object>} Oggetto contenente array 'meals' con ricette della categoria
@@ -155,6 +163,7 @@ export async function fetchById(recipeId){
  * const seafoodRecipes = await fetchByCategory("Seafood");
  */
 export async function fetchByCategory(categoryId){
+    console.log("Fectched by category: ", await fetchRecipes(fetchByCategoryURL, fetchOptions, categoryId))
     return fetchRecipes(fetchByCategoryURL, fetchOptions, categoryId);
 }
 
@@ -177,20 +186,43 @@ export async function fetchAllCategories(){
     return fetchRecipes(fetchAllCategoriesURL, fetchOptions);
 }
 
-/**
- * Ottiene lista completa di tutti gli ingredienti disponibili su TheMealDB
- * 
- * @async
- * @function fetchAllIngredients
- * @returns {Promise<Object>} Oggetto contenente array 'meals' con lista ingredienti
- * @throws {Error} Se la richiesta API fallisce
- * 
- * @example
- * const ingredientsData = await fetchAllIngredients();
- */
-export async function fetchAllIngredients(){
-    return fetchRecipes(fetchAllIngredientsURL, fetchOptions);
+
+export async function fetchByFirstLetter(letter){
+    return fetchRecipes(fetchByFirstLetterURL, fetchOptions, letter);
 }
+
+
+export async function createLocalRecipesDB() {
+    try {
+        let accumulator = [];
+    
+        for(let i=97; i <= 122; i++){
+            const fetchedOBJ = await fetchByFirstLetter(String.fromCharCode(i));
+            if(fetchedOBJ.meals){
+                fetchedOBJ.meals.forEach(meal => accumulator.push(new FullRecipe(meal)));
+            }
+        }
+    
+        StorageManagement.set(RECIPES_DB_KEY, accumulator, {storageLocation: "local", dataType: "array"});
+
+        console.log(JSON.parse(localStorage.getItem(RECIPES_DB_KEY)));
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+export async function createLocalCategoriesDB() {
+    try {
+        const fetchedOBJ = await fetchAllCategories();
+        const catArray = createPreviewArray(fetchedOBJ.meals, "categories");
+        StorageManagement.set(CATEGORIES_DB_KEY, catArray, {storageLocation: "local", dataType: "array"});
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+
+
 
 // ===============================
 // NOTE IMPLEMENTAZIONE

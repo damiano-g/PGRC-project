@@ -11,6 +11,7 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
+import { createLocalRecipesDB, fetchByFirstLetter } from "../recipesAPI.js";
 import { LoggedUser, PreviewArray } from "../sessionControl.js";
 import { favBtnDisplay, initializeNavbar, populateCarousel, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
 
@@ -53,6 +54,8 @@ window.addEventListener("load", async () => {
     //     recipesObjAccumulator.meals.push(singleRecipeObj.meals[0]);
     // }
     // console.log(recipesObjAccumulator);
+
+    createLocalRecipesDB();
 
     populateCarousel(await PreviewArray.rndMeals(5), slideshow);
 
