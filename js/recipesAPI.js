@@ -12,18 +12,6 @@ import { StorageManagement } from "./storageManagement.js";
 // CONFIGURAZIONE ENDPOINT API
 // ===============================
 
-/** @constant {string} URL per ottenere una ricetta casuale */
-const rndFetchURL = 'https://www.themealdb.com/api/json/v1/1/random.php';
-
-/** @constant {string} URL base per ricerca ricette per nome */
-const fetchByNameURL = 'https://www.themealdb.com/api/json/v1/1/search.php?s=' ;
-
-/** @constant {string} URL base per filtro ricette per categoria */
-const fetchByCategoryURL = 'https://www.themealdb.com/api/json/v1/1/filter.php?c=';
-
-/** @constant {string} URL base per ottenere dettagli ricetta tramite ID */
-const fetchByIdURL = 'https://www.themealdb.com/api/json/v1/1/lookup.php?i=';
-
 // Metadata endpoints
 /** @constant {string} URL per ottenere lista completa categorie disponibili */
 const fetchAllCategoriesURL = 'https://www.themealdb.com/api/json/v1/1/categories.php';
@@ -42,8 +30,6 @@ const fetchOptions = {
 
 const RECIPES_DB_KEY = "recipes";
 const CATEGORIES_DB_KEY = "categories";
-
-let storedRecipes = [];
 
 // ===============================
 // FUNZIONE CORE FETCH
@@ -86,87 +72,6 @@ async function fetchRecipes(URL, options, specifier = null){
     }
 }
 
-// ===============================
-// WRAPPER FUNCTIONS PUBBLICHE
-// ===============================
-
-/**
- * Ottiene una ricetta casuale da TheMealDB
- * Restituisce tutti i dati inclusi ingredienti, misure, istruzioni
- * 
- * @async
- * @deprecated
- * @function rndFetch
- * @returns {Promise<Object>} Oggetto contenente array 'meals' con una ricetta casuale
- * @throws {Error} Se la richiesta API fallisce
- * 
- * @example
- * const randomRecipe = await rndFetch();
- * console.log(randomRecipe.meals[0].strMeal); // Nome della ricetta
- */
-export async function rndFetch() {
-    return fetchRecipes(rndFetchURL, fetchOptions);
-}
-
-/**
- * Cerca ricette per nome o parte del nome
- * Supporta ricerca parziale (es. "pas" trova "Pasta al Pomodoro")
- * Restituisce tutti i dati inclusi ingredienti, misure, istruzioni
- *  
- * @async
- * @deprecated
- * @function fetchByName  
- * @param {string} recipeName - Nome o parte del nome della ricetta da cercare
- * @returns {Promise<Object>} Oggetto contenente array 'meals' con risultati ricerca
- * @throws {Error} Se la richiesta API fallisce
- * 
- * @example
- * const results = await fetchByName("pasta");
- * results.meals.forEach(meal => console.log(meal.strMeal));
- */
-export async function fetchByName(recipeName){
-    return fetchRecipes(fetchByNameURL, fetchOptions, recipeName);
-}
-
-/**
- * Ottiene dettagli completi di una ricetta specifica tramite ID
- * Restituisce tutti i dati inclusi ingredienti, misure, istruzioni
- * 
- * @async
- * @deprecated
- * @function fetchById
- * @param {string|number} recipeId - ID univoco della ricetta su TheMealDB
- * @returns {Promise<Object>} Oggetto contenente array 'meals' con dettagli ricetta completi
- * @throws {Error} Se la richiesta API fallisce o ID non valido
- * 
- * @example
- * const recipeDetails = await fetchById("52772");
- * const fullRecipe = recipeDetails.meals[0];
- * console.log(fullRecipe.strInstructions); // Istruzioni complete
- */
-export async function fetchById(recipeId){
-    return fetchRecipes(fetchByIdURL, fetchOptions, recipeId);
-}
-
-/**
- * Filtra ricette per categoria specifica
- * Restituisce lista parziale (no ingredienti/istruzioni) per performance
- * 
- * @async
- * @deprecated
- * @function fetchByCategory
- * @param {string} categoryId - Nome della categoria (es. "Seafood", "Vegetarian")
- * @returns {Promise<Object>} Oggetto contenente array 'meals' con ricette della categoria
- * @throws {Error} Se la richiesta API fallisce o categoria non esiste
- * 
- * @example
- * const seafoodRecipes = await fetchByCategory("Seafood");
- */
-export async function fetchByCategory(categoryId){
-    console.log("Fectched by category: ", await fetchRecipes(fetchByCategoryURL, fetchOptions, categoryId))
-    return fetchRecipes(fetchByCategoryURL, fetchOptions, categoryId);
-}
-
 /**
  * Ottiene lista completa di tutte le categorie disponibili su TheMealDB
  * Include nome, descrizione e immagine thumbnail per ogni categoria
@@ -182,17 +87,17 @@ export async function fetchByCategory(categoryId){
  *   console.log(`${cat.strCategory}: ${cat.strCategoryDescription}`);
  * });
  */
-export async function fetchAllCategories(){
+async function fetchAllCategories(){
     return fetchRecipes(fetchAllCategoriesURL, fetchOptions);
 }
 
 
-export async function fetchByFirstLetter(letter){
+async function fetchByFirstLetter(letter){
     return fetchRecipes(fetchByFirstLetterURL, fetchOptions, letter);
 }
 
 
-export async function createLocalRecipesDB() {
+async function createLocalRecipesDB() {
     try {
         let accumulator = [];
     
@@ -205,21 +110,147 @@ export async function createLocalRecipesDB() {
     
         StorageManagement.set(RECIPES_DB_KEY, accumulator, {storageLocation: "local", dataType: "array"});
 
-        console.log(JSON.parse(localStorage.getItem(RECIPES_DB_KEY)));
+        return accumulator;
+
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+async function createLocalCategoriesDB() {
+    try {
+        const fetchedOBJ = await fetchAllCategories();
+        const catArray = createPreviewArray(fetchedOBJ.meals, "categories");
+        StorageManagement.set(CATEGORIES_DB_KEY, catArray, {storageLocation: "local", dataType: "array"});
+        return catArray;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+
+async function getData(storageKey) {
+    try {
+        let dataArray = StorageManagement.get(storageKey, {storageLocation: "local", dataType: "array"});
+        if(!dataArray){
+            switch(storageKey){
+                case "recipes": 
+                    dataArray = await createLocalRecipesDB();
+                    break;
+                case "categories":
+                    dataArray = await createLocalCategoriesDB();
+                    break;
+                default: throw new Error("Unsupported data type");
+            }
+        }
+        return structuredClone(dataArray);
     } catch (error) {
         console.error(error);
     }
 }
 
-export async function createLocalCategoriesDB() {
+
+export async function getAllRecipes() {
+    return getData(RECIPES_DB_KEY);
+}
+
+export async function getAllCategories() {
+    return getData(CATEGORIES_DB_KEY);
+}
+
+export async function searchRecipeById(recipeId) {
     try {
-        const fetchedOBJ = await fetchAllCategories();
-        const catArray = createPreviewArray(fetchedOBJ.meals, "categories");
-        StorageManagement.set(CATEGORIES_DB_KEY, catArray, {storageLocation: "local", dataType: "array"});
+        const allRecipes = await getAllRecipes();
+        const index = allRecipes.findIndex(recipe => recipe.id === recipeId);
+        if(index >= 0){
+            return structuredClone(allRecipes[index]);
+        }else{
+            throw new Error("Recipe not found");
+        }
     } catch (error) {
         console.error(error);
+        throw error;
     }
 }
+
+export async function searchRecipesByName(query) {
+    try {
+        const normalizedQuery = query.toLowerCase().trim();
+        const searchTerms = normalizedQuery.split(/\s+/);
+
+        const allRecipes = await getAllRecipes();
+        const searchResults = [];
+
+        allRecipes.forEach(recipe => {
+            let score = 0;
+
+            const normalizedName = recipe.name.toLowerCase();
+            const nameTerms = normalizedName.split(/\s+/);
+            
+            let matchedTerms = 0;
+
+            searchTerms.forEach(searchTerm => {
+                let fullMatch = false;
+                let partialMatch = false;
+
+                nameTerms.forEach(nameTerm => {
+                    if(!fullMatch && !partialMatch){ // Previene conteggi multipli
+                        if(nameTerm === searchTerm){
+                            score += 20;
+                            matchedTerms++;
+                        }else{
+                            recipeNameFullMatch = false;
+                            if(nameTerm.startsWith(searchTerm)){
+                                score += 10;
+                            }
+                        }
+                    }
+                });
+            });
+
+            if(matchedTerms === searchTerms.length){
+                score += 30;
+            }
+            
+            if(score > 0){
+                searchResults.push({recipe, score});
+            }
+        });
+
+        searchResults.sort((a, b) => b.score - a.score);
+
+        return searchResults.map(result => result.recipe);
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function rndSearch(quantity){
+    try {
+        const allRecipes = await getAllRecipes();
+        const accumulator = [];
+        const picked = [];
+
+        for(let i=0; i <= quantity; i++){
+            let rndIndex;
+
+            do {
+                rndIndex = Math.floor(Math.random() * ((allRecipes.length -1)+ 1));
+            } while (picked.includes(rndIndex));
+            
+            accumulator.push(allRecipes[rndIndex]);
+        }
+
+        return accumulator;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
 
 
 

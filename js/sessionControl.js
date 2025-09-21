@@ -12,8 +12,8 @@
 
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
-import { createPreviewArray, FullRecipe } from "./data-models.js";
-import { fetchAllCategories, fetchByCategory, fetchById, fetchByName, rndFetch } from "./recipesAPI.js";
+import { createPreviewArray } from "./data-models.js";
+import * as RecipesManagement from "./recipesAPI.js";
 import { StorageManagement } from "./storageManagement.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
@@ -41,14 +41,15 @@ async function recipesAccumulator(idsArray){
         const accumulatorArray = [];
 
         for(let i=0; i < idsArray.length; i++){
-            const APIresponse = await fetchById(idsArray[i]); 
-            accumulatorArray.push(APIresponse.meals[0]);
+            const recipe = await RecipesManagement.searchRecipeById(idsArray[i]); 
+            accumulatorArray.push(recipe);
         }
         return accumulatorArray;
     } catch (error) {
         throw error;
     }
 }
+
 
 /**
  * Namespace per operazioni utenti non autenticati (registrazione/login)
@@ -430,8 +431,7 @@ export const Recipe = {
 
     getFullData: async (recipeId) => {
         try {
-            const APIresponse = await fetchById(recipeId);
-            return new FullRecipe(APIresponse.meals[0]);
+            return RecipesManagement.searchRecipeById(recipeId);
         } catch (error) {
             throw error;
         }
@@ -441,7 +441,7 @@ export const Recipe = {
 export const PreviewArray = {
     categories: async () => {
         try {
-            return createPreviewArray(await fetchAllCategories(), "categories");
+            return RecipesManagement.getAllCategories();
         } catch (error) {
             throw error;
         }
@@ -449,7 +449,7 @@ export const PreviewArray = {
 
     mealsByName: async (searchedName) => {
         try {
-            return createPreviewArray(await fetchByName(searchedName), "meals");
+            return createPreviewArray(await RecipesManagement.searchRecipesByName(searchedName), "meals");
         } catch (error) {
             throw error;
         }
@@ -457,7 +457,9 @@ export const PreviewArray = {
 
     mealsByCategory: async (category) => {
         try {
-            return createPreviewArray(await fetchByCategory(category), "meals");
+            const allRecipes = await RecipesManagement.getAllRecipes();
+            const filteredRecipes = allRecipes.filter(recipe => recipe.category === category);
+            return createPreviewArray(filteredRecipes, "meals");
         } catch (error) {
             throw error;
         }
@@ -473,13 +475,7 @@ export const PreviewArray = {
 
     rndMeals: async (quantity) => {
         try {
-            const recipesObjAccumulator = await rndFetch();
-            for(let i=1; i < quantity; i++){
-                const singleRecipeObj = await rndFetch();
-                recipesObjAccumulator.meals.push(singleRecipeObj.meals[0]);
-            }
-
-            return createPreviewArray(recipesObjAccumulator, "meals");
+            return createPreviewArray(await RecipesManagement.rndSearch(quantity), "meals");
         } catch (error) {
             throw error;
         }
