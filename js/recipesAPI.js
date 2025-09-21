@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-import { createPreviewArray, FullRecipe } from "./data-models.js";
+import { Category, FullRecipe } from "./data-models.js";
 import { StorageManagement } from "./storageManagement.js";
 
 // ===============================
@@ -121,7 +121,9 @@ async function createLocalRecipesDB() {
 async function createLocalCategoriesDB() {
     try {
         const fetchedOBJ = await fetchAllCategories();
-        const catArray = createPreviewArray(fetchedOBJ.meals, "categories");
+        console.log(fetchedOBJ);
+        const catArray = [];
+        fetchedOBJ.categories.forEach(item => catArray.push(new Category(item)));
         StorageManagement.set(CATEGORIES_DB_KEY, catArray, {storageLocation: "local", dataType: "array"});
         return catArray;
     } catch (error) {
@@ -134,7 +136,8 @@ async function createLocalCategoriesDB() {
 async function getData(storageKey) {
     try {
         let dataArray = StorageManagement.get(storageKey, {storageLocation: "local", dataType: "array"});
-        if(!dataArray){
+        // console.log(dataArray);
+        if(dataArray.length < 1){
             switch(storageKey){
                 case "recipes": 
                     dataArray = await createLocalRecipesDB();
@@ -152,12 +155,12 @@ async function getData(storageKey) {
 }
 
 
-export async function getAllRecipes() {
-    return getData(RECIPES_DB_KEY);
+async function getAllRecipes() {
+    return await getData(RECIPES_DB_KEY);
 }
 
 export async function getAllCategories() {
-    return getData(CATEGORIES_DB_KEY);
+    return await getData(CATEGORIES_DB_KEY);
 }
 
 export async function searchRecipeById(recipeId) {
@@ -194,24 +197,25 @@ export async function searchRecipesByName(query) {
             searchTerms.forEach(searchTerm => {
                 let fullMatch = false;
                 let partialMatch = false;
+                let divider = 1;
 
                 nameTerms.forEach(nameTerm => {
                     if(!fullMatch && !partialMatch){ // Previene conteggi multipli
                         if(nameTerm === searchTerm){
-                            score += 20;
+                            score += 20/divider;
                             matchedTerms++;
                         }else{
-                            recipeNameFullMatch = false;
                             if(nameTerm.startsWith(searchTerm)){
-                                score += 10;
+                                score += 10/divider;
                             }
                         }
                     }
+                    divider++;
                 });
             });
 
             if(matchedTerms === searchTerms.length){
-                score += 30;
+                score += score;
             }
             
             if(score > 0){
@@ -249,6 +253,16 @@ export async function rndSearch(quantity){
         console.error(error);
         throw error;
     }
+}
+
+export async function searchRecipesByCategory(category){
+    try {
+        const allRecipes = await getAllRecipes();
+        return allRecipes.filter(recipe => recipe.category === category);    
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }  
 }
 
 

@@ -106,7 +106,7 @@ function createPreviewCard (itemObj, bodyElement = null) {
  * 
  * @function populatePreviewContainer
  * @private
- * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array oggetti normalizzati
+ * @param {Array<import('./data-models.js').ItemPreview>} itemsObj - Array oggetti normalizzati
  * @param {HTMLElement} displayContainer - Container target per inserimento card
  * @param {Array<HTMLElement>|null} [bodyElementsArray=null] - Array elementi body opzionali
  * @returns {void}
@@ -122,24 +122,24 @@ function createPreviewCard (itemObj, bodyElement = null) {
  * 
  * @since 1.0.0
  */
-export function populatePreviewContainer (itemsPreviewArray, displayContainer, action = null) {
+export function populatePreviewContainer (itemsObj, displayContainer, action = null) {
    if(action != "remove"){
       if(action != "add"){
          displayContainer.innerHTML = "";
       }
       
-      for(let i=0; i < itemsPreviewArray.length; i++){
+      for(let i=0; i < itemsObj.items.length; i++){
          let relatedBodyElement = null;
 
-         switch(itemsPreviewArray[i].type){
+         switch(itemsObj.type){
             case "meals":
-               relatedBodyElement = CardDisplayStrategy.withGlobalRating(itemsPreviewArray[i]);
+               relatedBodyElement = CardDisplayStrategy.withGlobalRating(itemsObj.items[i]);
                break;
             case "reviews":
-               relatedBodyElement = CardDisplayStrategy.withUserRating(itemsPreviewArray[i]);
+               relatedBodyElement = CardDisplayStrategy.withUserRating(itemsObj.items[i]);
                break;
             case "notes":
-               relatedBodyElement = CardDisplayStrategy.withNotes(itemsPreviewArray[i]);
+               relatedBodyElement = CardDisplayStrategy.withNotes(itemsObj.items[i]);
                break;
             case "categories":
                break;
@@ -147,24 +147,24 @@ export function populatePreviewContainer (itemsPreviewArray, displayContainer, a
             throw new Error("Wrong data format");
          }
          
-         displayContainer.appendChild(createPreviewCard(itemsPreviewArray[i], relatedBodyElement));
+         displayContainer.appendChild(createPreviewCard(itemsObj.items[i], relatedBodyElement));
       }
    }else{
       const allCards = displayContainer.querySelectorAll(".card");
       allCards.forEach(card => {
-         if(itemsPreviewArray.some(preview => preview.id === card.dataset.itemId)){
+         if(itemsObj.items.some(preview => preview.id === card.dataset.itemId)){
             displayContainer.removeChild(card);
          };
       });
    }
 }
 
-export function addPreviewToContainer(itemsPreviewArray, displayContainer){
-   populatePreviewContainer(itemsPreviewArray, displayContainer, "add");
+export function addPreviewToContainer(itemsObj, displayContainer){
+   populatePreviewContainer(itemsObj, displayContainer, "add");
 };
 
-export function removePreviewFromArray(itemsPreviewArray, displayContainer){
-   populatePreviewContainer(itemsPreviewArray, displayContainer, "remove");
+export function removePreviewFromArray(itemsObj, displayContainer){
+   populatePreviewContainer(itemsObj, displayContainer, "remove");
 };
 
 
@@ -173,7 +173,7 @@ export function removePreviewFromArray(itemsPreviewArray, displayContainer){
  * 
  * @function createCarouselItem
  * @private
- * @param {import('./data-models.js').ItemPreview} itemPreviewObj - Oggetto dati normalizzato
+ * @param {import('./data-models.js').ItemPreview} fullRecipeObj - Oggetto dati normalizzato
  * @returns {HTMLElement} Elemento carousel-item pronto per carousel Bootstrap
  * 
  * @description
@@ -190,32 +190,32 @@ export function removePreviewFromArray(itemsPreviewArray, displayContainer){
  * 
  * @since 1.0.0
  */
-function createCarouselItem(itemPreviewObj) { 
+function createCarouselItem(fullRecipeObj) { 
    const carouselItem = document.createElement("div");
    carouselItem.classList.add("carousel-item");
 
    // Data attribute per identificazione (conversione esplicita a stringa)
-   const tasteAvg = Recipe.avgTasteRate(itemPreviewObj.id)
-   const difficultyAvg = Recipe.avgDifficultyRate(itemPreviewObj.id);
-   carouselItem.dataset.itemId = String(itemPreviewObj.id);
+   const tasteAvg = Recipe.avgTasteRate(fullRecipeObj.id)
+   const difficultyAvg = Recipe.avgDifficultyRate(fullRecipeObj.id);
+   carouselItem.dataset.itemId = String(fullRecipeObj.id);
 
    const image = document.createElement("img");
-   image.src = itemPreviewObj.image;
-   image.alt = itemPreviewObj.name;
+   image.src = fullRecipeObj.image;
+   image.alt = fullRecipeObj.name;
    image.classList.add("d-block", "w-100");
    carouselItem.appendChild(image);
 
    const captionContainer = document.createElement("div");
    captionContainer.classList.add("carousel-caption", "d-none", "d-md-block");
    const recipeTitle = document.createElement("h5");
-   recipeTitle.innerText = itemPreviewObj.name;
+   recipeTitle.innerText = fullRecipeObj.name;
    captionContainer.appendChild(recipeTitle);
    const slideFavBtn = document.createElement("i");
    slideFavBtn.classList.add("bi", "bi-4x", "bi-heart", "fav-icon");
    captionContainer.appendChild(slideFavBtn);
    carouselItem.appendChild(captionContainer);
 
-   favBtnDisplay(slideFavBtn, itemPreviewObj.id);
+   favBtnDisplay(slideFavBtn, fullRecipeObj.id);
 
    // carouselItem.innerHTML = `
    //    <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
@@ -344,7 +344,7 @@ const CardDisplayStrategy = {
  * Popola carousel Bootstrap con array di slide da ItemPreview
  * 
  * @function populateCarousel
- * @param {Array<import('./data-models.js').ItemPreview>} itemsPreviewArray - Array oggetti normalizzati
+ * @param {Array<import('./data-models.js').ItemPreview>} recipesObj - Array oggetti normalizzati
  * @param {HTMLElement} carouselInner - Elemento .carousel-inner di Bootstrap
  * @returns {void}
  * 
@@ -366,10 +366,10 @@ const CardDisplayStrategy = {
  * 
  * @since 1.0.0
  */
-export function populateCarousel(itemsPreviewArray, carouselInner) { 
+export function populateCarousel(recipesObj, carouselInner) { 
    carouselInner.innerHTML = "";
 
-   itemsPreviewArray.forEach(element => {
+   recipesObj.items.forEach(element => {
       carouselInner.appendChild(createCarouselItem(element));
    }); 
 };

@@ -12,7 +12,6 @@
 
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
-import { createPreviewArray } from "./data-models.js";
 import * as RecipesManagement from "./recipesAPI.js";
 import { StorageManagement } from "./storageManagement.js";
 
@@ -439,9 +438,10 @@ export const Recipe = {
 };
 
 export const PreviewArray = {
+    
     categories: async () => {
         try {
-            return RecipesManagement.getAllCategories();
+            return {type: "categories", items: await RecipesManagement.getAllCategories()};
         } catch (error) {
             throw error;
         }
@@ -449,7 +449,7 @@ export const PreviewArray = {
 
     mealsByName: async (searchedName) => {
         try {
-            return createPreviewArray(await RecipesManagement.searchRecipesByName(searchedName), "meals");
+            return {type: "meals", items: await RecipesManagement.searchRecipesByName(searchedName)};
         } catch (error) {
             throw error;
         }
@@ -457,9 +457,7 @@ export const PreviewArray = {
 
     mealsByCategory: async (category) => {
         try {
-            const allRecipes = await RecipesManagement.getAllRecipes();
-            const filteredRecipes = allRecipes.filter(recipe => recipe.category === category);
-            return createPreviewArray(filteredRecipes, "meals");
+            return {type: "meals", items: await RecipesManagement.searchRecipesByCategory(category)};
         } catch (error) {
             throw error;
         }
@@ -467,7 +465,7 @@ export const PreviewArray = {
 
     mealsById: async (idsArray) => {
         try {
-            return createPreviewArray(await recipesAccumulator(idsArray), "meals");
+            return {type: "meals", items: await recipesAccumulator(idsArray)};
         } catch (error) {
             throw error;
         }
@@ -475,7 +473,7 @@ export const PreviewArray = {
 
     rndMeals: async (quantity) => {
         try {
-            return createPreviewArray(await RecipesManagement.rndSearch(quantity), "meals");
+            return {type: "meals", items: await RecipesManagement.rndSearch(quantity)};
         } catch (error) {
             throw error;
         }
@@ -487,7 +485,7 @@ export const PreviewArray = {
 
             LoggedUser.getReviews().forEach(review => recipesIdsArray.push(review.recipeId));
 
-            return createPreviewArray(await recipesAccumulator(recipesIdsArray), "reviews");
+            return {type: "reviews", items: await recipesAccumulator(recipesIdsArray)};
         } catch (error) {
             throw error;
         }
@@ -495,7 +493,7 @@ export const PreviewArray = {
 
     fromUserFavourites: async () => {
         try {
-            return createPreviewArray(await recipesAccumulator(LoggedUser.getData().favourites), "meals");
+            return {type: "meals", items: await recipesAccumulator(LoggedUser.getData().favourites)};
         } catch (error) {
             throw error;
         }
@@ -511,7 +509,8 @@ export const PreviewArray = {
                 }
             });
 
-            return createPreviewArray(await recipesAccumulator(recipesIdsArray), "notes");
+            return {type: "notes", items: await recipesAccumulator(recipesIdsArray)};
+
         } catch (error) {
             throw error;
         }

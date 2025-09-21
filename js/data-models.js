@@ -214,11 +214,10 @@ export function Review(recipeId, userId, tasteRate, difficultyRate){
  * 
  * @since 1.0.0
  */
-export function ItemPreview(rawObj, itemType){
-    this.type = itemType,
-    this.id = rawObj.idMeal || rawObj.strCategory || "",
-    this.name = rawObj.strMeal || rawObj.strCategory || "",
-    this.image = rawObj.strMealThumb || rawObj.strCategoryThumb || "../assets/images/no_image.jpg"
+export function Category(rawObj){
+    this.id = rawObj.strCategory || "",
+    this.name = rawObj.strCategory || "",
+    this.image = rawObj.strCategoryThumb || "../assets/images/no_image.jpg"
 }
 
 // ================================================================================================
@@ -277,6 +276,8 @@ export function FullRecipe(rawRecipeObj){
 
     /** @type {string} Nome completo ricetta */
     this.name = rawRecipeObj.strMeal || "",
+
+    this.category = rawRecipeObj.strCategory || "",
 
     /** @type {string} URL immagine alta risoluzione */
     this.image = rawRecipeObj.strMealThumb || "",
@@ -354,93 +355,6 @@ FullRecipe.prototype.getIngredients = function (rawRecipeObj){
     return array;
 }
 
-// ================================================================================================
-// PUBLIC API - FACTORY FUNCTIONS
-// ================================================================================================
-
-/**
- * Crea array di oggetti ItemPreview da risposta API TheMealDB
- * 
- * @function createPreviewArray
- * @param {Object|Array} itemsObj - Oggetto risposta da API TheMealDB o array diretto
- * @param {Array} [itemsObj.meals] - Array ricette (se risposta search/lookup)
- * @param {Array} [itemsObj.categories] - Array categorie (se risposta categories)
- * @param {Array} [itemsObj.drinks] - Array drink (se API cocktail)
- * @param {string|null} [itemsType=null] - Tipo esplicito se itemsObj è array diretto
- * @returns {Array<ItemPreview>} Array di oggetti ItemPreview normalizzati
- * 
- * @description
- * Factory function per conversione batch API responses in oggetti standardizzati.
- * Supporta sia risposte API wrapped ({meals: [...]}) che array diretti.
- * 
- * **Modalità Auto-detection:**
- * - Estrae automaticamente il primo array trovato nell'oggetto response
- * - Inferisce tipo dalla chiave object (es. "meals" → tipo "meals")
- * - Gestisce uniformemente strutture diverse senza code changes
- * 
- * **Modalità Explicit Type:**
- * - itemsObj è array + itemsType specificato → usa tipo esplicito
- * - Utile per array processati o dati non-API
- * 
- * @example
- * // Con risposta ricerca ricette
- * const searchResponse = {meals: [{idMeal: "123", strMeal: "Pasta"}, ...]};
- * const previews = createPreviewArray(searchResponse);
- * // → [ItemPreview{id: "123", name: "Pasta", type: "meals"}, ...]
- * 
- * @example
- * // Con risposta lista categorie
- * const categoriesResponse = {categories: [{idCategory: "1", strCategory: "Beef"}, ...]};
- * const previews = createPreviewArray(categoriesResponse);
- * // → [ItemPreview{id: "Beef", name: "Beef", type: "categories"}, ...]
- * 
- * @example
- * // Con array diretto + tipo esplicito
- * const recipesArray = [{idMeal: "456", strMeal: "Pizza"}, ...];
- * const previews = createPreviewArray(recipesArray, "meals");
- * // → [ItemPreview{id: "456", name: "Pizza", type: "meals"}, ...]
- * 
- * @example
- * // Con oggetto vuoto o malformato
- * const emptyResponse = {};
- * const previews = createPreviewArray(emptyResponse);
- * // → [] (array vuoto, nessun crash)
- * 
- * @throws {TypeError} Se itemsObj non è un oggetto o è null
- * @throws {Error} Se l'array estratto contiene elementi non processabili da ItemPreview
- * 
- * @todo Aggiungere validazione struttura response per early error detection
- * @todo Implementare progress callback per array molto grandi
- * @todo Considerare streaming processing per memory efficiency
- * 
- * @see {@link ItemPreview} Per dettagli sul costruttore degli oggetti preview
- * 
- * @note
- * Per oggetti response con multiple chiavi array, viene processata solo la prima
- * secondo l'ordine restituito da Object.keys() (non garantito per oggetti).
- * 
- * @since 1.0.0
- */
-export function createPreviewArray(itemsObj, itemsType){
-    
-    /** @type {Array<ItemPreview>} Array accumulator per oggetti preview */
-    const previewArray = [];
-    
-    /** @type {string} Nome della prima chiave nell'oggetto response (es. "meals", "categories") o tipo esplicito */
-    //const arrayType = Array.isArray(itemsObj) && itemsType ? itemsType : Object.keys(itemsObj)[0];
-    
-    /** @type {Array} Array effettivo da processare (estratto da response o diretto) */
-    const originalArray = Array.isArray(itemsObj) ? itemsObj : itemsObj[itemsType];
-
-    // Itera sull'array contenuto nella risposta API
-    originalArray.forEach(element => {
-        /** @type {ItemPreview} Oggetto preview normalizzato dall'elemento raw */
-        const item = new ItemPreview(element, itemsType);
-        previewArray.push(item);
-    });
-
-    return previewArray;
-}
 
 // ================================================================================================
 // ARCHITECTURE NOTES
