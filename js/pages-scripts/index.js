@@ -45,7 +45,7 @@ window.addEventListener("load", async () => {
     // POPOLAZIONE CAROUSEL RICETTE CASUALI
     // ===============================
 
-    populateCarousel(await PreviewArray.rndMeals(5), slideshow);
+    populateCarousel(await PreviewArray.mostPopular(5), slideshow);
 
     // Attiva il primo slide del carousel (Bootstrap requirement)
     requestAnimationFrame(() => {

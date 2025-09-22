@@ -531,12 +531,10 @@ export const PreviewArray = {
                         reviewCount++;
                     }
                 });
-                if(reviewCount > 0){
-                    revPerRecipe.push({obj: recipe, totalReviews: reviewCount});
-                }
+                revPerRecipe.push({obj: recipe, totalReviews: reviewCount});
             });
 
-            revPerRecipe.sort((a,b) => b.totalReviews - b.totalReviews);
+            revPerRecipe.sort((a,b) => b.totalReviews - a.totalReviews);
 
             revPerRecipe.length = quantity;
 
