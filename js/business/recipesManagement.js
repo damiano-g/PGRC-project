@@ -155,7 +155,7 @@ async function getData(storageKey) {
 }
 
 
-async function getAllRecipes() {
+export async function getAllRecipes() {
     return await getData(RECIPES_DB_KEY);
 }
 

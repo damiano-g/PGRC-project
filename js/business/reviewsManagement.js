@@ -188,9 +188,9 @@ export function recipeAvgRate (recipeId, ratingType) {
     try {
         let sum = 0;
         let totalReviews = 0;
-        getStoredReviews().forEach(element => {
-            if(element.recipeId === recipeId){
-                sum += element[ratingType];
+        getStoredReviews().forEach(review => {
+            if(review.recipeId === recipeId){
+                sum += review[ratingType];
                 totalReviews++;
             }
         });

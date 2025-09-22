@@ -14,6 +14,7 @@ import * as RecipesManagement from "./business/recipesManagement.js";
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
 import { StorageManagement } from "./storageManagement.js";
+import { removePreviewFromArray } from "./UI.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
 const LOGGED_USER_KEY = "loggedUser";
@@ -512,6 +513,37 @@ export const PreviewArray = {
             return {type: "notes", items: await recipesAccumulator(recipesIdsArray)};
 
         } catch (error) {
+            throw error;
+        }
+    },
+
+    mostPopular: async (quantity) => {
+        try {
+            const allReviews = ReviewsManagement.getStoredReviews();
+            const allRecipes = await RecipesManagement.getAllRecipes();
+
+            const revPerRecipe = [];
+
+            allRecipes.forEach(recipe => {
+                let reviewCount = 0;
+                allReviews.forEach(review => {
+                    if(review.recipeId === recipe.id){
+                        reviewCount++;
+                    }
+                });
+                if(reviewCount > 0){
+                    revPerRecipe.push({obj: recipe, totalReviews: reviewCount});
+                }
+            });
+
+            revPerRecipe.sort((a,b) => b.totalReviews - b.totalReviews);
+
+            revPerRecipe.length = quantity;
+
+            return {type: "meals", items: revPerRecipe.map(recipe => recipe.obj)};
+
+        } catch (error) {
+            console.error(error);
             throw error;
         }
     }
