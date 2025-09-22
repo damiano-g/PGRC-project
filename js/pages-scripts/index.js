@@ -11,7 +11,6 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { getAllCategories } from "../recipesAPI.js";
 import { LoggedUser, PreviewArray } from "../sessionControl.js";
 import { favBtnDisplay, initializeNavbar, populateCarousel, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
 

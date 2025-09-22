@@ -5,8 +5,8 @@
  * @version 1.0.0
  */
 
-import { Category, FullRecipe } from "./data-models.js";
-import { StorageManagement } from "./storageManagement.js";
+import { Category, FullRecipe } from "../data-models.js";
+import { StorageManagement } from "../storageManagement.js";
 
 // ===============================
 // CONFIGURAZIONE ENDPOINT API

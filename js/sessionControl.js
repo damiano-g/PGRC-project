@@ -10,9 +10,9 @@
  * @requires ./storageManagement.js - Gestione storage
  */
 
+import * as RecipesManagement from "./business/recipesManagement.js";
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
-import * as RecipesManagement from "./recipesAPI.js";
 import { StorageManagement } from "./storageManagement.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */

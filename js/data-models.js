@@ -63,7 +63,7 @@ function generateItemId(itemType) {
  * @function User
  * @param {string} validUsername - Username già validato upstream
  * @param {string} validEmail - Email già validata upstream  
- * @param {string} hashPassword - Password già hashata per sicurezza
+ * @param {string} hashedPassword - Password già hashata per sicurezza
  * 
  * @description
  * Factory per utenti con validazione delegata a layer superiore.
@@ -82,11 +82,11 @@ function generateItemId(itemType) {
  * 
  * @since 1.0.0
  */
-export function User(validUsername, validEmail, hashPassword){
+export function User(validUsername, validEmail, hashedPassword){
     this.id = generateItemId("user"),
     this.username = validUsername, // Username fornito (già validato)
     this.email = validEmail, // Email fornita (già validata)
-    this.password = hashPassword, // Password hashata
+    this.password = hashedPassword, // Password hashata
     this.favourites = [],
     this.notes = [],
     this.creationDate = new Date().toISOString()
