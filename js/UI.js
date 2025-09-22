@@ -49,25 +49,25 @@ function createPreviewCard (itemObj, bodyElement = null) {
    card.dataset.itemId = itemObj.id;
    card.innerHTML = `
       <div class="row g-0">
-         <div class="col-5">
+         <div class="col-5 card-image position-relative">
                <img src="${itemObj.image}" alt="${itemObj.name}" class="img-fluid rounded-start">
          </div>
-         <div class="col-7 card-body">
+         <div class="col-7 card-body ps-4">
             <h5 class="card-title mb-3">${itemObj.name}</h5>
          </div>
       </div>
    `;
 
    if(bodyElement){
+      const cardImage = card.querySelector(".card-image");
+      const cardFavIcon = document.createElement("i");
+      cardFavIcon.classList.add("bi", "bi-heart", "fav-icon", "position-absolute", "top-0", "start-0");
+      cardImage.appendChild(cardFavIcon);
       const cardBody = card.querySelector(".card-body");
       cardBody.appendChild(bodyElement);
 
-      const cardFavBtn = document.createElement("button");
-      cardFavBtn.classList.add("btn", "position-absolute", "bottom-0", "end-0", "fav-button");
-      const cardFavIcon = document.createElement("i");
-      cardFavIcon.classList.add("bi", "bi-heart", "fav-icon");
-      cardFavBtn.appendChild(cardFavIcon);
-      cardBody.appendChild(cardFavBtn);
+      // const cardFavBtn = document.createElement("button");
+      // cardFavBtn.classList.add("btn", "position-absolute", "bottom-0", "end-0", "fav-button");
       favBtnDisplay(cardFavIcon, itemObj.id);
    }
 
@@ -77,19 +77,21 @@ function createPreviewCard (itemObj, bodyElement = null) {
  function cardRatingContent(tasteRate, difficultyRate, title) {
    const reviews = document.createElement("div");
       
-   reviews.classList.add("container", "ps-4", "rate-container");
+   reviews.classList.add("container", "px-0", "rate-container");
    
    let content = `<h6>${title}</h6>`;
    
    if(Number(tasteRate) > 0 && Number(difficultyRate) > 0){
       content += `
-      <div class="row">
-         <div class="col>
+      <div>
+         <!--<div class="col>
             <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteRate}"></progress></progress>
          </div>
          <div class="col>
             <span class="ps-0">Difficoltà</span><progress class="w-50 mb-1" max="5" value="${difficultyRate}"></progress></progress>
-         </div>
+         </div>-->
+         <span class="bi bi-star"><span class="px-2">${tasteRate}</span></span>
+         <span class="bi bi-fork-knife"><span class="px-2">${difficultyRate}</span></span>
       </div>
       `;
    }else{
@@ -206,15 +208,24 @@ function createCarouselItem(fullRecipeObj) {
    carouselItem.appendChild(image);
 
    const captionContainer = document.createElement("div");
-   captionContainer.classList.add("carousel-caption", "d-none", "d-md-block");
-   const recipeTitle = document.createElement("h5");
+   captionContainer.classList.add("carousel-caption", "start-0", "px-5");
+   const recipeTitle = document.createElement("h1");
+   recipeTitle.classList.add("text-start");
    recipeTitle.innerText = fullRecipeObj.name;
    captionContainer.appendChild(recipeTitle);
-   const slideFavBtn = document.createElement("i");
-   slideFavBtn.classList.add("bi", "bi-4x", "bi-heart", "fav-icon");
-   captionContainer.appendChild(slideFavBtn);
+   const recipeRating = document.createElement("span");
+   recipeRating.classList.add("start-0");
+   recipeRating.innerHTML = `
+      <span class="bi bi-star"><span class="px-2">${tasteAvg}</span></span>
+      <span class="bi bi-fork-knife"><span class="px-2">${difficultyAvg}</span></span>
+   `;
+   captionContainer.appendChild(recipeRating);
    carouselItem.appendChild(captionContainer);
 
+   const slideFavBtn = document.createElement("i");
+   slideFavBtn.classList.add("bi", "bi-heart", "fs-4", "fav-icon", "position-absolute", "top-0", "end-0");
+   carouselItem.appendChild(slideFavBtn);
+   
    favBtnDisplay(slideFavBtn, fullRecipeObj.id);
 
    // carouselItem.innerHTML = `

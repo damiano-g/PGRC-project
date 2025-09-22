@@ -14,7 +14,6 @@ import * as RecipesManagement from "./business/recipesManagement.js";
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
 import { StorageManagement } from "./storageManagement.js";
-import { removePreviewFromArray } from "./UI.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
 const LOGGED_USER_KEY = "loggedUser";
