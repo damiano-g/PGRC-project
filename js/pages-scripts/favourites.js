@@ -15,10 +15,6 @@ import { addPreviewToContainer, favBtnDisplay, initializeNavbar, populatePreview
 // DOM ELEMENTS
 // ================================================================================================
 
-/** Pulsante ricerca nella navbar */
-const favSearchBtn = document.getElementById("searchBtn");
-/** Campo input ricerca nella navbar */
-const favSearchBar = document.getElementById("searchBar");
 /** Container ricette preferite */
 const personalFavsContainer = document.getElementById("fav-recipes");
 /** Container ricette recensite */

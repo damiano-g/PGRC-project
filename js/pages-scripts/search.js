@@ -12,7 +12,7 @@
 // ===============================
 
 import { LoggedUser, PreviewArray } from "../sessionControl.js";
-import { favBtnDisplay, populatePreviewContainer, initializeNavbar } from "../UI.js"; // Componenti UI per rendering
+import { favBtnDisplay, initializeNavbar, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -26,8 +26,6 @@ const searchBar = document.getElementById("searchBar");
 
 /** @type {HTMLElement} Container dove vengono mostrati i risultati della ricerca */
 const resultsContainer = document.getElementById("results-container");
-
-let searchPageCards;
 
 // ===============================
 // GESTIONE RICERCA PER NOME

@@ -18,12 +18,6 @@ import { createRecipeOverview, favBtnDisplay, initializeNavbar, populateRecipeNo
 // SELEZIONE ELEMENTI DOM
 // ===============================
 
-/** @type {HTMLElement} Container per il titolo della ricetta */
-const recipeTitle = document.getElementById("recipe-title");
-
-/** @type {HTMLElement} Container per l'immagine principale */
-const imageBox = document.getElementById("image-box");
-
 /** @type {HTMLUListElement} Lista ingredienti con quantità */
 const ingredientsList = document.getElementById("ingredients-list");
 
@@ -42,10 +36,6 @@ const noteTextInput = document.getElementById("insert-note");
 /** @type {HTMLButtonElement} Pulsante inserimento nota */
 const noteInsBtn = document.querySelector("#notes form .btn");
 
-/** @type {HTMLButtonElement} Pulsante toggle preferiti */
-const detailsFavBtn = document.getElementById("favBtn");
-
-const revBtn = document.getElementById("revBtn");
 const revForm = document.querySelector(".modal .form");
 const revAlertText = document.querySelector(".modal .text");
 const revConfirmBtn = document.querySelector(".modal-footer .btn");

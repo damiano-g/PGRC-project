@@ -24,12 +24,6 @@ const slideshow = document.querySelector(".carousel-inner");
 /** @type {HTMLElement} Container griglia categorie */
 const catContainer = document.getElementById("categories");
 
-/** @type {HTMLButtonElement} Pulsante ricerca nella home */
-const homeSearchBtn = document.getElementById("searchBtn");
-
-/** @type {HTMLInputElement} Campo input ricerca nella home */
-const homeSearchBar = document.getElementById("searchBar");
-
 document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 // ===============================
 // INIZIALIZZAZIONE DASHBOARD
