@@ -1,77 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../recipeStyle.css">
-    <title>Modify user data</title>
-</head>
-<body class="d-none" id="settings-page">
-    
-    <nav class="navbar navbar-dark bg-secondary fixed-top">
-        <div class="container-fluid">
-            <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
-                <span class="navbar-brand font-size-sm">Menu</span>
-            </button>
-            <ul class="dropdown-menu">
-                <li id="home-link">
-                    <div class="dropdown-item">Homepage</div>
-                    <div class="dropdown-divider"></div>
-                </li>
-                <li><span class="dropdown-item d-none" id="personal-page-link">Il mio ricettario</span></li>
-                <li><span class="dropdown-item d-none" id="account-settings-link">Impostazioni account</span></li>
-                <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
-                <li><span class="dropdown-item d-none" id="login-link">Accedi</span></li>
-                <li><span class="dropdown-item d-none" id="signin-link">Registrati</span></li>
-            </ul>
-            <form class="input-group w-50">
-                <input class="form-control" type="search" placeholder="Search" id="searchBar">
-                <button class="btn btn-sm btn-outline-light" type="button" id="searchBtn">Search</button>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../recipeStyle.css">
+        <title>Modify user data</title>
+    </head>
+    <body class="d-none" id="settings-page">
+        
+        <nav class="navbar navbar-light fixed-top">
+            <div class="container-fluid">
+                <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
+                    <img  src="../assets/images/Pot_logo.png" alt="">
+                </button>
+                <ul class="dropdown-menu">
+                    <li id="home-link">
+                        <div class="dropdown-item">Homepage</div>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
+                    <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
+                    <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
+                    <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
+                    <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
+                </ul>
+                <form class="input-group w-50">
+                    <input class="form-control" type="search" placeholder="Search" id="searchBar">
+                    <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
+                </form>
+            </div>
+        </nav>
+
+        <div class="container pt-5 mt-3">
+
+            <h2>I tuoi dati</h2>
+        
+            <form class="needs-validation">
+                <div class="form-section mb-3 mt-3">
+                    <label class="form-label" for="username">Username</label><button class="btn allow-modif" type="button">Abilita modifica</button>
+                    <input class="form-control" type="text" id="username" disabled>
+                    <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
+                </div>
+                <div class="form-section mb-3 mt-3">
+                    <label class="form-label" for="email">Email</label><button class="btn allow-modif" type="button">Abilita modifica</button>
+                    <input class="form-control" type="email" id="email" disabled>
+                    <div class="invalid-feedback">Formato non valido</div>
+                </div>
+                <div class="form-section mb-3 mt-3">
+                    Password<button class="btn allow-modif" type="button">Abilita modifica</button><br>
+                    <label class="form-label" for="currentPassword">Password attuale</label><button class="btn" type="button" id="auth-modif" disabled>Autorizza</button>
+                    <input class="form-control" type="password" id="currentPassword" placeholder="Inserisci la password" disabled>
+                    <div class="invalid-feedback">Le password non corrispondono</div>
+                </div>
+                <div class="mb-3 mt-3">
+                    <label class="form-label" for="newPassword">Nuova password</label>
+                    <input class="form-control" type="password" id="newPassword" placeholder="Scegli password" disabled>
+                    <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
+                        <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+                    </div>
+                </div>
+                <div class="mb-3 mt-3">
+                    <label class="form-label" for="confirmPassword">Conferma nuova password</label>
+                    <input class="form-control" type="password" id="confirmPassword" placeholder="Conferma password" disabled>
+                    <div class="invalid-feedback">Le password non corrispondono</div>
+                </div>
+                <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
+                <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Salva modifiche</button>
             </form>
         </div>
-    </nav>
-
-    <div class="container pt-5 mt-3">
-
-        <h2>I tuoi dati</h2></button>
-    
-        <form class="needs-validation">
-            <div class="form-section mb-3 mt-3">
-                <label class="form-label" for="username">Username</label><button class="btn allow-modif" type="button">Abilita modifica</button>
-                <input class="form-control" type="text" id="username" disabled>
-                <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
-            </div>
-            <div class="form-section mb-3 mt-3">
-                <label class="form-label" for="email">Email</label><button class="btn allow-modif" type="button">Abilita modifica</button>
-                <input class="form-control" type="email" id="email" disabled>
-                <div class="invalid-feedback">Formato non valido</div>
-            </div>
-            <div class="form-section mb-3 mt-3">
-                Password<button class="btn allow-modif" type="button">Abilita modifica</button><br>
-                <label class="form-label" for="currentPassword">Password attuale</label><button class="btn" type="button" id="auth-modif" disabled>Autorizza</button>
-                <input class="form-control" type="password" id="currentPassword" placeholder="Inserisci la password" disabled>
-                <div class="invalid-feedback">Le password non corrispondono</div>
-            </div>
-            <div class="mb-3 mt-3">
-                <label class="form-label" for="newPassword">Nuova password</label>
-                <input class="form-control" type="password" id="newPassword" placeholder="Scegli password" disabled>
-                <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
-                    <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
-                </div>
-            </div>
-            <div class="mb-3 mt-3">
-                <label class="form-label" for="confirmPassword">Conferma nuova password</label>
-                <input class="form-control" type="password" id="confirmPassword" placeholder="Conferma password" disabled>
-                <div class="invalid-feedback">Le password non corrispondono</div>
-            </div>
-            <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
-            <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Salva modifiche</button>
-        </form>
-    </div>
 
 
-    <script type="module" src="../js/pages-scripts/modif.js"></script>
-    <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
+        <script type="module" src="../js/pages-scripts/modif.js"></script>
+        <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

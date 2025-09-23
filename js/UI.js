@@ -217,20 +217,6 @@ function createCarouselItem(fullRecipeObj) {
    
    favBtnDisplay(slideFavBtn, fullRecipeObj.id);
 
-   // carouselItem.innerHTML = `
-   //    <img src=${itemPreviewObj.image} class="d-block w-100" alt=${itemPreviewObj.name}> <!-- d-block and w-100 prevent browser default image alignement -->
-   //    <div class="carousel-caption d-none d-md-block"> <!-- d-none and d-md-block hides captions in smaller viewports -->
-   //       <h5>${itemPreviewObj.name}</h5>
-   //       <button class="btn btn-lg position-absolute top-0 end-0"><i class="bi bi-2x bi-heart"></i></button>
-   //       <div class="row">
-   //          <span>Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteAvg}"></progress>
-   //       </div>
-   //       <div class="row">
-   //          <span>Difficoltà di preparazione</span><progress class="w-50 mb-1" max="5" value="${difficultyAvg}"></progress>
-   //       </div>
-   //    </div>
-   // `;
-
    return carouselItem;   
 };
 

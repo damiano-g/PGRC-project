@@ -12,6 +12,7 @@
 
 import { handleUserError } from "../errorsManagement.js";
 import { LoggedUser } from "../sessionControl.js";
+import { initializeNavbar } from "../UI.js";
 import * as validate from "../validate.js";
 
 // ================================================================================================
@@ -479,6 +480,7 @@ window.addEventListener("load", () => {
     }
 });
 
+document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 // ================================================================================================
 // ARCHITECTURE NOTES
 // ================================================================================================
