@@ -33,38 +33,36 @@
     </nav>
 
 
-    <div class="centered-content">
-
-        <div class="container w-75">
-    
-            <h2>Registrati</h2>
-        
+    <div class="container-fluid centered-content">
+        <div>
+            <h2>Signin</h2>
             <form class="needs-validation">
                 <div class="mb-3 mt-3">
-                    <label class="form-label" for="username">Scegli username</label>
-                    <input class="form-control" type="text" id="username" placeholder="Username" required>
+                    <label class="form-label" for="username">Username</label>
+                    <input class="form-control" type="text" id="username" placeholder="Choose a username" required>
                     <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
                 </div>
                 <div class="mb-3 mt-3">
-                    <label class="form-label" for="email">Inserisci email</label>
-                    <input class="form-control" type="email" id="email" placeholder="Email" required>
-                    <div class="invalid-feedback">Formato non valido</div>
+                    <label class="form-label" for="email">Email</label>
+                    <input class="form-control" type="email" id="email" placeholder="Insert your email" required>
+                    <div class="invalid-feedback">Invalid format</div>
                 </div>
                 <div class="mb-3 mt-3">
-                    <label class="form-label" for="password">Scegli una password</label>
-                    <input class="form-control" type="password" id="password" placeholder="Scegli password" required>
-                    <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
-                        <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+                    <label class="form-label" for="password">Password</label>
+                    <input class="form-control" type="password" id="password" placeholder="Choose a password" required>
+                    <div class="invalid-feedback">
+                        Passwords must contain at least <span id="passLen">8 characters</span>, <span id="upCase">one capital letter,</span>,
+                            <span id="lowCase">one small letter</span> and <span id="num">a number</span>.
                     </div>
                 </div>
                 <div class="mb-3 mt-3">
-                    <label class="form-label" for="confirmPassword">Conferma password</label>
-                    <input class="form-control" type="password" id="confirmPassword" placeholder="Conferma password" required disabled>
-                    <div class="invalid-feedback">Le password non corrispondono</div>
+                    <label class="form-label" for="confirmPassword">Confirm password</label>
+                    <input class="form-control" type="password" id="confirmPassword" placeholder="Confirm password" required disabled>
+                    <div class="invalid-feedback">Passwords don't match</div>
                 </div>
-                <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoLog">Vai a login</button>
-                <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
-                <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Registrati</button>
+                <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoLog">Go to login</button>
+                <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Clear</button>
+                <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Signin</button>
             </form>
         </div>
     </div>

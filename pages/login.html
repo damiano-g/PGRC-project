@@ -33,27 +33,27 @@
         </div>
     </nav>
 
-    <div class="centered-content">
-        <div class="container w-75">
-    
-            <h2>Entra</h2>
+    <div class="container-fluid centered-content">
+        <div>
+            <h2>Login</h2>
         
             <form class="needs-validation">
                 <div class="mb-3 mt-3">
-                    <label class="form-label" for="username">Inserisci lo username</label>
-                    <input class="form-control" type="text" id="username" placeholder="Username" required>
-                    <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
+                    <label class="form-label" for="username">Username</label>
+                    <input class="form-control" type="text" id="username" placeholder="Insert username" required>
+                    <div class="invalid-feedback">Username must contain at least two characters</div>
                 </div>
                 <div class="mb-3 mt-3">
-                    <label class="form-label" for="password">Inserisci la password</label>
-                    <input class="form-control" type="password" id="password" placeholder="Scegli password" required>
-                    <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
-                        <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+                    <label class="form-label" for="password">Password</label>
+                    <input class="form-control" type="password" id="password" placeholder="Insert password" required>
+                    <div class="invalid-feedback">
+                        Passwords must contain at least <span id="passLen">8 characters</span>, <span id="upCase">one capital letter,</span>,
+                            <span id="lowCase">one small letter</span> and <span id="num">a number</span>.
                     </div>
                 </div>
-                <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoSign">Registrati</button>
-                <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
-                <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Entra</button>
+                <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoSign">Signin</button>
+                <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Clear</button>
+                <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Login</button>
             </form>
         </div>
     </div>
