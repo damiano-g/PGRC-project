@@ -532,6 +532,13 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
       signinPageLink.classList.remove("d-none");
    }
 
+   if(bodyDOMObject.id != "search-page"){
+      navBarDOMObject.querySelector("#searchBtn").addEventListener("click", () => {
+         // Naviga a search.html con parametro query per ricerca automatica
+         window.location.href = `${linkPrefix}search.html?q=${String(navBarDOMObject.querySelector("#searchBar").value)}`;
+      });
+   }
+
    if(userLogged){
       const logoutLink = navBarDOMObject.querySelector("#logout-link"); 
       logoutLink.addEventListener("click", () => {

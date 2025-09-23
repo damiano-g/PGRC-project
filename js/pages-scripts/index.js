@@ -110,17 +110,4 @@ slideshow.addEventListener("click", (click) => {
     };
 });
 
-// ===============================
-// RICERCA DALLA HOME
-// ===============================
-
-/**
- * Event listener per pulsante ricerca principale
- * Naviga alla pagina ricerca con termine di ricerca preimpostato
- */
-homeSearchBtn.addEventListener("click", () => {
-    // Naviga a search.html con parametro query per ricerca automatica
-    window.location.href = `./pages/search.html?q=${String(homeSearchBar.value)}`
-});
-
 
