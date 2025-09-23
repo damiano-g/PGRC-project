@@ -137,7 +137,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
  
         if(recipeId && userId && tasteRate && difficultyRate){
             // ADD MODE: Crea nuova recensione
-            recipeReviewsArray.push(new Review(recipeId, userId, tasteRate, difficultyRate));
+            recipeReviewsArray.push(new Review(recipeId, userId, Number(tasteRate), Number(difficultyRate)));
         }else{
             if(recipeId && userId && !(tasteRate || difficultyRate)){
                 // DELETE MODE: Rimuovi recensione esistente
@@ -190,11 +190,11 @@ export function recipeAvgRate (recipeId, ratingType) {
         let totalReviews = 0;
         getStoredReviews().forEach(review => {
             if(review.recipeId === recipeId){
-                sum += review[ratingType];
+                sum += Number(review[ratingType]);
                 totalReviews++;
             }
         });
-        return sum/totalReviews;
+        return (sum/totalReviews).toFixed(1);
     } catch (error) {
         console.error(error);
         throw error;

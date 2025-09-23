@@ -91,7 +91,6 @@ window.addEventListener("load", async () => {
 
     // Rendering sezione note
     populatePreviewContainer(await PreviewArray.fromAllUserNotes(), personalNotesContainer);
-    console.log(await PreviewArray.fromAllUserNotes());
 });
 
 

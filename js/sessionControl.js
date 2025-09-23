@@ -169,7 +169,7 @@ export const LoggedUser = {
      */
     getReviews: () => {
         try {
-            return ReviewsManagement.getStoredReviews().filter(element => Recipe.isReviewed(element.recipeId)) || [];      
+            return ReviewsManagement.getStoredReviews().filter(element => element.userId === LoggedUser.getId()) || [];      
         } catch (error) {
             throw error;
         }
