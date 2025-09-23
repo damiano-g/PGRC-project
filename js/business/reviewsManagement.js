@@ -226,7 +226,7 @@ export function recipeAvgRate (recipeId, ratingType) {
 export function recipeUserRate(recipeId, userId, ratingType) {
     try {
         const review = getStoredReviews().find(element => element.recipeId === recipeId && element.userId === userId);
-        return review ? review[ratingType] : undefined;
+        return review ? Number(review[ratingType]).toFixed(1) : undefined;
     } catch (error) {
         console.error(error);
         throw error;

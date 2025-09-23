@@ -48,14 +48,12 @@ function createPreviewCard (itemObj, bodyElement = null) {
    // Aggiunge data attribute per identificazione durante event delegation
    card.dataset.itemId = itemObj.id;
    card.innerHTML = `
-      <div class="row g-0">
-         <div class="col-5 card-image position-relative">
+         <div class="card-image position-relative">
                <img src="${itemObj.image}" alt="${itemObj.name}" class="img-fluid rounded-start">
          </div>
-         <div class="col-7 card-body ps-4">
+         <div class="card-body ps-4">
             <h5 class="card-title mb-3">${itemObj.name}</h5>
          </div>
-      </div>
    `;
 
    if(bodyElement){
@@ -65,9 +63,6 @@ function createPreviewCard (itemObj, bodyElement = null) {
       cardImage.appendChild(cardFavIcon);
       const cardBody = card.querySelector(".card-body");
       cardBody.appendChild(bodyElement);
-
-      // const cardFavBtn = document.createElement("button");
-      // cardFavBtn.classList.add("btn", "position-absolute", "bottom-0", "end-0", "fav-button");
       favBtnDisplay(cardFavIcon, itemObj.id);
    }
 
@@ -79,19 +74,13 @@ function createPreviewCard (itemObj, bodyElement = null) {
       
    reviews.classList.add("container", "px-0", "rate-container");
    
-   let content = `<h6>${title}</h6>`;
+   let content = `<span>${title}</span><br>`;
    
    if(Number(tasteRate) > 0 && Number(difficultyRate) > 0){
       content += `
       <div>
-         <!--<div class="col>
-            <span class="ps-0">Gusto</span><progress class="w-50 mb-1" max="5" value="${tasteRate}"></progress></progress>
-         </div>
-         <div class="col>
-            <span class="ps-0">Difficoltà</span><progress class="w-50 mb-1" max="5" value="${difficultyRate}"></progress></progress>
-         </div>-->
-         <span class="bi bi-star"><span class="px-2">${tasteRate}</span></span>
-         <span class="bi bi-fork-knife"><span class="px-2">${difficultyRate}</span></span>
+         <i class="bi bi-star-fill"></i><span class="ms-2 me-3">${tasteRate}</span>
+         <i class="bi bi-fork-knife"></i><span class="ms-1">${difficultyRate}</span>
       </div>
       `;
    }else{
@@ -210,16 +199,16 @@ function createCarouselItem(fullRecipeObj) {
    const captionContainer = document.createElement("div");
    captionContainer.classList.add("carousel-caption", "start-0", "px-5");
    const recipeTitle = document.createElement("h1");
-   recipeTitle.classList.add("text-start");
    recipeTitle.innerText = fullRecipeObj.name;
    captionContainer.appendChild(recipeTitle);
-   const recipeRating = document.createElement("span");
-   recipeRating.classList.add("start-0");
-   recipeRating.innerHTML = `
-      <span class="bi bi-star"><span class="px-2">${tasteAvg}</span></span>
-      <span class="bi bi-fork-knife"><span class="px-2">${difficultyAvg}</span></span>
-   `;
-   captionContainer.appendChild(recipeRating);
+   if(tasteAvg > 0 && difficultyAvg > 0){
+      const recipeRating = document.createElement("span");
+      recipeRating.innerHTML = `
+         <i class="bi bi-star-fill"></i><span class="ms-2 me-3">${tasteAvg}</span>
+         <i class="bi bi-fork-knife"></i><span class="ms-1">${difficultyAvg}</span>
+      `;
+      captionContainer.appendChild(recipeRating);
+   }
    carouselItem.appendChild(captionContainer);
 
    const slideFavBtn = document.createElement("i");
@@ -269,8 +258,6 @@ function createCarouselItem(fullRecipeObj) {
 function createNoteCard(userNote) { 
    const noteCard = document.createElement("div");
    noteCard.classList.add("card");
-   noteCard.classList.add("mb-2");
-   noteCard.classList.add("mt-2");
 
    noteCard.innerHTML = `
       <div class="card-body">${userNote.text}</div>
@@ -298,11 +285,11 @@ function createNoteCard(userNote) {
 const CardDisplayStrategy = {
 
    withGlobalRating: function (itemObj) {
-      return cardRatingContent(Recipe.avgTasteRate(itemObj.id), Recipe.avgTasteRate(itemObj.id), "Valutazioni globali");
+      return cardRatingContent(Recipe.avgTasteRate(itemObj.id), Recipe.avgTasteRate(itemObj.id), "Global ratings");
    },
 
    withUserRating: function (itemObj) {
-      return cardRatingContent(Recipe.userTasteRate(itemObj.id), Recipe.userDifficulyRate(itemObj.id), "La mia valutazione");
+      return cardRatingContent(Recipe.userTasteRate(itemObj.id), Recipe.userDifficulyRate(itemObj.id), "Your rating");
    },
 
 
@@ -485,9 +472,9 @@ export function favBtnDisplay(btn, recipeId) {
  */
 export function revBtnDisplay(btn, recipeId) { 
    if(LoggedUser.isLogged() && Recipe.isReviewed(recipeId)){
-      btn.innerText = "Rimuovi recensione";
+      btn.innerText = "Delete review";
    }else{
-      btn.innerText = "Aggiungi recensione";
+      btn.innerText = "Add review";
    }
 };
 
@@ -504,7 +491,7 @@ export function createRecipeOverview(recipeObj) {
 
    const overviewCard = createPreviewCard(recipeObj, bodyElement);
    const cardRevBtn = document.createElement("button");
-   cardRevBtn.classList.add("btn", "btn-secondary", "position-absolute", "bottom-0");
+   cardRevBtn.classList.add("btn", "btn-outline-secondary", "position-absolute", "bottom-0", "end-0");
    cardRevBtn.type = "button";
    cardRevBtn.id = "revBtn";
    cardRevBtn.dataset.bsToggle = "modal";
