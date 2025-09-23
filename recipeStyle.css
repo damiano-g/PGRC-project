@@ -292,3 +292,20 @@ h3{
     font-weight: bold;
 }
 
+#settings-page>.container-fluid>div{
+    margin: 25px auto;
+    width: 85%;
+}
+
+#settings-page form .allow-modif:hover,
+#settings-page form #auth-modif:hover{
+    cursor: pointer;
+}
+
+#settings-page form .allow-modif,
+#settings-page form #auth-modif{
+    margin-left: 10px;
+    font-style: italic;
+    font-size: 85%;
+}
+

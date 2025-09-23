@@ -32,42 +32,45 @@
             </div>
         </nav>
 
-        <div class="container pt-5 mt-3">
-
-            <h2>I tuoi dati</h2>
-        
-            <form class="needs-validation">
-                <div class="form-section mb-3 mt-3">
-                    <label class="form-label" for="username">Username</label><button class="btn allow-modif" type="button">Abilita modifica</button>
-                    <input class="form-control" type="text" id="username" disabled>
-                    <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
-                </div>
-                <div class="form-section mb-3 mt-3">
-                    <label class="form-label" for="email">Email</label><button class="btn allow-modif" type="button">Abilita modifica</button>
-                    <input class="form-control" type="email" id="email" disabled>
-                    <div class="invalid-feedback">Formato non valido</div>
-                </div>
-                <div class="form-section mb-3 mt-3">
-                    Password<button class="btn allow-modif" type="button">Abilita modifica</button><br>
-                    <label class="form-label" for="currentPassword">Password attuale</label><button class="btn" type="button" id="auth-modif" disabled>Autorizza</button>
-                    <input class="form-control" type="password" id="currentPassword" placeholder="Inserisci la password" disabled>
-                    <div class="invalid-feedback">Le password non corrispondono</div>
-                </div>
-                <div class="mb-3 mt-3">
-                    <label class="form-label" for="newPassword">Nuova password</label>
-                    <input class="form-control" type="password" id="newPassword" placeholder="Scegli password" disabled>
-                    <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
-                        <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+        <div class="container-fluid">
+            <div>
+                <h2>I tuoi dati</h2>
+                <form class="needs-validation">
+                    <div class="form-section mb-3 mt-3">
+                        <label class="form-label" for="username">Username</label>
+                        <span class="allow-modif">Abilita modifica</span>
+                        <input class="form-control" type="text" id="username" disabled>
+                        <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
                     </div>
-                </div>
-                <div class="mb-3 mt-3">
-                    <label class="form-label" for="confirmPassword">Conferma nuova password</label>
-                    <input class="form-control" type="password" id="confirmPassword" placeholder="Conferma password" disabled>
-                    <div class="invalid-feedback">Le password non corrispondono</div>
-                </div>
-                <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
-                <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Salva modifiche</button>
-            </form>
+                    <div class="form-section mb-3 mt-3">
+                        <label class="form-label" for="email">Email</label>
+                        <span class="allow-modif">Abilita modifica</span>
+                        <input class="form-control" type="email" id="email" disabled>
+                        <div class="invalid-feedback">Formato non valido</div>
+                    </div>
+                    <div class="form-section mb-3 mt-3">
+                        Password
+                        <span class="allow-modif">Abilita modifica</span><br>
+                        <label class="form-label" for="currentPassword">Password attuale</label><span id="auth-modif" disabled>Autorizza</button>
+                        <input class="form-control" type="password" id="currentPassword" placeholder="Inserisci la password" disabled>
+                        <div class="invalid-feedback">Le password non corrispondono</div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label" for="newPassword">Nuova password</label>
+                        <input class="form-control" type="password" id="newPassword" placeholder="Scegli password" disabled>
+                        <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
+                            <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label" for="confirmPassword">Conferma nuova password</label>
+                        <input class="form-control" type="password" id="confirmPassword" placeholder="Conferma password" disabled>
+                        <div class="invalid-feedback">Le password non corrispondono</div>
+                    </div>
+                    <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
+                    <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Salva modifiche</button>
+                </form>
+            </div>
         </div>
 
 

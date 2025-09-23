@@ -31,7 +31,7 @@ import * as validate from "../validate.js";
  * @type {FormInputObject}
  * @description Wrapper per campo username con tracking stato e valore default
  */
-const modifUsernameInput = {
+const settingsUsernameInput = {
     DOMelement: document.getElementById("username"),
     defaultValue: "",
     inputStatus: 0,
@@ -42,7 +42,7 @@ const modifUsernameInput = {
  * @type {FormInputObject}
  * @description Wrapper per campo email con tracking stato e valore default
  */
-const modifEmailInput = {
+const settingsEmailInput = {
     DOMelement: document.getElementById("email"),
     defaultValue: "",
     inputStatus: 0,
@@ -53,7 +53,7 @@ const modifEmailInput = {
  * @type {FormInputObject}
  * @description Wrapper per campo password corrente per autorizzazione modifiche
  */
-const modifCurrentPassInput = {
+const settingsCurrentPassInput = {
     DOMelement: document.getElementById("currentPassword"),
     defaultValue: "",
     inputStatus: 0,
@@ -64,7 +64,7 @@ const modifCurrentPassInput = {
  * @type {FormInputObject}
  * @description Wrapper per campo nuova password con validazione policy
  */
-const modifNewPassInput = {
+const settingsNewPassInput = {
     DOMelement: document.getElementById("newPassword"),
     defaultValue: "",
     inputStatus: 0,
@@ -75,7 +75,7 @@ const modifNewPassInput = {
  * @type {FormInputObject}
  * @description Wrapper per campo conferma password con matching validation
  */
-const modifConfPassInput = {
+const settingsConfPassInput = {
     DOMelement: document.getElementById("confirmPassword"),
     defaultValue: "",
     inputStatus: 0,
@@ -86,7 +86,7 @@ const modifConfPassInput = {
  * @type {Array<FormInputObject>}
  * @description Collezione per iterazione validazione e formatting globale
  */
-const modifFormInputs = [modifUsernameInput, modifEmailInput, modifCurrentPassInput, modifNewPassInput, modifConfPassInput];
+const allSettingsFormInputs = [settingsUsernameInput, settingsEmailInput, settingsCurrentPassInput, settingsNewPassInput, settingsConfPassInput];
 
 // ================================================================================================
 // DOM REFERENCES - ELEMENTI UI PRINCIPALI
@@ -97,7 +97,7 @@ const modifFormInputs = [modifUsernameInput, modifEmailInput, modifCurrentPassIn
  * @type {HTMLButtonElement}
  * @description Richiede verifica password corrente prima di abilitare nuova password
  */
-const authModifBtn = document.getElementById("auth-modif");
+const authPasswordModifBtn = document.getElementById("auth-modif");
 
 /**
  * Pulsanti "Abilita modifica" per ogni sezione del form
@@ -111,14 +111,14 @@ const allowModifBtns = document.querySelectorAll(".form-section .allow-modif");
  * @type {HTMLButtonElement}
  * @description Esegue aggiornamenti selettivi in base a sezioni abilitate
  */
-const modifSubBtn = document.getElementById("submit");
+const settingsSubBtn = document.getElementById("submit");
 
 /**
  * Pulsante reset per ripristino stato iniziale pagina
  * @type {HTMLButtonElement}
  * @description Trigger reload completo per reset form e stato UI
  */
-const modifClearBtn = document.getElementById("clear");
+const settingsClearBtn = document.getElementById("clear");
 
 // ================================================================================================
 // EVENT HANDLERS - GESTIONE ABILITAZIONE SEZIONI
@@ -157,11 +157,11 @@ allowModifBtns.forEach(item => item.addEventListener("click", function (event) {
     const textInputs = parentDiv.querySelectorAll(".form-control");
 
     // Disabilita sempre i campi password quando si abilita un'altra sezione
-    modifNewPassInput.DOMelement.disabled = true;
-    modifNewPassInput.DOMelement.required = false;
-    modifConfPassInput.DOMelement.disabled = true;
-    modifConfPassInput.DOMelement.required = false;
-    authModifBtn.disabled = true;
+    settingsNewPassInput.DOMelement.disabled = true;
+    settingsNewPassInput.DOMelement.required = false;
+    settingsConfPassInput.DOMelement.disabled = true;
+    settingsConfPassInput.DOMelement.required = false;
+    authPasswordModifBtn.disabled = true;
 
     // Toggle dello stato disabled/required per gli input della sezione corrente
     textInputs.forEach(item => {
@@ -170,7 +170,7 @@ allowModifBtns.forEach(item => item.addEventListener("click", function (event) {
     });
 
     // Aggiorna lo stato di validazione e UI per tutti i campi
-    modifFormInputs.forEach(item => {
+    allSettingsFormInputs.forEach(item => {
         if(item.DOMelement.required === true){
             item.DOMelement.dispatchEvent(new Event("input"));
         }else{
@@ -214,19 +214,19 @@ allowModifBtns.forEach(item => item.addEventListener("click", function (event) {
  * 
  * @since 1.0.0
  */
-authModifBtn.addEventListener("click", async () => {
-    const providedPassword = modifCurrentPassInput.DOMelement.value;
-    modifCurrentPassInput.DOMelement.value = "*********";
+authPasswordModifBtn.addEventListener("click", async () => {
+    const providedPassword = settingsCurrentPassInput.DOMelement.value;
+    settingsCurrentPassInput.DOMelement.value = "*********";
 
     // Verifica la password tramite autenticazione
     try {
         if(await LoggedUser.authOperations(providedPassword)){
-            modifCurrentPassInput.inputStatus = 1;
-            modifNewPassInput.DOMelement.disabled = false;
-            modifNewPassInput.DOMelement.required = true;
-            modifConfPassInput.DOMelement.required = true;
+            settingsCurrentPassInput.inputStatus = 1;
+            settingsNewPassInput.DOMelement.disabled = false;
+            settingsNewPassInput.DOMelement.required = true;
+            settingsConfPassInput.DOMelement.required = true;
         }else{
-            modifCurrentPassInput.DOMelement.value = ""
+            settingsCurrentPassInput.DOMelement.value = ""
             alert("Password errata");
         }
     } catch (error) {
@@ -244,7 +244,7 @@ authModifBtn.addEventListener("click", async () => {
  * @description Attiva validazione formato e disponibilità username ad ogni keystroke
  * @since 1.0.0
  */
-modifUsernameInput.DOMelement.addEventListener("input", () => validate.validateUsername(modifUsernameInput));
+settingsUsernameInput.DOMelement.addEventListener("input", () => validate.validateUsername(settingsUsernameInput));
 
 /**
  * Event handler per validazione real-time email  
@@ -252,7 +252,7 @@ modifUsernameInput.DOMelement.addEventListener("input", () => validate.validateU
  * @description Attiva validazione formato e disponibilità email ad ogni keystroke
  * @since 1.0.0
  */
-modifEmailInput.DOMelement.addEventListener("input", () => validate.validateEmail(modifEmailInput));
+settingsEmailInput.DOMelement.addEventListener("input", () => validate.validateEmail(settingsEmailInput));
 
 /**
  * Event handler per validazione password con cascade su conferma
@@ -264,10 +264,10 @@ modifEmailInput.DOMelement.addEventListener("input", () => validate.validateEmai
  * 
  * @since 1.0.0
  */
-modifNewPassInput.DOMelement.addEventListener("input", () => {
-    validate.validatePassword(modifNewPassInput);
-    modifConfPassInput.DOMelement.dispatchEvent(new Event("input"));
-    validate.formatInputField(modifNewPassInput);
+settingsNewPassInput.DOMelement.addEventListener("input", () => {
+    validate.validatePassword(settingsNewPassInput);
+    settingsConfPassInput.DOMelement.dispatchEvent(new Event("input"));
+    validate.formatInputField(settingsNewPassInput);
 });
 
 /**
@@ -276,7 +276,7 @@ modifNewPassInput.DOMelement.addEventListener("input", () => {
  * @description Verifica matching tra nuova password e conferma password
  * @since 1.0.0
  */
-modifConfPassInput.DOMelement.addEventListener("input", () => validate.validatePassConfirm(modifConfPassInput, modifNewPassInput));
+settingsConfPassInput.DOMelement.addEventListener("input", () => validate.validatePassConfirm(settingsConfPassInput, settingsNewPassInput));
 
 /**
  * Event handlers per controllo stato submit button
@@ -288,8 +288,8 @@ modifConfPassInput.DOMelement.addEventListener("input", () => validate.validateP
  * 
  * @since 1.0.0
  */
-modifFormInputs.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => {
-    validate.validateBtn(modifFormInputs, modifSubBtn);
+allSettingsFormInputs.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => {
+    validate.validateBtn(allSettingsFormInputs, settingsSubBtn);
     validate.formatInputField(inputObject);       
 }));
 
@@ -303,12 +303,12 @@ modifFormInputs.forEach(inputObject => inputObject.DOMelement.addEventListener("
  * 
  * @since 1.0.0
  */
-modifCurrentPassInput.DOMelement.addEventListener("input", () => {
-    if(authModifBtn.disabled && modifCurrentPassInput.DOMelement.value.length > 0){
-        authModifBtn.disabled = false;
+settingsCurrentPassInput.DOMelement.addEventListener("input", () => {
+    if(authPasswordModifBtn.disabled && settingsCurrentPassInput.DOMelement.value.length > 0){
+        authPasswordModifBtn.disabled = false;
     }else{
-        if(modifCurrentPassInput.DOMelement.value.length < 1){
-            authModifBtn.disabled = true;
+        if(settingsCurrentPassInput.DOMelement.value.length < 1){
+            authPasswordModifBtn.disabled = true;
         }
     }
 });
@@ -323,7 +323,7 @@ modifCurrentPassInput.DOMelement.addEventListener("input", () => {
  * @description Ricarica pagina per ripristino stato iniziale completo
  * @since 1.0.0
  */
-modifClearBtn.addEventListener("click", () => location.reload());
+settingsClearBtn.addEventListener("click", () => location.reload());
 
 // ================================================================================================
 // FORM SUBMISSION - AGGIORNAMENTI SELETTIVI
@@ -369,16 +369,16 @@ modifClearBtn.addEventListener("click", () => location.reload());
  * 
  * @since 1.0.0
  */
-modifSubBtn.addEventListener("click", async () => {
+settingsSubBtn.addEventListener("click", async () => {
 
     // ========================================
     // AGGIORNAMENTO PASSWORD
     // ========================================
     // Aggiorna la password se la sezione password è stata abilitata
     // Prerequisito: l'utente deve aver superato l'autenticazione con password corrente
-    if(modifNewPassInput.DOMelement.required){
+    if(settingsNewPassInput.DOMelement.required){
         try {
-            await LoggedUser.changePassword(modifNewPassInput.DOMelement.value);
+            await LoggedUser.changePassword(settingsNewPassInput.DOMelement.value);
             alert("Password aggiornata");
         } catch (error) {
             handleUserError(error);
@@ -390,9 +390,9 @@ modifSubBtn.addEventListener("click", async () => {
     // ========================================
     // Aggiorna l'username se la sezione username è stata abilitata
     // Sequenza: 1) Verifica disponibilità username, 2) Applica modifica al database
-    if(modifUsernameInput.DOMelement.required){
+    if(settingsUsernameInput.DOMelement.required){
         try {
-            LoggedUser.changeUsername(modifUsernameInput.DOMelement.value);
+            LoggedUser.changeUsername(settingsUsernameInput.DOMelement.value);
             alert("Nome utente aggiornato");
         } catch (error) {
             // Gestisce errori di validazione (username già in uso) o storage
@@ -405,10 +405,10 @@ modifSubBtn.addEventListener("click", async () => {
     // ========================================
     // Aggiorna l'email se la sezione email è stata abilitata
     // Sequenza: 1) Verifica disponibilità email, 2) Applica modifica al database
-    if(modifEmailInput.DOMelement.required){
+    if(settingsEmailInput.DOMelement.required){
         try {
             // Se la validazione passa, procede con l'aggiornamento
-            LoggedUser.changeEmail(modifEmailInput.DOMelement.value);
+            LoggedUser.changeEmail(settingsEmailInput.DOMelement.value);
             alert("Email aggiornata");
         } catch (error) {
             // Gestisce errori di validazione (email già in uso) o storage
@@ -469,10 +469,10 @@ window.addEventListener("load", () => {
     }else{
         try {
             const currentUser = LoggedUser.getData();
-            modifUsernameInput.defaultValue = currentUser.username;
-            modifUsernameInput.DOMelement.value = modifUsernameInput.defaultValue
-            modifEmailInput.defaultValue = currentUser.email;
-            modifEmailInput.DOMelement.value = modifEmailInput.defaultValue;
+            settingsUsernameInput.defaultValue = currentUser.username;
+            settingsUsernameInput.DOMelement.value = settingsUsernameInput.defaultValue
+            settingsEmailInput.defaultValue = currentUser.email;
+            settingsEmailInput.DOMelement.value = settingsEmailInput.defaultValue;
         } catch (error) {
             handleUserError(error)
         }
