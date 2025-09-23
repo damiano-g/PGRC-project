@@ -33,18 +33,23 @@
         </div>
     </nav>
     
-    <div class="container pt-5 my-3">
-        <h2 class="mx-auto text-center px-4 py-2">Il mio ricettario</h2>
-        
-        <h3 class="mx-auto text-center px-4 py-2">Le mie ricette peferite</h3>
-        <div class="row" id="fav-recipes"></div>
-
-        <h3 class="mx-auto text-center px-4 py-2">Le mie recensioni</h3>
-        <div class="row" id="rev-recipes"></div>
-
-        <h3 class="mx-auto text-center px-4 py-2">Le mie note</h3>
-        <div class="row" id="noted-recipes"></div>
+    <div class="container-fluid">
+            <h2 class="mx-auto text-center">My cookbook</h2>
+            
+            <section>
+                <h3 class="mx-auto text-center">My favourites recipes</h3>
+                <div class="row" id="fav-recipes"></div>
+            </section>
     
+            <section>
+                <h3 class="mx-auto text-center">My reviews</h3>
+                <div class="row" id="rev-recipes"></div>
+            </section>
+    
+            <section>
+                <h3 class="mx-auto text-center">My notes</h3>
+                <div class="row" id="noted-recipes"></div>
+            </section>
     </div>
 
     <script type="module" src="../js/pages-scripts/favourites.js"></script>

@@ -127,14 +127,21 @@
     gap: 10px;
 }
 
+
 #results-container .card,
 #categories .card,
 #fav-recipes .card,
 #rev-recipes .card,
 #noted-recipes .card,
-.carousel-item,
-.carousel-item .btn {
+.carousel-item {
     cursor: pointer;
+}
+
+#results-container .card,
+#categories .card,
+#fav-recipes .card,
+#rev-recipes .card,
+#noted-recipes .card{
     transition: transform 0.5s ease;
     transition: box-shadow 0.2s ease;
 }
@@ -143,12 +150,18 @@
 #categories .card:hover,
 #fav-recipes .card:hover,
 #rev-recipes .card:hover,
-#noted-recipes .card:hover,
-.carousel-item:hover{
+#noted-recipes .card:hover{
     transform: scale(1.002);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+.carousel img{
+    transition: transform 3s ease-in-out;
+}
+
+.carousel-item:hover img{
+    transform: scale(1.017);
+}
 
 
 
@@ -184,7 +197,8 @@
 }
 
 .carousel-inner,
-#recipe-contents .card{
+#recipe-contents .card,
+#personal-page>.container-fluid{
     max-width: 90%;
 }
 
@@ -273,7 +287,7 @@ i{
 }
 
 body>.container-fluid{
-    padding-top: 60px;
+    padding-top: 80px;
     padding-bottom: 20px;
 }
 
@@ -319,5 +333,12 @@ h3{
 
 #settings-page .form-section label{
     margin: 0;
+}
+
+#personal-page>.container-fluid>section{
+    margin-bottom: 60px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    border-radius: 10px;
 }
 
