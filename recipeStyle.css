@@ -294,7 +294,7 @@ h3{
 
 #settings-page>.container-fluid>div{
     margin: 25px auto;
-    width: 85%;
+    width: 60%;
 }
 
 #settings-page form .allow-modif:hover,
@@ -307,5 +307,15 @@ h3{
     margin-left: 10px;
     font-style: italic;
     font-size: 85%;
+}
+
+#settings-page .form-section>span{
+    display: flex;
+    align-items: center;
+    padding-bottom: 5px;
+}
+
+#settings-page .form-section label{
+    margin: 0;
 }
 

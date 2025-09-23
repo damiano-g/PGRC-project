@@ -230,6 +230,7 @@ authPasswordModifBtn.addEventListener("click", async () => {
             alert("Password errata");
         }
     } catch (error) {
+        console.error(error);
         handleUserError(error);
     }
 });

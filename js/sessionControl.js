@@ -279,7 +279,7 @@ export const LoggedUser = {
      */
     authOperations: async (password) => {
         try {
-            return await UsersManagement.admitUser(LoggedUser.getData().id, providedPassword);
+            return await UsersManagement.admitUser(LoggedUser.getData().id, password);
         } catch (error) {
             throw error;
         }

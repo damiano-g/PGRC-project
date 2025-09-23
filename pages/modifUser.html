@@ -34,41 +34,50 @@
 
         <div class="container-fluid">
             <div>
-                <h2>I tuoi dati</h2>
+                <h2>Your data</h2>
                 <form class="needs-validation">
                     <div class="form-section mb-3 mt-3">
-                        <label class="form-label" for="username">Username</label>
-                        <span class="allow-modif">Abilita modifica</span>
+                        <span>
+                            <label class="form-label" for="username">Username</label>
+                            <button type="button" class="btn btn-light allow-modif">Enable</button>
+                        </span>
                         <input class="form-control" type="text" id="username" disabled>
-                        <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
+                        <div class="invalid-feedback">Username must contain at least two characters</div>
                     </div>
                     <div class="form-section mb-3 mt-3">
-                        <label class="form-label" for="email">Email</label>
-                        <span class="allow-modif">Abilita modifica</span>
+                        <span>
+                            <label class="form-label" for="email">Email</label>
+                            <button type="button" class="btn btn-light allow-modif">Enable</button>
+                        </span>
                         <input class="form-control" type="email" id="email" disabled>
-                        <div class="invalid-feedback">Formato non valido</div>
+                        <div class="invalid-feedback">Invalid format</div>
                     </div>
                     <div class="form-section mb-3 mt-3">
-                        Password
-                        <span class="allow-modif">Abilita modifica</span><br>
-                        <label class="form-label" for="currentPassword">Password attuale</label><span id="auth-modif" disabled>Autorizza</button>
-                        <input class="form-control" type="password" id="currentPassword" placeholder="Inserisci la password" disabled>
-                        <div class="invalid-feedback">Le password non corrispondono</div>
+                        <span>
+                            Password
+                            <button type="button" class="btn btn-light allow-modif">Enable</button><br>
+                        </span>
+                        <span>
+                            <label class="form-label" for="currentPassword">Current password</label>
+                            <button type="button" class="btn btn-light" id="auth-modif" disabled>Authorize</button>
+                        </span>
+                        <input class="form-control" type="password" id="currentPassword" placeholder="Insert your password" disabled>
+                        <div class="invalid-feedback">Passwords don't match</div>
                     </div>
-                    <div class="mb-3 mt-3">
-                        <label class="form-label" for="newPassword">Nuova password</label>
-                        <input class="form-control" type="password" id="newPassword" placeholder="Scegli password" disabled>
-                        <div class="invalid-feedback">La password deve contenere almeno <span id="passLen">8 caratteri</span>, <span id="upCase">una lettera maiuscola</span>,
-                            <span id="lowCase">una lettera minuscola</span> e <span id="num">un numero</span>.
+                    <div class="form-section mb-3 mt-3">
+                        <label class="form-label" for="newPassword">New password</label>
+                        <input class="form-control" type="password" id="newPassword" placeholder="Choose new password" disabled>
+                        <div class="invalid-feedback">Passwords must contain at least <span id="passLen">8 characters</span>, <span id="upCase">one capital letter,</span>,
+                            <span id="lowCase">one small letter</span> and <span id="num">a number</span>.
                         </div>
                     </div>
-                    <div class="mb-3 mt-3">
-                        <label class="form-label" for="confirmPassword">Conferma nuova password</label>
-                        <input class="form-control" type="password" id="confirmPassword" placeholder="Conferma password" disabled>
-                        <div class="invalid-feedback">Le password non corrispondono</div>
+                    <div class="form-section mb-3 mt-3">
+                        <label class="form-label" for="confirmPassword">Confirm new password</label>
+                        <input class="form-control" type="password" id="confirmPassword" placeholder="Confirm new password" disabled>
+                        <div class="invalid-feedback">Passwords don't match</div>
                     </div>
-                    <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Pulisci campi</button>
-                    <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Salva modifiche</button>
+                    <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Reset</button>
+                    <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Save</button>
                 </form>
             </div>
         </div>
