@@ -35,56 +35,57 @@
     </nav>
 
     <div class="container-fluid">
-
-        <!-- <h2 class="text-center">Dettaglio ricetta</h2> -->
-        <div class="modal" id="reviewDialog">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <!-- Modal Header -->
-                    <div class="modal-header">
-                        <h4 class="modal-title">Recensici la ricetta</h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <!-- Modal body -->
-                    <div class="modal-body">
-                        <div class="form d-none">
-                            <label for="tasteRate">Gusto</label>
-                            <input type="number" name="tasteRate" id="tasteRate" min="0" max="5" step="1">
-                            <label for="difficultyRate">Difficoltà</label>
-                            <input type="number" name="difficultyRate" id="difficultyRate" min="0" max="5" step="1">
+        <div>
+            <div class="modal" id="reviewDialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Recensici la ricetta</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="text d-none">
-                            Sei sicuro di voler rimuovere la tua recensione?<br>
-                            L'operazione è irreversibile.
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            <div class="form d-none">
+                                <label for="tasteRate">Gusto</label>
+                                <input type="number" name="tasteRate" id="tasteRate" min="0" max="5" step="1">
+                                <label for="difficultyRate">Difficoltà</label>
+                                <input type="number" name="difficultyRate" id="difficultyRate" min="0" max="5" step="1">
+                            </div>
+                            <div class="text d-none">
+                                Sei sicuro di voler rimuovere la tua recensione?<br>
+                                L'operazione è irreversibile.
+                            </div>
                         </div>
-                    </div>
-                    <!-- Modal footer -->
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Conferma</button>
+                        <!-- Modal footer -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Conferma</button>
+                        </div>
                     </div>
                 </div>
             </div>
+    
+            <div id="recipe-contents">
+                <div id="recipe-overview"></div>
+                <div id="ingredients-box">
+                    <h3>Ingredients</h3>
+                    <ul id="ingredients-list"></ul>
+                </div>
+                <div    id="instructions-box">
+                    <h3>Preparation</h3>
+                    <p id="instructions-steps"></p>
+                </div>
+            </div>
+            <div class="mb-4 mt-4 d-none" id="notes">
+                <h4>Notes</h4>
+                <form>
+                    <textarea maxlength="200" name="insert-note" id="insert-note" class="form-control" placeholder="Inserisci una nota personale..."></textarea>
+                    <button class="btn btn-secondary" type="button" disabled>Inserisci</button>
+                </form>
+                <div class="mb-3 mt-3 d-none" id="user-notes"></div>
+            </div>
         </div>
 
-        <div id="recipe-contents">
-            <div class="row" id="recipe-overview"></div>
-            <div class="row" id="ingredients-box">
-                <h3>Ingredients</h3>
-                <ul id="ingredients-list"></ul>
-            </div>
-            <div class="row" id="instructions-box">
-                <h3>Preparation</h3>
-                <p id="instructions-steps"></p>
-            </div>
-        </div>
-        <div class="mb-4 mt-4 d-none" id="notes">
-            <h4>Notes</h4>
-            <form>
-                <textarea maxlength="200" name="insert-note" id="insert-note" class="form-control" placeholder="Inserisci una nota personale..."></textarea>
-                <button class="btn btn-secondary" type="button" disabled>Inserisci</button>
-            </form>
-            <div class="mb-3 mt-3 d-none" id="user-notes"></div>
-        </div>
     </div>    
     <script type="module" src="../js/pages-scripts/recipe-details.js"></script>
     <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>

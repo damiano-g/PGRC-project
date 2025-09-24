@@ -11,6 +11,7 @@
     display: flex;
 }
 
+
 #categories .card{
     flex-direction: row;
     height: 75px;
@@ -37,25 +38,18 @@
     flex-direction: column;
 }
 
-#categories,
-#ingredients-box,
-#instructions-box,
-#notes{
-    margin-left: auto;
-    margin-right: auto;
-    justify-content: center;
-    max-width: 85%;
+#search-page .card-image,
+#personal-page .card-image{
+    height: 70%;
+    width: 100%;
 }
 
-#recipe-contents .card-title{
-    font-size: 30px;
-    font-weight: 900;
+#search-page .card-body,
+#personal-page .card-body{
+    height: 30%;
+    width: 100%;
 }
 
-#recipe-contents .rate-container{
-    margin: 30px 0;
-    font-size: 18px;
-}
 
 #fav-recipes,
 #rev-recipes,
@@ -70,12 +64,12 @@
     }
 }
 
-@media(min-width: 480px) {
+@media(min-width: 560px) {
     #fav-recipes,
     #rev-recipes,
     #results-container,
     #noted-recipes{
-        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
     }
     
     #categories{
@@ -84,7 +78,7 @@
 
     #search-page .card,
     #personal-page .card{
-        height: 150px;
+        height: 200px;
     }
 
     #search-page .card,
@@ -94,11 +88,13 @@
     
     #search-page .card-image,
     #personal-page .card-image{
+        height: 100%;
         width: 40%;
     }
     
     #search-page .card-body,
     #personal-page .card-body{
+        height: 100%;
         width: 60%;
     }
 }
@@ -148,18 +144,20 @@
 
 #results-container .card:hover,
 #categories .card:hover,
-#fav-recipes .card:hover,
-#rev-recipes .card:hover,
-#noted-recipes .card:hover{
+#personal-page .card:hover{
     transform: scale(1.002);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-.carousel img{
+.carousel img,
+.card img{
     transition: transform 3s ease-in-out;
 }
 
-.carousel-item:hover img{
+.carousel-item:hover img,
+#results-container .card:hover img,
+#categories .card:hover img,
+#personal-page .card:hover img{
     transform: scale(1.017);
 }
 
@@ -169,7 +167,7 @@
 
 .carousel,
 #recipe-page .card{
-    margin: 25px auto;
+    margin: 0 auto 25px;
 }
 
 .carousel,
@@ -194,12 +192,6 @@
     border-radius: 10px;
     margin-left: auto;
     margin-right: auto;
-}
-
-.carousel-inner,
-#recipe-contents .card,
-#personal-page>.container-fluid{
-    max-width: 90%;
 }
 
 .carousel .carousel-control-prev{
@@ -231,7 +223,7 @@
 }
 
 
-/* NAVBAR MANAGEMENT */
+/* MAIN NAVBAR MANAGEMENT */
 
 nav li{
     cursor: pointer;
@@ -286,11 +278,6 @@ i{
     padding-left: 16px;
 }
 
-body>.container-fluid{
-    padding-top: 80px;
-    padding-bottom: 20px;
-}
-
 .valid-text{
     color: green;
 }
@@ -331,14 +318,72 @@ h3{
     padding-bottom: 5px;
 }
 
+#fav-section,
+#rev-section,
+#noted-section {
+    scroll-margin-top: 154px;
+}
+
 #settings-page .form-section label{
     margin: 0;
 }
 
-#personal-page>.container-fluid>section{
+#personal-page>.container-fluid section{
     margin-bottom: 60px;
     border: 1px solid rgba(0, 0, 0, 0.05);
     padding: 10px;
     border-radius: 10px;
 }
 
+#personal-page>.container-fluid nav,
+#personal-page>.container-fluid>div{
+    position: sticky;
+    z-index: 10;
+    top: 63px;
+}
+
+#personal-page>.container-fluid nav>div{
+    text-align: center;
+}
+
+#personal-page>.container-fluid>div>nav a{
+    color: #333;
+    font-style: italic;
+}
+
+#noted-section ul{
+    padding-left: 20px;
+    list-style-type: circle;
+    color: #333;
+    font-style: italic;
+}
+
+#categories,
+#ingredients-box,
+#instructions-box,
+#notes{
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+    max-width: 95%;
+}
+
+#recipe-contents .card-title{
+    font-size: 30px;
+    font-weight: 900;
+}
+
+#recipe-contents .rate-container{
+    margin: 30px 0;
+    font-size: 18px;
+}
+
+body>.container-fluid{
+    padding-top: 63px;
+    padding-bottom: 20px;
+    max-width: 90%;
+}
+
+body>.container-fluid>div{
+    padding-top: 17px;
+}

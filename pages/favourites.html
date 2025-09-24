@@ -34,22 +34,32 @@
     </nav>
     
     <div class="container-fluid">
-            <h2 class="mx-auto text-center">My cookbook</h2>
+        
+        <div>
+            <nav>
+                <div>
+                    <h1 class="mx-auto text-center m-0">My cookbook</h1>
+                    <a href="#fav-section">Favourites</a>
+                    <a href="#rev-section">Reviewed</a>
+                    <a href="#noted-section">Notes</a>
+                </div>
+            </nav>
             
-            <section>
+            <section id="fav-section">
                 <h3 class="mx-auto text-center">My favourites recipes</h3>
                 <div class="row" id="fav-recipes"></div>
             </section>
     
-            <section>
+            <section id="rev-section">
                 <h3 class="mx-auto text-center">My reviews</h3>
                 <div class="row" id="rev-recipes"></div>
             </section>
     
-            <section>
+            <section id="noted-section">
                 <h3 class="mx-auto text-center">My notes</h3>
                 <div class="row" id="noted-recipes"></div>
             </section>
+        </div>
     </div>
 
     <script type="module" src="../js/pages-scripts/favourites.js"></script>

@@ -305,14 +305,14 @@ const CardDisplayStrategy = {
     * @since 1.0.0
     */
    withNotes: function (itemObj) {
-      const notesContainer = document.createElement("div");
-      
-      notesContainer.classList.add("container", "ps-4");
+      const notesContainer = document.createElement("ul");
 
       LoggedUser.getRecipeNotes(itemObj.id).forEach(note => {
-         const noteDOMObj = document.createElement("p");
-         noteDOMObj.classList.add("text-truncate");
-         noteDOMObj.innerText = note.text;
+         const noteDOMObj = document.createElement("li");
+         const noteInner = document.createElement("span");
+         noteInner.classList.add("text-truncate", "d-block");
+         noteInner.innerText = note.text;
+         noteDOMObj.appendChild(noteInner);
          notesContainer.appendChild(noteDOMObj);
       });
 
