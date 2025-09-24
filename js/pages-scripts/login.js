@@ -1,5 +1,5 @@
 import { handleUserError, } from "../errorsManagement.js";
-import { NewUser } from "../sessionControl.js";
+import { LoggedUser, NewUser } from "../sessionControl.js";
 import { initializeNavbar } from "../UI.js";
 import { validateBtn, } from "../validate.js";
 
@@ -21,6 +21,8 @@ const loginRequiredInputs = [loginUsernameInput, loginPasswordInput];
 const loginCLearBtn = document.getElementById("clear");
 const loginSubBtn = document.getElementById("submit");
 const loginGotosignBtn = document.getElementById("gotoSign");
+
+let historyNavigation = false;
 
 document.addEventListener("DOMContentLoaded", initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 
@@ -90,3 +92,17 @@ loginSubBtn.addEventListener("click", async () => {
     }
 });
 
+window.addEventListener("load", () => {
+
+    const previousUrl = document.referrer;
+
+    if(LoggedUser.isLogged()){
+        if(previousUrl && previousUrl.includes("favourites.html")){
+            window.location.href = "../index.html";
+        }else{
+            window.location.href = "./favourites.html";
+        }
+    }else{
+        document.querySelector("body").classList.remove("d-none");
+    }
+});
