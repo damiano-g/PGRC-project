@@ -38,6 +38,10 @@
     flex-direction: column;
 }
 
+#recipe-page .card .fav-icon:hover{
+    cursor: pointer;
+}
+
 #search-page .card-image,
 #personal-page .card-image{
     height: 70%;
@@ -337,18 +341,46 @@ h3{
 
 #personal-page>.container-fluid nav{
     position: sticky;
+}
+
+#page-title{
     z-index: 10;
     padding-top: 17px;
-    top: 63px;
+    top: 62px;
+}
+
+.section-title{
+    padding-top: 40px;
+    margin-bottom: 15px;
+}
+
+#fav-nav{
+    z-index: 9;
+    top: 121px;
+}
+
+#rev-nav{
+    z-index: 8;
+    top: 179px;
+}
+
+#noted-nav{
+    z-index: 7;
+    top: 237px;
 }
 
 #personal-page>.container-fluid nav>div{
     text-align: center;
 }
 
-#personal-page>.container-fluid>nav a{
+#page-title span{
     color: #333;
     font-style: italic;
+    text-decoration: underline;
+}
+
+#page-title span:hover{
+    cursor: pointer;
 }
 
 #noted-section ul{
@@ -383,3 +415,4 @@ body>.container-fluid{
     padding-bottom: 20px;
     max-width: 90%;
 }
+

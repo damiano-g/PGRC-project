@@ -62,6 +62,27 @@ personalPageBody.addEventListener("click", async (click) => {
     };
 });
 
+document.querySelectorAll("#page-title span").forEach(link => {
+    link.addEventListener("click", () => {
+        const targetId = link.dataset.target;
+        const targetElement = document.getElementById(targetId);
+        let targetPosition;
+        switch(targetId){
+            case "fav-recipes":
+                targetPosition = 210;
+                break;
+            case "rev-recipes":
+                targetPosition = 270;
+                break;
+            case "noted-recipes":
+                targetPosition = 330;
+                break;
+        }
+
+        window.scrollTo({top: (targetElement.getBoundingClientRect().top + pageYOffset - targetPosition), behavior: "smooth"});
+    }); 
+});
+
 /**
  * Inizializzazione pagina personale utente.
  * - Verifica autenticazione e gestisce redirect.
