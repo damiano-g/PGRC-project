@@ -335,10 +335,10 @@ h3{
     border-radius: 10px;
 }
 
-#personal-page>.container-fluid nav,
-#personal-page>.container-fluid>div{
+#personal-page>.container-fluid nav{
     position: sticky;
     z-index: 10;
+    padding-top: 17px;
     top: 63px;
 }
 
@@ -346,7 +346,7 @@ h3{
     text-align: center;
 }
 
-#personal-page>.container-fluid>div>nav a{
+#personal-page>.container-fluid>nav a{
     color: #333;
     font-style: italic;
 }
@@ -379,11 +379,7 @@ h3{
 }
 
 body>.container-fluid{
-    padding-top: 63px;
+    padding-top: 80px;
     padding-bottom: 20px;
     max-width: 90%;
-}
-
-body>.container-fluid>div{
-    padding-top: 17px;
 }
