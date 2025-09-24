@@ -44,11 +44,20 @@
                     <a href="#noted-section">Notes</a>
                 </div>
             </nav>
+
+            <div class="accordion" id="personal-cookbok">
+                <div class="accordion-item" id="fav-section">
+                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#fav-recipes">
+                        <h3 class="accordion-header">
+                            My favourites recipes
+                        </h3>
+                    </button>
+                    <div class="accordion-collapse collapse" id="fav-recipes" data-bs-parent="#personal-cookbook">
+                        <div class="row accordion-body"></div>
+                    </div>
+                </div>
+            </div>
             
-            <section id="fav-section">
-                <h3 class="mx-auto text-center">My favourites recipes</h3>
-                <div class="row" id="fav-recipes"></div>
-            </section>
     
             <section id="rev-section">
                 <h3 class="mx-auto text-center">My reviews</h3>
