@@ -77,15 +77,16 @@ window.addEventListener("load", async () => {
         personalPageBody.classList.remove("d-none");
     };
 
-    const currentUser = LoggedUser.getData();
-
     // Rendering sezione preferiti
+    personalFavsContainer.innerHTML = "Add recipes to favourites to view them in this area";
     populatePreviewContainer(await PreviewArray.fromUserFavourites(), personalFavsContainer);
 
     // Rendering sezione recensioni
+    personalRevsContainer.innerHTML = "Rate recipes taste and difficulty to view them in this area";
     populatePreviewContainer(await PreviewArray.fromUserReviews(), personalRevsContainer);
 
     // Rendering sezione note
+    personalNotesContainer.innerHTML = "Take notes to view relative recipes in this area";
     populatePreviewContainer(await PreviewArray.fromAllUserNotes(), personalNotesContainer);
 });
 

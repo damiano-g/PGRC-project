@@ -115,30 +115,32 @@ function createPreviewCard (itemObj, bodyElement = null) {
  */
 export function populatePreviewContainer (itemsObj, displayContainer, action = null) {
    if(action != "remove"){
-      if(action != "add"){
-         displayContainer.innerHTML = "";
-      }
-      
-      for(let i=0; i < itemsObj.items.length; i++){
-         let relatedBodyElement = null;
-
-         switch(itemsObj.type){
-            case "meals":
-               relatedBodyElement = CardDisplayStrategy.withGlobalRating(itemsObj.items[i]);
-               break;
-            case "reviews":
-               relatedBodyElement = CardDisplayStrategy.withUserRating(itemsObj.items[i]);
-               break;
-            case "notes":
-               relatedBodyElement = CardDisplayStrategy.withNotes(itemsObj.items[i]);
-               break;
-            case "categories":
-               break;
-            default:
-            throw new Error("Wrong data format");
+      if(itemsObj.items.length > 0){ // Permette di lasciare il messaggio di default della pagina in caso di array vuoto
+         if(action != "add"){
+            displayContainer.innerHTML = "";
          }
          
-         displayContainer.appendChild(createPreviewCard(itemsObj.items[i], relatedBodyElement));
+         for(let i=0; i < itemsObj.items.length; i++){
+            let relatedBodyElement = null;
+   
+            switch(itemsObj.type){
+               case "meals":
+                  relatedBodyElement = CardDisplayStrategy.withGlobalRating(itemsObj.items[i]);
+                  break;
+               case "reviews":
+                  relatedBodyElement = CardDisplayStrategy.withUserRating(itemsObj.items[i]);
+                  break;
+               case "notes":
+                  relatedBodyElement = CardDisplayStrategy.withNotes(itemsObj.items[i]);
+                  break;
+               case "categories":
+                  break;
+               default:
+               throw new Error("Wrong data format");
+            }
+            
+            displayContainer.appendChild(createPreviewCard(itemsObj.items[i], relatedBodyElement));
+         }
       }
    }else{
       const allCards = displayContainer.querySelectorAll(".card");
