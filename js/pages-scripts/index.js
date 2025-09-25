@@ -22,7 +22,7 @@ import { favBtnDisplay, initializeNavbar, populateCarousel, populatePreviewConta
 const slideshow = document.querySelector(".carousel-inner");
 
 /** @type {HTMLElement} Container griglia categorie */
-const catContainer = document.getElementById("categories");
+const catContainer = document.getElementById("categories-container");
 
 document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 // ===============================

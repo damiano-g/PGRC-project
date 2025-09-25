@@ -11,17 +11,16 @@
     display: flex;
 }
 
-
-#categories .card{
+#categories-container .card{
     flex-direction: row;
     height: 75px;
 }
 
-#categories .card .card-image{
+#categories-container .card .card-image{
     width: 40%;
 }
 
-#categories .card .card-body{
+#categories-container .card .card-body{
     width: 60%;
 }
 
@@ -63,7 +62,7 @@
 }
 
 @media(min-width: 320px){
-    #categories{
+    #categories-container{
         grid-template-columns: repeat(auto-fit, minmax(200px, 300px)); 
     }
 }
@@ -76,7 +75,7 @@
         grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
     }
     
-    #categories{
+    #categories-container{
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 
@@ -122,14 +121,14 @@
 #rev-recipes,
 #noted-recipes,
 #results-container,
-#categories{
+#categories-container{
     display: grid;
     gap: 10px;
 }
 
 
 #results-container .card,
-#categories .card,
+#categories-container .card,
 #fav-recipes .card,
 #rev-recipes .card,
 #noted-recipes .card,
@@ -138,7 +137,7 @@
 }
 
 #results-container .card,
-#categories .card,
+#categories-container .card,
 #fav-recipes .card,
 #rev-recipes .card,
 #noted-recipes .card{
@@ -147,7 +146,7 @@
 }
 
 #results-container .card:hover,
-#categories .card:hover,
+#categories-container .card:hover,
 #personal-page .card:hover{
     transform: scale(1.002);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -160,7 +159,7 @@
 
 .carousel-item:hover img,
 #results-container .card:hover img,
-#categories .card:hover img,
+#categories-container .card:hover img,
 #personal-page .card:hover img{
     transform: scale(1.017);
 }
@@ -359,10 +358,6 @@ h3{
     text-decoration: underline;
 }
 
-/* #page-title span:hover{
-    cursor: pointer;
-} */
-
 #noted-section ul{
     padding-left: 20px;
     list-style-type: circle;
@@ -370,7 +365,7 @@ h3{
     font-style: italic;
 }
 
-#categories,
+#categories-container,
 #ingredients-box,
 #instructions-box,
 #notes{
