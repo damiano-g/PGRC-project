@@ -322,66 +322,46 @@ h3{
     padding-bottom: 5px;
 }
 
-#fav-section,
-#rev-section,
-#noted-section {
+/* #personal-page>.container-fluid>section {
     scroll-margin-top: 154px;
-}
+} */
 
 #settings-page .form-section label{
     margin: 0;
 }
 
-#personal-page>.container-fluid section{
+#personal-page>.container-fluid section>div{
     margin-bottom: 60px;
     border: 1px solid rgba(0, 0, 0, 0.05);
     padding: 10px;
     border-radius: 10px;
 }
 
-#personal-page>.container-fluid nav{
-    position: sticky;
+#personal-page #recipes-container{
+    margin: 90px 0 0 0  ; 
 }
 
 #page-title{
+    position: fixed;
     z-index: 10;
     padding-top: 17px;
-    top: 62px;
-}
-
-.section-title{
-    padding-top: 40px;
-    margin-bottom: 15px;
-}
-
-#fav-nav{
-    z-index: 9;
-    top: 121px;
-}
-
-#rev-nav{
-    z-index: 8;
-    top: 179px;
-}
-
-#noted-nav{
-    z-index: 7;
-    top: 237px;
+    width: 90%;
+    top: 63px;
 }
 
 #personal-page>.container-fluid nav>div{
     text-align: center;
 }
 
-#page-title span{
+#page-title a{
     color: #333;
     font-style: italic;
     text-decoration: underline;
 }
 
-#page-title span:hover{
+/* #page-title span:hover{
     cursor: pointer;
-}
+} */
 
 #noted-section ul{
     padding-left: 20px;
@@ -411,8 +391,14 @@ h3{
 }
 
 body>.container-fluid{
-    padding-top: 80px;
-    padding-bottom: 20px;
+    padding: 80px 0 20px;
     max-width: 90%;
+}
+
+#page-title .active{
+    font-size: 110%;
+    color: rgb(0, 0, 0);
+    font-weight: 125%;
+    text-decoration: none;
 }
 

@@ -24,6 +24,20 @@ const personalNotesContainer = document.getElementById("noted-recipes");
 /** Body pagina personale (per gestione visibilità) */
 const personalPageBody = document.querySelector("body");
 
+function displaySection(sectionName){
+    document.querySelectorAll("#recipes-container>section").forEach(section => section.classList.add("d-none"));
+    const activeSection = document.getElementById(sectionName);
+    activeSection.classList.remove("d-none");
+    document.querySelectorAll("#page-title a").forEach(link => {
+        if(activeSection.id === link.href.substring(link.href.indexOf("#")+1)){
+            link.classList.add("active");
+        }else{
+            link.classList.remove("active");
+        }
+    }); 
+    window.scroll({top: 0, behavior: "smooth"}); 
+}
+
 // ================================================================================================
 // EVENT HANDLERS
 // ================================================================================================
@@ -62,27 +76,6 @@ personalPageBody.addEventListener("click", async (click) => {
     };
 });
 
-document.querySelectorAll("#page-title span").forEach(link => {
-    link.addEventListener("click", () => {
-        const targetId = link.dataset.target;
-        const targetElement = document.getElementById(targetId);
-        let targetPosition;
-        switch(targetId){
-            case "fav-recipes":
-                targetPosition = 210;
-                break;
-            case "rev-recipes":
-                targetPosition = 270;
-                break;
-            case "noted-recipes":
-                targetPosition = 330;
-                break;
-        }
-
-        window.scrollTo({top: (targetElement.getBoundingClientRect().top + pageYOffset - targetPosition), behavior: "smooth"});
-    }); 
-});
-
 /**
  * Inizializzazione pagina personale utente.
  * - Verifica autenticazione e gestisce redirect.
@@ -109,6 +102,24 @@ window.addEventListener("load", async () => {
     // Rendering sezione note
     personalNotesContainer.innerHTML = "Take notes to view relative recipes in this area";
     populatePreviewContainer(await PreviewArray.fromAllUserNotes(), personalNotesContainer);
+});
+
+document.getElementById("page-title").addEventListener("click", (click) => {
+    click.preventDefault();
+    const sectionLink = click.target.closest("a");
+    if(sectionLink){
+        displaySection(sectionLink.href.substring(sectionLink.href.indexOf("#")+1));
+        history.pushState(null, "", `${sectionLink.href}`);
+    }
+});
+
+window.addEventListener("popstate", () => {
+    const index = window.location.href.indexOf("#");
+    if(index >= 0){
+        displaySection(window.location.href.substring(index+1));
+    }else{
+        displaySection("fav-section");
+    }
 });
 
 

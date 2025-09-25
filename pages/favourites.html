@@ -38,26 +38,28 @@
         <nav id="page-title">
             <div>
                 <h1 class="mx-auto text-center m-0">My cookbook</h1>
-                <span data-target="fav-recipes">Favourites</span>
-                <span data-target="rev-recipes">Reviewed</span>
-                <span data-target="noted-recipes">Notes</span>
+                <a class="active" href="#fav-section">Favourites</a>
+                <a href="#rev-section">Reviewed</a>
+                <a href="#noted-section">Notes</a>
             </div>
         </nav>
         
-        <nav class="section-title" id="fav-nav">
-            <h3 class="mx-auto text-center">My favourites recipes</h3>
-        </nav>
-        <div class="row content-section" id="fav-recipes"></div>
-
-        <nav class="section-title" id="rev-nav">
-            <h3 class="mx-auto text-center">My reviews</h3>
-        </nav>
-        <div class="row content-section" id="rev-recipes"></div>
-
-        <nav class="section-title " id="noted-nav">
-            <h3 class="mx-auto text-center">My notes</h3>
-        </nav>
-        <div class="row content-section" id="noted-recipes"></div>
+        <div id="recipes-container">
+            <section id="fav-section">
+                <h3 class="mx-auto text-center">My favourites recipes</h3>
+                <div id="fav-recipes"></div>
+            </section>
+            
+            <section class="d-none" id="rev-section">
+                <h3 class="mx-auto text-center">My reviews</h3>
+                <div id="rev-recipes"></div>
+            </section>
+    
+            <section class="d-none" id="noted-section">
+                <h3 class="mx-auto text-center">My notes</h3>
+                <div id="noted-recipes"></div>
+            </section>
+        </div>
     </div>
 
     <script type="module" src="../js/pages-scripts/favourites.js"></script>
