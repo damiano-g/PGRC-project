@@ -238,12 +238,12 @@ CAROUSEL MANAGEMENT
 }
 
 .carousel .carousel-control-prev{
-    padding-left: 20px;
+    padding-left: 16px;
     justify-content: start;
 }
 
 .carousel .carousel-control-next{
-    padding-right: 20px;
+    padding-right: 16px;
     justify-content: end;
 }
 
@@ -263,6 +263,10 @@ CAROUSEL MANAGEMENT
 .carousel-caption h1{
     font-size: 30px;
     font-weight: 800;
+}
+
+.carousel .fav-icon{
+    margin-right: 16px;
 }
 
 /*---------------------------------------------------------------------------*/
