@@ -1,3 +1,21 @@
+<!-- ==========================================================================
+   INDEX.HTML - HOMEPAGE PGRC PROJECT
+
+   @description
+   Mostra un carousel di immagini, categorie di ricette e una navbar con ricerca globale. 
+   Gestisce navigazione utente (login/logout) e collegamenti a pagine interne.
+
+   @structure
+   - Navbar: menu dropdown con link dinamici (login/logout), barra ricerca
+   - Main content: carousel immagini, sezione categorie
+
+   @dependencies
+   - Bootstrap CSS/JS per layout e componenti
+   - Bootstrap Icons per icone
+   - recipeStyle.css per stili custom
+   - index.js per logica dinamica
+   ========================================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -11,8 +29,13 @@
 
     <body id="index-page">
 
+        <!-- ===========================
+           NAVBAR PRINCIPALE
+           =========================== -->
+        <!-- Navbar fissa in alto: logo dropdown, ricerca globale, link dinamici per login/logout -->
         <nav class="navbar navbar-light fixed-top">
             <div class="container-fluid">
+                <!-- Pulsante dropdown con logo -->
                 <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
                     <img  src="./assets/images/Pot_logo.png" alt="">
                 </button>
@@ -27,6 +50,7 @@
                     <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
                     <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
                 </ul>
+                <!-- Form ricerca -->
                 <form class="input-group w-50">
                     <input class="form-control" type="search" placeholder="Search" id="searchBar">
                     <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
@@ -34,13 +58,22 @@
             </div>
         </nav>
 
+        <!-- ===========================
+           CONTENUTO PRINCIPALE
+           =========================== -->
+        <!-- Container principale: carousel immagini e sezione categorie -->
         <div class="container-fluid">
+
+            <!-- Carousel automatico: mostra immagini ricette con controlli prev/next -->
             <div id="carousel" class="carousel slide" data-bs-ride="carousel">
+                <!-- Container slide carousel: popolato dinamicamente con slide cliccabili -->
                 <div class="carousel-inner"></div>
+                <!-- Pulsante precedente carousel -->
                 <button class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Previous</span>
                 </button>
+                <!-- Pulsante successivo carousel -->
                 <button class="carousel-control-next" type="button" data-bs-target="#carousel" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Next</span>
@@ -48,6 +81,7 @@
             </div>
         
             <h3 class="text-center my-3">Categories</h3>
+            <!-- Container categorie: popolato dinamicamente con card categorie cliccabili -->
             <div id="categories-container"></div>
         </div>
 

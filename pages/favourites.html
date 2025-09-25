@@ -1,3 +1,23 @@
+<!-- ==========================================================================
+   FAVOURITES.HTML - PAGINA RICETTARIO UTENTE
+
+   @description
+   Mostra ricette preferite, recensioni e note dell'utente loggato.
+   Include navbar con navigazione interna tra sezioni e ricerca globale.
+   Gestisce navigazione utente e collegamenti dinamici.
+
+   @structure
+   - Navbar: menu dropdown con link dinamici (login/logout), barra ricerca
+   - Page-title nav: link interni per sezioni (favourites, reviews, notes)
+   - Recipes-container: sezioni per ricette preferite, recensioni, note
+
+   @dependencies
+   - Bootstrap CSS/JS per layout e componenti
+   - Bootstrap Icons per icone
+   - recipeStyle.css per stili custom
+   - favourites.js per logica dinamica e popolamento sezioni
+   ========================================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,10 +28,16 @@
     <link rel="stylesheet" href="../recipeStyle.css">
     <title>Favourites page</title>
 </head>
+
 <body id="personal-page" class="d-none">
     
+    <!-- ===========================
+    NAVBAR PRINCIPALE
+    =========================== -->
+    <!-- Navbar fissa in alto: logo dropdown, ricerca globale, link dinamici per login/logout -->
     <nav class="navbar navbar-light fixed-top">
         <div class="container-fluid">
+            <!-- Pulsante dropdown con logo-->
             <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
                 <img  src="../assets/images/Pot_logo.png" alt="">
             </button>
@@ -26,6 +52,7 @@
                 <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
                 <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
             </ul>
+            <!-- Form ricerca -->
             <form class="input-group w-50">
                 <input class="form-control" type="search" placeholder="Search" id="searchBar">
                 <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
@@ -33,8 +60,12 @@
         </div>
     </nav>
     
+    <!-- ===========================
+    CONTENUTO PRINCIPALE
+    =========================== -->
     <div class="container-fluid">
         
+        <!-- Navbar interna fissa: titolo pagina e link per navigare tra sezioni -->
         <nav id="page-title">
             <div>
                 <h1 class="mx-auto text-center m-0">My cookbook</h1>
@@ -44,7 +75,10 @@
             </div>
         </nav>
         
+        <!-- Container sezioni ricette: popolato dinamicamente con card per ogni sezione -->
         <div id="recipes-container">
+
+            <!-- Sezione favourites: visibile di default -->
             <section id="fav-section">
                 <h3 class="mx-auto text-center">My favourites recipes</h3>
                 <div id="fav-recipes"></div>
