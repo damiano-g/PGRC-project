@@ -1,3 +1,22 @@
+<!-- ==========================================================================
+   SIGNIN.HTML - PAGINA REGISTRAZIONE UTENTE
+
+   @description
+   Pagina registrazione nuovo utente con form validazione client-side per username,
+   email e password. Include controlli sicurezza password, conferma password e
+   navigazione integrata a login.
+
+   @structure
+   - Navbar: menu dropdown con navigazione globale, barra ricerca e gestione autenticazione
+   - Container principale: form registrazione con campi username, email, password e conferma
+   - Form validation: feedback real-time su requisiti campi e corrispondenza password
+
+   @dependencies
+   - Bootstrap CSS/JS per layout, componenti e validazione form
+   - recipeStyle.css per stili custom e layout centrato
+   - singin.js per logica validazione, gestione eventi e creazione account
+   ========================================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,67 +26,78 @@
     <link rel="stylesheet" href="../recipeStyle.css">
     <title>Sign in page</title>
 </head>
-<body id="signin-page">
-    
-    <nav class="navbar navbar-light fixed-top">
-        <div class="container-fluid">
-            <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
-                <img  src="../assets/images/Pot_logo.png" alt="">
-            </button>
-            <ul class="dropdown-menu">
-                <li id="home-link">
-                    <div class="dropdown-item">Homepage</div>
-                    <div class="dropdown-divider"></div>
-                </li>
-                <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
-                <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
-                <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
-                <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
-                <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
-            </ul>
-            <form class="input-group w-50">
-                <input class="form-control" type="search" placeholder="Search" id="searchBar">
-                <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
-            </form>
-        </div>
-    </nav>
+    <body id="signin-page">
+        
+        <!-- ===========================
+            NAVBAR PRINCIPALE
+        =========================== -->
+        <!-- Navbar fissa in alto: logo dropdown, ricerca globale, link dinamici per login/logout -->
+        <nav class="navbar navbar-light fixed-top">
+            <div class="container-fluid">
+                <!-- Pulsante dropdown con logo-->
+                <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
+                    <img  src="../assets/images/Pot_logo.png" alt="">
+                </button>
+                <ul class="dropdown-menu">
+                    <li id="home-link">
+                        <div class="dropdown-item">Homepage</div>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
+                    <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
+                    <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
+                    <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
+                    <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
+                </ul>
+                <!-- Form ricerca -->
+                <form class="input-group w-50">
+                    <input class="form-control" type="search" placeholder="Search" id="searchBar">
+                    <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
+                </form>
+            </div>
+        </nav>
 
-
-    <div class="container-fluid centered-content">
-        <div>
-            <h2>Signin</h2>
-            <form class="needs-validation">
-                <div class="mb-3 mt-3">
-                    <label class="form-label" for="username">Username</label>
-                    <input class="form-control" type="text" id="username" placeholder="Choose a username" required>
-                    <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
-                </div>
-                <div class="mb-3 mt-3">
-                    <label class="form-label" for="email">Email</label>
-                    <input class="form-control" type="email" id="email" placeholder="Insert your email" required>
-                    <div class="invalid-feedback">Invalid format</div>
-                </div>
-                <div class="mb-3 mt-3">
-                    <label class="form-label" for="password">Password</label>
-                    <input class="form-control" type="password" id="password" placeholder="Choose a password" required>
-                    <div class="invalid-feedback">
-                        Passwords must contain at least <span id="passLen">8 characters</span>, <span id="upCase">one capital letter,</span>,
-                            <span id="lowCase">one small letter</span> and <span id="num">a number</span>.
+        <!--========================
+            SIGNIN FORM CONTAINER 
+        ==========================-->
+        <!-- Contenitore centrato con form registrazione: campi username, email, password
+            e conferma password con validazione Bootstrap, controlli sicurezza password
+            e navigazione a pagina login -->
+        <div class="container-fluid centered-content">
+            <div>
+                <h2>Signin</h2>
+                <form class="needs-validation">
+                    <div class="mb-3 mt-3">
+                        <label class="form-label" for="username">Username</label>
+                        <input class="form-control" type="text" id="username" placeholder="Choose a username" required>
+                        <div class="invalid-feedback">Il nome deve contenere almeno 2 caratteri</div>
                     </div>
-                </div>
-                <div class="mb-3 mt-3">
-                    <label class="form-label" for="confirmPassword">Confirm password</label>
-                    <input class="form-control" type="password" id="confirmPassword" placeholder="Confirm password" required disabled>
-                    <div class="invalid-feedback">Passwords don't match</div>
-                </div>
-                <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoLog">Go to login</button>
-                <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Clear</button>
-                <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Signin</button>
-            </form>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" type="email" id="email" placeholder="Insert your email" required>
+                        <div class="invalid-feedback">Invalid format</div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" type="password" id="password" placeholder="Choose a password" required>
+                        <div class="invalid-feedback">
+                            Passwords must contain at least <span id="passLen">8 characters</span>, <span id="upCase">one capital letter,</span>,
+                                <span id="lowCase">one small letter</span> and <span id="num">a number</span>.
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label" for="confirmPassword">Confirm password</label>
+                        <input class="form-control" type="password" id="confirmPassword" placeholder="Confirm password" required disabled>
+                        <div class="invalid-feedback">Passwords don't match</div>
+                    </div>
+                    <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoLog">Go to login</button>
+                    <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Clear</button>
+                    <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Signin</button>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <script type="module" src="../js/pages-scripts/singin.js"></script>
-    <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
+        <script type="module" src="../js/pages-scripts/singin.js"></script>
+        <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

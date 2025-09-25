@@ -1,91 +1,134 @@
+<!-- ==========================================================================
+   RECIPE-DETAILS.HTML - PAGINA DETTAGLI RICETTA
+
+   @description
+   Pagina dettaglio singola ricetta con visualizzazione completa: overview, ingredienti,
+   istruzioni, sistema recensioni (gusto/difficoltà), gestione note personali utente
+   e navigazione integrata. Supporta stati autenticazione.
+
+   @structure
+   - Navbar: menu dropdown con navigazione globale, barra ricerca e gestione autenticazione
+   - Review modal: dialog Bootstrap per aggiunta/modifica/rimozione recensioni
+   - Recipe content: sezioni overview, ingredienti, istruzioni con layout responsive
+   - Notes section: form per note personali e lista note esistenti (solo utenti autenticati)
+
+   @dependencies
+   - Bootstrap CSS/JS per layout, modal e componenti interattivi
+   - Bootstrap Icons per icone recensioni e navigazione
+   - recipeStyle.css per stili custom e layout responsive
+   - recipe-details.js per logica caricamento dati, gestione recensioni e note
+   ========================================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../bootstrap/node_modules/bootstrap-icons/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../recipeStyle.css">
-    <title>Recipe <details></details></title>
-    
-</head>
-<body id="recipe-page">
-    
-    <nav class="navbar navbar-light fixed-top">
-        <div class="container-fluid">
-            <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
-                <img  src="../assets/images/Pot_logo.png" alt="">
-            </button>
-            <ul class="dropdown-menu">
-                <li id="home-link">
-                    <div class="dropdown-item">Homepage</div>
-                    <div class="dropdown-divider"></div>
-                </li>
-                <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
-                <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
-                <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
-                <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
-                <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
-            </ul>
-            <form class="input-group w-50">
-                <input class="form-control" type="search" placeholder="Search" id="searchBar">
-                <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
-            </form>
-        </div>
-    </nav>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../bootstrap/node_modules/bootstrap-icons/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="../recipeStyle.css">
+        <title>Recipe <details></details></title>
+        
+    </head>
+    <body id="recipe-page">
+        
+        <!-- ===========================
+            NAVBAR PRINCIPALE
+        =========================== -->
+        <!-- Navbar fissa in alto: logo dropdown, ricerca globale, link dinamici per login/logout -->
+        <nav class="navbar navbar-light fixed-top">
+            <div class="container-fluid">
+                <!-- Pulsante dropdown con logo-->
+                <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
+                    <img  src="../assets/images/Pot_logo.png" alt="">
+                </button>
+                <ul class="dropdown-menu">
+                    <li id="home-link">
+                        <div class="dropdown-item">Homepage</div>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
+                    <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
+                    <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
+                    <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
+                    <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
+                </ul>
+                <!-- Form ricerca -->
+                <form class="input-group w-50">
+                    <input class="form-control" type="search" placeholder="Search" id="searchBar">
+                    <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
+                </form>
+            </div>
+        </nav>
 
-    <div class="container-fluid">
-        <div class="modal" id="reviewDialog">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <!-- Modal Header -->
-                    <div class="modal-header">
-                        <h4 class="modal-title">Recensici la ricetta</h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <!-- Modal body -->
-                    <div class="modal-body">
-                        <div class="form d-none">
-                            <label for="tasteRate">Gusto</label>
-                            <input type="number" name="tasteRate" id="tasteRate" min="0" max="5" step="1">
-                            <label for="difficultyRate">Difficoltà</label>
-                            <input type="number" name="difficultyRate" id="difficultyRate" min="0" max="5" step="1">
+        <!--============================
+            MAIN SECTION
+        ==============================-->
+        <div class="container-fluid">
+
+            <!-- REVIEW MODAL -->
+            <!-- Modal Bootstrap per gestione recensioni: form con rating gusto/difficoltà
+                per aggiunta/modifica, messaggio conferma per rimozione. Gestisce validazione input numerici -->
+            <div class="modal" id="reviewDialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Recensici la ricetta</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="text d-none">
-                            Sei sicuro di voler rimuovere la tua recensione?<br>
-                            L'operazione è irreversibile.
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            <div class="form d-none">
+                                <label for="tasteRate">Gusto</label>
+                                <input type="number" name="tasteRate" id="tasteRate" min="0" max="5" step="1">
+                                <label for="difficultyRate">Difficoltà</label>
+                                <input type="number" name="difficultyRate" id="difficultyRate" min="0" max="5" step="1">
+                            </div>
+                            <div class="text d-none">
+                                Sei sicuro di voler rimuovere la tua recensione?<br>
+                                L'operazione è irreversibile.
+                            </div>
                         </div>
-                    </div>
-                    <!-- Modal footer -->
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Conferma</button>
+                        <!-- Modal footer -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Conferma</button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- RECIPE CONTENT CONTAINER -->
+            <!-- Contenitore principale contenuto ricetta: sezione overview con immagine/titolo e recensioni
+                globali/personali, lista ingredienti, istruzioni preparazione. -->
+            <div id="recipe-contents">
+
+                <div id="recipe-overview"></div>
+                <div id="ingredients-box">
+                    <h3>Ingredients</h3>
+                    <ul id="ingredients-list"></ul>
+                </div>
+                <div    id="instructions-box">
+                    <h3>Preparation</h3>
+                    <p id="instructions-steps"></p>
+                </div>
+            </div>
+
+            <!-- NOTES SECTION -->
+            <!-- Sezione note personali: form textarea per inserimento note (max 200 caratteri),
+                pulsante inserimento disabilitato fino a contenuto valido (abilitazione JS), lista note esistenti
+                con gestione visualizzazione per utenti autenticati -->
+            <div class="mb-4 mt-4 d-none" id="notes">
+                <h4>Notes</h4>
+                <form>
+                    <textarea maxlength="200" name="insert-note" id="insert-note" class="form-control" placeholder="Inserisci una nota personale..."></textarea>
+                    <button class="btn btn-secondary" type="button" disabled>Inserisci</button>
+                </form>
+                <div class="mb-3 mt-3 d-none" id="user-notes"></div>
+            </div>
         </div>
 
-        <div id="recipe-contents">
-            <div id="recipe-overview"></div>
-            <div id="ingredients-box">
-                <h3>Ingredients</h3>
-                <ul id="ingredients-list"></ul>
-            </div>
-            <div    id="instructions-box">
-                <h3>Preparation</h3>
-                <p id="instructions-steps"></p>
-            </div>
-        </div>
-        <div class="mb-4 mt-4 d-none" id="notes">
-            <h4>Notes</h4>
-            <form>
-                <textarea maxlength="200" name="insert-note" id="insert-note" class="form-control" placeholder="Inserisci una nota personale..."></textarea>
-                <button class="btn btn-secondary" type="button" disabled>Inserisci</button>
-            </form>
-            <div class="mb-3 mt-3 d-none" id="user-notes"></div>
-        </div>
-
-    </div>    
-    <script type="module" src="../js/pages-scripts/recipe-details.js"></script>
-    <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
+        <script type="module" src="../js/pages-scripts/recipe-details.js"></script>
+        <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

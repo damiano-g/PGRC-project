@@ -1,47 +1,76 @@
+<!-- ==========================================================================
+   SEARCH.HTML - PAGINA RISULTATI RICERCA
+
+   @description
+   Pagina risultati ricerca ricette con visualizzazione grid di card
+   filtrate per query utente. Supporta navigazione dettaglio ricetta, gestione
+   stati autenticazione e caricamento dinamico risultati.
+
+   @structure
+   - Navbar: menu dropdown con navigazione globale, barra ricerca e gestione autenticazione
+   - Search results container: titolo pagina, grid card risultati con immagini/titoli
+   - Card interactions: click per navigazione dettaglio, gestione preferiti/recensioni
+
+   @dependencies
+   - Bootstrap CSS/JS per layout grid, componenti card e navigazione
+   - Bootstrap Icons per icone card e navigazione
+   - recipeStyle.css per stili custom card e layout responsive
+   - search.js per logica caricamento risultati, gestione query e navigazione
+   ========================================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../bootstrap/node_modules/bootstrap-icons/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../recipeStyle.css">
-    <title>Search page</title>
-    
-</head>
-<body id="search-page">
-    
-    <nav class="navbar navbar-light fixed-top">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../bootstrap/node_modules/bootstrap-icons/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="../recipeStyle.css">
+        <title>Search page</title>
+        
+    </head>
+    <body id="search-page">
+        
+        <!-- ===========================
+            NAVBAR PRINCIPALE
+        =========================== -->
+        <!-- Navbar fissa in alto: logo dropdown, ricerca globale, link dinamici per login/logout -->
+        <nav class="navbar navbar-light fixed-top">
+            <div class="container-fluid">
+                <!-- Pulsante dropdown con logo-->
+                <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
+                    <img  src="../assets/images/Pot_logo.png" alt="">
+                </button>
+                <ul class="dropdown-menu">
+                    <li id="home-link">
+                        <div class="dropdown-item">Homepage</div>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
+                    <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
+                    <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
+                    <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
+                    <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
+                </ul>
+                <!-- Form ricerca -->
+                <form class="input-group w-50">
+                    <input class="form-control" type="search" placeholder="Search" id="searchBar">
+                    <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
+                </form>
+            </div>
+        </nav>
+        
+        <!-- SEARCH RESULTS CONTAINER -->
+        <!-- Contenitore risultati ricerca: titolo pagina centrato, div per grid
+            card risultati con gestione layout responsive. -->
         <div class="container-fluid">
-            <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
-                <img  src="../assets/images/Pot_logo.png" alt="">
-            </button>
-            <ul class="dropdown-menu">
-                <li id="home-link">
-                    <div class="dropdown-item">Homepage</div>
-                    <div class="dropdown-divider"></div>
-                </li>
-                <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
-                <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
-                <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
-                <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
-                <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
-            </ul>
-            <form class="input-group w-50">
-                <input class="form-control" type="search" placeholder="Search" id="searchBar">
-                <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
-            </form>
+
+            <h2 class="mx-auto text-center px-4 py-2">Risultati della ricerca</h2>
+
+            <div id="results-container"></div>
         </div>
-    </nav>
-    
-    <div class="container-fluid">
 
-        <h2 class="mx-auto text-center px-4 py-2">Risultati della ricerca</h2>
-
-        <div id="results-container"></div>
-    </div>
-
-    <script type="module" src="../js/pages-scripts/search.js"></script>
-    <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
+        <script type="module" src="../js/pages-scripts/search.js"></script>
+        <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

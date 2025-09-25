@@ -20,83 +20,83 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../bootstrap/node_modules/bootstrap-icons/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../recipeStyle.css">
-    <title>Favourites page</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../bootstrap/node_modules/bootstrap-icons/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="../recipeStyle.css">
+        <title>Favourites page</title>
+    </head>
 
-<body id="personal-page" class="d-none">
-    
-    <!-- ===========================
-    NAVBAR PRINCIPALE
-    =========================== -->
-    <!-- Navbar fissa in alto: logo dropdown, ricerca globale, link dinamici per login/logout -->
-    <nav class="navbar navbar-light fixed-top">
-        <div class="container-fluid">
-            <!-- Pulsante dropdown con logo-->
-            <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
-                <img  src="../assets/images/Pot_logo.png" alt="">
-            </button>
-            <ul class="dropdown-menu">
-                <li id="home-link">
-                    <div class="dropdown-item">Homepage</div>
-                    <div class="dropdown-divider"></div>
-                </li>
-                <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
-                <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
-                <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
-                <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
-                <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
-            </ul>
-            <!-- Form ricerca -->
-            <form class="input-group w-50">
-                <input class="form-control" type="search" placeholder="Search" id="searchBar">
-                <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
-            </form>
-        </div>
-    </nav>
-    
-    <!-- ===========================
-    CONTENUTO PRINCIPALE
-    =========================== -->
-    <div class="container-fluid">
+    <body id="personal-page" class="d-none">
         
-        <!-- Navbar interna fissa: titolo pagina e link per navigare tra sezioni -->
-        <nav id="page-title">
-            <div>
-                <h1 class="mx-auto text-center m-0">My cookbook</h1>
-                <a class="active" href="#fav-section">Favourites</a>
-                <a href="#rev-section">Reviewed</a>
-                <a href="#noted-section">Notes</a>
+        <!-- ===========================
+            NAVBAR PRINCIPALE
+        =========================== -->
+        <!-- Navbar fissa in alto: logo dropdown, ricerca globale, link dinamici per login/logout -->
+        <nav class="navbar navbar-light fixed-top">
+            <div class="container-fluid">
+                <!-- Pulsante dropdown con logo-->
+                <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
+                    <img  src="../assets/images/Pot_logo.png" alt="">
+                </button>
+                <ul class="dropdown-menu">
+                    <li id="home-link">
+                        <div class="dropdown-item">Homepage</div>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
+                    <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
+                    <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
+                    <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
+                    <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
+                </ul>
+                <!-- Form ricerca -->
+                <form class="input-group w-50">
+                    <input class="form-control" type="search" placeholder="Search" id="searchBar">
+                    <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
+                </form>
             </div>
         </nav>
         
-        <!-- Container sezioni ricette: popolato dinamicamente con card per ogni sezione -->
-        <div id="recipes-container">
-
-            <!-- Sezione favourites: visibile di default -->
-            <section id="fav-section">
-                <h3 class="mx-auto text-center">My favourites recipes</h3>
-                <div id="fav-recipes"></div>
-            </section>
+        <!-- ===========================
+            CONTENUTO PRINCIPALE
+        =========================== -->
+        <div class="container-fluid">
             
-            <section class="d-none" id="rev-section">
-                <h3 class="mx-auto text-center">My reviews</h3>
-                <div id="rev-recipes"></div>
-            </section>
-    
-            <section class="d-none" id="noted-section">
-                <h3 class="mx-auto text-center">My notes</h3>
-                <div id="noted-recipes"></div>
-            </section>
-        </div>
-    </div>
+            <!-- Navbar interna fissa: titolo pagina e link per navigare tra sezioni -->
+            <nav id="page-title">
+                <div>
+                    <h1 class="mx-auto text-center m-0">My cookbook</h1>
+                    <a class="active" href="#fav-section">Favourites</a>
+                    <a href="#rev-section">Reviewed</a>
+                    <a href="#noted-section">Notes</a>
+                </div>
+            </nav>
+            
+            <!-- Container sezioni ricette: popolato dinamicamente con card per ogni sezione -->
+            <div id="recipes-container">
 
-    <script type="module" src="../js/pages-scripts/favourites.js"></script>
-    <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
+                <!-- Sezione favourites: visibile di default -->
+                <section id="fav-section">
+                    <h3 class="mx-auto text-center">My favourites recipes</h3>
+                    <div id="fav-recipes"></div>
+                </section>
+                
+                <section class="d-none" id="rev-section">
+                    <h3 class="mx-auto text-center">My reviews</h3>
+                    <div id="rev-recipes"></div>
+                </section>
+        
+                <section class="d-none" id="noted-section">
+                    <h3 class="mx-auto text-center">My notes</h3>
+                    <div id="noted-recipes"></div>
+                </section>
+            </div>
+        </div>
+
+        <script type="module" src="../js/pages-scripts/favourites.js"></script>
+        <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

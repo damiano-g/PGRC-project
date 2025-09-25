@@ -1,3 +1,22 @@
+<!-- ==========================================================================
+   LOGIN.HTML - PAGINA DI AUTENTICAZIONE UTENTE
+
+   @description
+   Pagina di login per accesso al sistema. Include form con validazione client-side
+   per username e password, navbar con navigazione globale e ricerca.
+   Gestisce transizioni a registrazione e validazione credenziali.
+
+   @structure
+   - Navbar: menu dropdown con link dinamici (login/logout), barra ricerca globale
+   - Container principale: form login con campi username/password e pulsanti azione
+   - Form validation: feedback real-time su requisiti password e username
+
+   @dependencies
+   - Bootstrap CSS/JS per layout, componenti e validazione form
+   - recipeStyle.css per stili custom e layout centrato
+   - login.js per logica validazione, gestione eventi e autenticazione
+   ========================================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,58 +27,65 @@
     <title>Log in page</title>
 </head>
 
-<body class="d-none" id="login-page">
+    <body class="d-none" id="login-page">
 
-    <nav class="navbar navbar-light fixed-top">
-        <div class="container-fluid">
-            <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
-                <img  src="../assets/images/Pot_logo.png" alt="">
-            </button>
-            <ul class="dropdown-menu">
-                <li id="home-link">
-                    <div class="dropdown-item">Homepage</div>
-                    <div class="dropdown-divider"></div>
-                </li>
-                <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
-                <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
-                <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
-                <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
-                <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
-            </ul>
-            <form class="input-group w-50">
-                <input class="form-control" type="search" placeholder="Search" id="searchBar">
-                <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
-            </form>
-        </div>
-    </nav>
+        <!-- ===========================
+            NAVBAR PRINCIPALE
+        =========================== -->
+        <!-- Navbar fissa in alto: logo dropdown, ricerca globale, link dinamici per login/logout -->
+        <nav class="navbar navbar-light fixed-top">
+            <div class="container-fluid">
+                <!-- Pulsante dropdown con logo-->
+                <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
+                    <img  src="../assets/images/Pot_logo.png" alt="">
+                </button>
+                <ul class="dropdown-menu">
+                    <li id="home-link">
+                        <div class="dropdown-item">Homepage</div>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li><span class="dropdown-item d-none" id="personal-page-link">My cookbook</span></li>
+                    <li><span class="dropdown-item d-none" id="account-settings-link">Account settings</span></li>
+                    <li><span class="dropdown-item d-none" id="logout-link">Logout</span></li>
+                    <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
+                    <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
+                </ul>
+                <!-- Form ricerca -->
+                <form class="input-group w-50">
+                    <input class="form-control" type="search" placeholder="Search" id="searchBar">
+                    <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
+                </form>
+            </div>
+        </nav>
 
-    <div class="container-fluid centered-content">
-        <div>
-            <h2>Login</h2>
-        
-            <form class="needs-validation">
-                <div class="mb-3 mt-3">
-                    <label class="form-label" for="username">Username</label>
-                    <input class="form-control" type="text" id="username" placeholder="Insert username" required>
-                    <div class="invalid-feedback">Username must contain at least two characters</div>
-                </div>
-                <div class="mb-3 mt-3">
-                    <label class="form-label" for="password">Password</label>
-                    <input class="form-control" type="password" id="password" placeholder="Insert password" required>
-                    <div class="invalid-feedback">
-                        Passwords must contain at least <span id="passLen">8 characters</span>, <span id="upCase">one capital letter,</span>,
-                            <span id="lowCase">one small letter</span> and <span id="num">a number</span>.
+        <!-- ==================== 
+            LOGIN FORM CONTAINER 
+        ======================-->
+        <!-- Contenitore centrato con form di login: campi username/password con validazione
+            Bootstrap, pulsanti per navigazione (signin), reset e submit. -->
+        <div class="container-fluid centered-content">
+            <div>
+                <h2>Login</h2>
+            
+                <form class="needs-validation">
+                    <div class="mb-3 mt-3">
+                        <label class="form-label" for="username">Username</label>
+                        <input class="form-control" type="text" id="username" placeholder="Insert username" required>
                     </div>
-                </div>
-                <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoSign">Signin</button>
-                <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Clear</button>
-                <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Login</button>
-            </form>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" type="password" id="password" placeholder="Insert password" required>
+                    </div>
+                    </div>
+                    <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoSign">Signin</button>
+                    <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Clear</button>
+                    <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Login</button>
+                </form>
+            </div>
         </div>
-    </div>
 
-    
-    <script type="module" src="../js/pages-scripts/login.js"></script>
-    <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>
+        
+        <script type="module" src="../js/pages-scripts/login.js"></script>
+        <script src="../bootstrap/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

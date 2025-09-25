@@ -1,3 +1,22 @@
+<!-- ==========================================================================
+   MODIFUSER.HTML - PAGINA MODIFICA DATI UTENTE
+
+   @description
+   Pagina per modifica dati profilo utente autenticato. Include form con campi
+   username, email e password con validazione client-side, controlli di sicurezza
+   per modifiche password e gestione stati abilitazione/disabilitazione campi.
+
+   @structure
+   - Navbar: menu dropdown con navigazione globale, barra ricerca e gestione autenticazione
+   - Container principale: form modifica dati con sezioni per username, email e password
+   - Form validation: feedback real-time su requisiti campi e conferma password
+
+   @dependencies
+   - Bootstrap CSS/JS per layout, componenti e validazione form
+   - recipeStyle.css per stili custom e layout centrato
+   - modif.js per logica validazione, gestione eventi e salvataggio modifiche
+   ========================================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -9,8 +28,13 @@
     </head>
     <body class="d-none" id="settings-page">
         
+        <!-- ===========================
+            NAVBAR PRINCIPALE
+        =========================== -->
+        <!-- Navbar fissa in alto: logo dropdown, ricerca globale, link dinamici per login/logout -->
         <nav class="navbar navbar-light fixed-top">
             <div class="container-fluid">
+                <!-- Pulsante dropdown con logo-->
                 <button class="btn btn-lg pt-0 pb-0 ps-0 pe-0" type="button" data-bs-toggle="dropdown" data-bs-target=".dropdown-menu">
                     <img  src="../assets/images/Pot_logo.png" alt="">
                 </button>
@@ -25,6 +49,7 @@
                     <li><span class="dropdown-item d-none" id="login-link">Login</span></li>
                     <li><span class="dropdown-item d-none" id="signin-link">Signin</span></li>
                 </ul>
+                <!-- Form ricerca -->
                 <form class="input-group w-50">
                     <input class="form-control" type="search" placeholder="Search" id="searchBar">
                     <button class="btn btn-sm btn-outline-dark" type="button" id="searchBtn">Search</button>
@@ -32,10 +57,18 @@
             </div>
         </nav>
 
+        <!--=========================
+            USER MODIFICATION FORM CONTAINER 
+        ==============================-->
+        <!-- Contenitore centrato con form modifica dati utente: sezioni per username,
+        email e password con controlli abilitazione/disabilitazione, validazione
+        Bootstrap e gestione sicurezza modifiche password (richiede password corrente) -->
         <div class="container-fluid centered-content">
             <div>
                 <h2>Your data</h2>
                 <form class="needs-validation">
+
+                    <!-- Sezione modifica username -->
                     <div class="form-section mb-3 mt-3">
                         <span>
                             <label class="form-label" for="username">Username</label>
@@ -44,6 +77,8 @@
                         <input class="form-control" type="text" id="username" disabled>
                         <div class="invalid-feedback">Username must contain at least two characters</div>
                     </div>
+
+                    <!-- Sezione modifica email -->
                     <div class="form-section mb-3 mt-3">
                         <span>
                             <label class="form-label" for="email">Email</label>
@@ -52,6 +87,10 @@
                         <input class="form-control" type="email" id="email" disabled>
                         <div class="invalid-feedback">Invalid format</div>
                     </div>
+
+                    <!-- Sezione autorizzazione e modifica password: pulsante "Enable" per
+                    abilitare sezione, campo password corrente con pulsante "Authorize"
+                    per validare accesso modifiche -->
                     <div class="form-section mb-3 mt-3">
                         <span>
                             Password
@@ -76,6 +115,9 @@
                         <input class="form-control" type="password" id="confirmPassword" placeholder="Confirm new password" disabled>
                         <div class="invalid-feedback">Passwords don't match</div>
                     </div>
+
+                    <!-- Pulsanti azione form: Reset per cancellare modifiche, Save per
+                    salvare dati solo con validazione completa -->
                     <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Reset</button>
                     <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Save</button>
                 </form>
