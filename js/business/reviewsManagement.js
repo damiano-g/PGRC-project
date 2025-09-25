@@ -1,27 +1,24 @@
 /**
- * @fileoverview Sistema di gestione recensioni ricette con rating gusto e difficoltà
- * @description Gestisce persistenza, CRUD operations e calcoli statistici per recensioni utente.
- * Supporta rating duplici (gusto/difficoltà) e funzioni aggregazione per display UI.
- * @author damia
- * @version 1.0.0
- * @since 2025-09-03
- * @requires data-models - Review constructor per validazione oggetti
- * @requires errorsManagement - ReviewsManagementError per gestione errori tipizzati
- * @requires storageManagement - StorageManagement per persistenza localStorage
+ * @fileoverview Gestore recensioni ricette con sistema rating duale
+ * @description Fornisce interfaccia per CRUD operazioni su recensioni, con supporto rating gusto/difficoltà,
+ * calcoli statistici aggregati e persistenza localStorage. Gestisce business rules come unicità
+ * recensioni per utente/ricetta e validazione parametri.
+ * @requires data-models.js - Classe Review per costruzione oggetti recensione
+ * @requires errorsManagement.js - Classe ReviewsManagementError per errori tipizzati
+ * @requires storageManagement.js - Modulo StorageManagement per persistenza dati
  */
 
 import { Review } from "../data-models.js";
 import { ReviewsManagementError } from "../errorsManagement.js";
 import { StorageManagement } from "../storageManagement.js";
 
-// ================================================================================================
-// STORAGE CONFIGURATION
-// ================================================================================================
+// ===============================
+// CONFIGURAZIONE STORAGE
+// ===============================
 
 /**
- * Chiave localStorage per persistenza dati recensioni
+ * Chiave localStorage per persistenza array recensioni
  * @constant {string}
- * @readonly
  */
 const REVIEWS_DB_KEY = "reviews";
 
@@ -36,27 +33,20 @@ let storedReviews = [];
 // STORAGE OPERATIONS
 // ================================================================================================
 
+// ===============================
+// OPERAZIONI STORAGE
+// ===============================
+
 /**
- * Recupera array recensioni da localStorage con caching automatico
+ * Recupera array recensioni da localStorage con refresh cache
+ * Restituisce copia profonda per prevenire mutazioni accidentali
  * 
- * @function getStoredReviews
- * @returns {Array<Review>} Deep clone dell'array recensioni per immutabilità
- * @throws {Error} Se localStorage non accessibile o dati corrotti
- * 
- * @description
- * Caricamento sicuro recensioni con gestione errori e cache refresh.
- * - Carica dati freschi da localStorage ad ogni chiamata
- * - Restituisce structuredClone per prevenire mutazioni accidentali
- * - Reset cache a array vuoto in caso di errore
+ * @public
+ * @returns {Array<Review>} Clone profondo dell'array recensioni
+ * @throws {Error} Se localStorage inaccessibile o dati corrotti
  * 
  * @example
  * const reviews = getStoredReviews();
- * // reviews è safe da modificare senza affecting storage
- * 
- * @todo Implementare caching intelligente per evitare reload localStorage
- * @todo Aggiungere validazione schema per dati corrotti
- * 
- * @since 1.0.0
  */
 export function getStoredReviews(){
     try{
@@ -73,23 +63,21 @@ export function getStoredReviews(){
 // PRIVATE HELPER FUNCTIONS
 // ================================================================================================
 
+// ===============================
+// FUNZIONI HELPER PRIVATE
+// ===============================
+
 /**
- * Recupera recensioni specifiche per combinazione ricetta-utente
+ * Recupera recensioni per combinazione specifica ricetta-utente
+ * Business rule: max 1 recensione per coppia utente-ricetta
  * 
- * @function getReviewId
  * @private
  * @param {string} recipeId - ID ricetta target
  * @param {string} userId - ID utente target
- * @returns {Array<Review>} Array recensioni filtrate (max 1 elemento per business logic)
+ * @returns {Array<Review>} Array recensioni filtrate (max 1 elemento)
  * 
- * @description
- * Utility per lookup recensioni con filtro combinato.
- * Business rule: ogni utente può avere max 1 recensione per ricetta.
- * 
- * @todo Completare gestione errori nel catch block
- * @todo Ottimizzare con Map() per lookup O(1) se performance critiche
- * 
- * @since 1.0.0
+ * @example
+ * const userReview = getReviewId("52772", "user123");
  */
 function getReviewId(recipeId, userId){
     try {
@@ -101,35 +89,24 @@ function getReviewId(recipeId, userId){
 }
 
 /**
- * Core engine per operazioni CRUD su recensioni con validazione business rules
+ * Motore CRUD per operazioni su recensioni con validazione business rules
+ * Supporta ADD (con rating) e DELETE (senza rating) basandosi su presenza parametri
  * 
- * @function updateRecipeReviews
- * @private
+ * @public
+ * @param {string} userId - ID utente che esegue operazione
  * @param {string} recipeId - ID ricetta target
- * @param {string} userId - ID utente che esegue l'operazione
- * @param {number|null} [tasteRate=null] - Rating gusto (1-5), null per delete operation
- * @param {number|null} [difficultyRate=null] - Rating difficoltà (1-5), null per delete operation
- * @returns {boolean} True se operazione completata con successo
+ * @param {number|null} [tasteRate=null] - Rating gusto (1-5) per ADD, null per DELETE
+ * @param {number|null} [difficultyRate=null] - Rating difficoltà (1-5) per ADD, null per DELETE
+ * @returns {boolean} True se operazione completata
  * @throws {ReviewsManagementError} Se validazione fallisce o recensione non trovata
  * 
- * @description
- * Funzione polivalente per ADD/DELETE recensioni con validazione parametri:
+ * @example
+ * // ADD recensione
+ * updateRecipeReviews("user123", "52772", 4, 3);
  * 
- * **ADD MODE**: recipeId + userId + tasteRate + difficultyRate
- * - Crea nuova Review e la aggiunge all'array
- * - Non verifica duplicati (business rule da gestire upstream)
- * 
- * **DELETE MODE**: recipeId + userId + rate=null
- * - Trova recensione esistente e la rimuove
- * - Throws NOT_FOUND se recensione non esiste
- * 
- * **VALIDATION**: Parametri malformati → Throws VALIDATION error
- * 
- * @todo Aggiungere verifica duplicati in ADD mode
- * @todo Implementare UPDATE mode per modifiche senza delete/add
- * @todo Validare range rating (1-5) prima di creazione Review
- * 
- * @since 1.0.0
+ * @example
+ * // DELETE recensione
+ * updateRecipeReviews("user123", "52772", null, null);
  */
 export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficultyRate = null){
     try {
@@ -164,25 +141,16 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
 
 /**
  * Calcola rating medio per ricetta su tipo specificato
+ * Itera tutte recensioni per aggregazione real-time
  * 
- * @function recipeAvgRate
- * @private
- * @param {string} recipeId - ID ricetta per calcolo statistiche
+ * @public
+ * @param {string} recipeId - ID ricetta per calcolo
  * @param {string} ratingType - Tipo rating ("tasteRate"|"difficultyRate")
- * @returns {number} Media aritmetica rating, NaN se nessuna recensione
+ * @returns {string} Media aritmetica formattata a 1 decimale, "NaN" se nessuna recensione
  * @throws {Error} Se accesso storage fallisce
  * 
- * @description
- * Calcolo statistico real-time su tutte le recensioni della ricetta.
- * - Itera recensioni e somma rating del tipo specificato
- * - Restituisce media aritmetica (sum/count)
- * - NaN per ricette senza recensioni (gestire upstream)
- * 
- * @todo Gestire esplicitamente caso nessuna recensione (return 0 vs NaN)
- * @todo Implementare caching per ricette con molte recensioni
- * @todo Aggiungere validazione ratingType parameter
- * 
- * @since 1.0.0
+ * @example
+ * const avgTaste = recipeAvgRate("52772", "tasteRate"); // "4.2"
  */
 export function recipeAvgRate (recipeId, ratingType) {
     try {
@@ -203,25 +171,17 @@ export function recipeAvgRate (recipeId, ratingType) {
 
 /**
  * Recupera rating specifico utente per ricetta e tipo
+ * Lookup diretto senza aggregazione
  * 
- * @function recipeUserRate
- * @private
+ * @public
  * @param {string} recipeId - ID ricetta target
  * @param {string} userId - ID utente target
  * @param {string} ratingType - Tipo rating ("tasteRate"|"difficultyRate")
- * @returns {number|undefined} Rating utente o undefined se non recensita
+ * @returns {string|undefined} Rating formattato a 1 decimale o undefined se non recensita
  * @throws {Error} Se accesso storage fallisce
  * 
- * @description
- * Lookup diretto rating utente specifico senza aggregazione.
- * - Trova recensione univoca per coppia ricetta-utente
- * - Restituisce valore specifico del ratingType
- * - undefined se utente non ha recensito la ricetta
- * 
- * @todo Aggiungere validazione esistenza userId prima del lookup
- * @todo Implementare caching per utenti con molte recensioni
- * 
- * @since 1.0.0
+ * @example
+ * const userTaste = recipeUserRate("52772", "user123", "tasteRate"); // "4.0"
  */
 export function recipeUserRate(recipeId, userId, ratingType) {
     try {
@@ -233,44 +193,43 @@ export function recipeUserRate(recipeId, userId, ratingType) {
     }
 }
 
+// ===============================
+// NOTE ARCHITETTURALI
+// ===============================
 
-// ================================================================================================
-// ARCHITECTURE NOTES
-// ================================================================================================
-
-/*
-DESIGN PATTERNS IMPLEMENTATI:
-
-1. **Repository Pattern**:
-   - getStoredReviews() come data access layer
-   - Astrazione storage con StorageManagement dependency
-   - Immutabilità garantita con structuredClone()
-
-2. **Command Pattern**:
-   - updateRecipeReviews() polivalente per ADD/DELETE
-   - Parametri determinano operazione (presence/absence logic)
-   - Transactional operations con rollback automatico su errore
-
-3. **Facade Pattern**:
-   - GlobalRatingFunctions e UserRatingFunctions come API semplificate
-   - Nascondono complessità calcoli e gestione errori
-   - Interface uniforme per UI components
-
-4. **Error Handling Strategy**:
-   - Custom errors (ReviewsManagementError) per business logic
-   - Generic errors per infrastructure (storage, network)
-   - Silent fail vs rethrow in base a criticità operazione
-
-BUSINESS RULES IMPLEMENTATE:
-
-- **One Review Per User Per Recipe**: Un utente può avere max 1 recensione per ricetta
-- **Dual Rating System**: Ogni recensione ha gusto + difficoltà (entrambi obbligatori)
-- **No Partial Updates**: Modifiche richiedono delete + add (atomicità)
-- **Real-time Aggregation**: Statistiche calcolate on-demand senza caching
-
-PERFORMANCE CONSIDERATIONS:
-
-- **Array Linear Search**: Accettabile per MVP, da ottimizzare con Map/Index per scale
-- **Storage Access**: Ogni operazione ricarica da localStorage (trade-off consistency vs performance)
-- **Immutability**: structuredClone garantisce safety ma ha overhead memory
-*/
+/**
+ * ARCHITETTURA E PATTERN:
+ * 
+ * PATTERN IMPLEMENTATI:
+ * - Repository Pattern: getStoredReviews() come data access layer con astrazione storage
+ * - Command Pattern: updateRecipeReviews() polivalente per ADD/DELETE basata su parametri
+ * - Immutability: structuredClone() previene mutazioni accidentali dati
+ * 
+ * BUSINESS RULES:
+ * - Unicità: Max 1 recensione per utente per ricetta
+ * - Dual Rating: Ogni recensione richiede gusto + difficoltà
+ * - No Partial Updates: Modifiche tramite delete + add per atomicità
+ * - Real-time Aggregation: Statistiche calcolate on-demand senza caching (scelta effettuata per non appesantire troppo fase di costruzione pagine)
+ * 
+ * DIPENDENZE:
+ * - data-models.js: Costruttore Review per validazione oggetti
+ * - errorsManagement.js: ReviewsManagementError per errori tipizzati business
+ * - storageManagement.js: StorageManagement per persistenza localStorage
+ * 
+ * PERFORMANCE:
+ * - Array Linear Search: Accettabile per MVP, ottimizzabile con Map/Index per scale
+ * - Storage Access: Reload completo ad ogni operazione (trade-off consistency vs performance)
+ * - Immutability Overhead: structuredClone() garantisce safety ma aumenta memoria
+ * 
+ * LIMITAZIONI:
+ * - No Cache Expiry: Dati persistono indefinitamente
+ * - No Concurrency: Operazioni sequenziali, no locking per multi-tab
+ * - No Validation Range: Rating accettati senza controllo 1-5 (da gestire upstream)
+ * 
+ * FUTURI MIGLIORAMENTI:
+ * - Caching intelligente per ridurre accessi localStorage
+ * - Validazione range rating prima costruzione Review
+ * - Supporto UPDATE mode separato da ADD/DELETE
+ * - Ottimizzazione lookup con Map() per performance O(1)
+ * - Gestione concorrenza con versioning o locking
+ */
