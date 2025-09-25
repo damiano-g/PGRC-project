@@ -27,6 +27,21 @@ const searchBar = document.getElementById("searchBar");
 /** @type {HTMLElement} Container dove vengono mostrati i risultati della ricerca */
 const resultsContainer = document.getElementById("results-container");
 
+async function search(){
+    // Parsing manuale dell'URL query string (es. "?q=pasta" → ["q", "pasta"])
+    const query = window.location.search.substring(1).split("=");
+    
+    if(query[0] === "q"){
+        searchBar.value = query[1];
+        searchBtn.click();
+    }
+    
+    if(query[0] === "cat"){
+        populatePreviewContainer(await PreviewArray.mealsByCategory(query[1]), resultsContainer);
+    }  
+}
+
+
 // ===============================
 // GESTIONE RICERCA PER NOME
 // ===============================
@@ -38,10 +53,8 @@ const resultsContainer = document.getElementById("results-container");
 searchBtn.addEventListener("click", async () => {
     const recipesPreviewArray = await PreviewArray.mealsByName(String(searchBar.value));
     if(recipesPreviewArray){
-        //const array = createPreviewArray(response);
         history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
         populatePreviewContainer(recipesPreviewArray, resultsContainer);
-        //CardDisplayStrategy.displayWithRating(array, resultsContainer)
     }else{
         const paragraph = document.createElement("div");
         paragraph.innerText = "La ricerca non ha prodotto risultati";
@@ -89,20 +102,7 @@ resultsContainer.addEventListener("click", (click) => {
  * Event listener per caricamento iniziale della pagina
  * Gestisce parametri URL per ripristinare stato da cronologia/link condivisi
  */
-window.addEventListener("load", async () => {
-    
-    // Parsing manuale dell'URL query string (es. "?q=pasta" → ["q", "pasta"])
-    const query = window.location.search.substring(1).split("=");
-    
-    if(query[0] === "q"){
-        searchBar.value = query[1];
-        searchBtn.click();
-    }
-    
-    if(query[0] === "cat"){
-        populatePreviewContainer(await PreviewArray.mealsByCategory(query[1]), resultsContainer);
-    }  
-});
+window.addEventListener("load", search)
 
 
 
@@ -115,9 +115,7 @@ window.addEventListener("load", async () => {
  * Event listener per navigazione cronologia (pulsanti Indietro/Avanti)
  * Ricarica la pagina per ripristinare lo stato corretto basato sull'URL
  */
-window.addEventListener("popstate", () => {
-    window.location.reload();
-});
+window.addEventListener("popstate", search);
 
 document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 

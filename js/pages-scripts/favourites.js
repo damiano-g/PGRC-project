@@ -102,6 +102,13 @@ window.addEventListener("load", async () => {
     // Rendering sezione note
     personalNotesContainer.innerHTML = "Take notes to view relative recipes in this area";
     populatePreviewContainer(await PreviewArray.fromAllUserNotes(), personalNotesContainer);
+
+    const index = window.location.href.indexOf("#");
+    if(index >= 0){
+        displaySection(window.location.href.substring(index+1));
+    }else{
+        displaySection("fav-section");
+    }
 });
 
 document.getElementById("page-title").addEventListener("click", (click) => {
