@@ -7,14 +7,14 @@
 
 #search-page .card,
 #personal-page .card,
-#recipe-page .card,
 #results-container .card,
 #categories-container .card,
 #fav-recipes .card,
 #rev-recipes .card,
 #noted-recipes .card,
 .carousel-item,
-nav li {
+nav li,
+#recipe-page .card .fav-icon:hover {
     cursor: pointer;
 }
 
@@ -24,10 +24,6 @@ nav li {
 MAIN NAVBAR MANAGEMENT
 ====================================================
 */
-
-nav li{
-    cursor: pointer;
-}
 
 nav img{
     height: 43px;
@@ -79,9 +75,6 @@ CARDS MANAGEMENT
     flex-direction: column;
 }
 
-#recipe-page .card .fav-icon:hover{
-    cursor: pointer;
-}
 
 /*Determinano le proporzioni degli elementi delle card quando verticali*/
 #search-page .card-image,
@@ -374,22 +367,6 @@ PERSONAL PAGE SPECIFICS
 /*----------------------------------------------------*/
 
 
-
-
-/* OTHERS */
-
-.valid-text{
-    color: green;
-}
-
-
-
-h3{
-    font-weight: bold;
-}
-
-
-
 /*
 ==================================== 
 CONTAINERS AND POSITIONING
@@ -461,4 +438,14 @@ body>.container-fluid{
 /*-------------------------------------------------------------------*/
 
 
-/* ANIMATIONS */
+/* MISC */
+
+.valid-text{
+    color: green;
+}
+
+
+
+h3{
+    font-weight: bold;
+}
