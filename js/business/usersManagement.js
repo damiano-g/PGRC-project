@@ -2,9 +2,9 @@
  * @fileoverview Gestione completa utenti - storage, validazione, autenticazione e operazioni CRUD
  * @description Sistema completo per gestione utenti con localStorage/sessionStorage,
  * validazione duplicati, autenticazione sicura e operazioni atomiche
- * @author damia
- * @version 1.0.0
- * @since 2025-08-28
+ * @requires errorsManagement.js - Classe UsersManagementError per errori tipizzati
+ * @requires data-models.js - Classi User e Note per costruzione oggetti
+ * @requires storageManagement.js - Modulo StorageManagement per persistenza dati
  */
 
 import { UsersManagementError, } from "../errorsManagement.js";
@@ -15,7 +15,10 @@ import { StorageManagement } from "../storageManagement.js";
 // CONFIGURAZIONE E COSTANTI
 // ============================================================================
 
-/** @type {string} Chiave localStorage per array utenti registrati */
+/**
+ * Chiave localStorage per array utenti registrati
+ * @constant {string}
+ */
 const USERS_DB_KEY = "users";
 
 
@@ -24,10 +27,10 @@ const USERS_DB_KEY = "users";
 // VARIABILI DI STATO CACHE
 // ============================================================================
 
-/** 
- * @type {Array<User>} Cache locale array utenti - aggiornata ad ogni accesso
- * @description Mantiene copia sincronizzata con localStorage per performance.
- * Attualmente sovrascritta ad ogni getter call - da valutare ottimizzazione futura
+/**
+ * Cache locale array utenti - aggiornata ad ogni accesso
+ * Mantiene copia sincronizzata con localStorage per performance
+ * @type {Array<User>}
  */
 let registeredUsers = [];
 
@@ -44,9 +47,8 @@ let registeredUsers = [];
  * @throws {UsersManagementError} Se errori di lettura, fallback array vuoto
  * 
  * @example
- * // Accesso sicuro lista utenti
  * const users = getRegisteredUsers();
- * users.forEach(user => console.log(user.username)); // Safe iteration
+ * users.forEach(user => console.log(user.username));
  */
 export function getRegisteredUsers() {
     try{
@@ -72,10 +74,8 @@ export function getRegisteredUsers() {
  * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * 
  * @example
- * // Lookup utente per login
  * try {
  *   const user = searchUserbyName("mario");
- *   const isAuthenticated = await admitUser(user.id, inputPassword);
  * } catch (error) {
  *   console.log("Utente non trovato");
  * }
@@ -93,13 +93,10 @@ export function searchUserbyName(username) {
  * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * 
  * @example
- * // Recupero profilo utente loggato
  * try {
- *   const currentUserId = getLoggedUserId();
- *   const currentUser = searchUserById(currentUserId);
- *   displayUserProfile(currentUser);
+ *   const user = searchUserById("user123");
  * } catch (error) {
- *   redirectToLogin();
+ *   console.log("Utente non trovato");
  * }
  */
 export function searchUserById(userId){
@@ -116,7 +113,7 @@ export function searchUserById(userId){
  * 
  * @async
  * @param {string} chosenUsername - Username desiderato
- * @param {string} chosenEmail - Email desiderata  
+ * @param {string} chosenEmail - Email desiderata
  * @param {string} chosenPassword - Password in chiaro
  * @returns {Promise<User>} Utente creato e salvato
  * @throws {UsersManagementError} Se username/email già in uso (tipo "VALIDATION")
@@ -124,13 +121,10 @@ export function searchUserById(userId){
  * @throws {Error} Se errori durante hashing
  * 
  * @example
- * // Registrazione completa con gestione errori
  * try {
  *   const newUser = await addNewUser("mario", "mario@email.com", "password123");
- *   console.log("Utente registrato:", newUser.id);
- *   // Redirect to welcome page
  * } catch (error) {
- *   handleUserError(error);
+ *   console.log("Errore registrazione");
  * }
  */
 export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
@@ -156,20 +150,18 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
 }
 
 /**
- * Rimuove utente attualmente loggato dal database
- * Operazione atomica per self-deletion account
+ * Rimuove utente dal database
+ * Operazione atomica per eliminazione account
  * 
- * @throws {UsersManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
+ * @param {string} userId - ID utente da eliminare
+ * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
- * // Eliminazione account corrente
  * try {
- *   deleteLoggedUser();
- *   sessionStorage.clear(); // Cleanup sessione
- *   window.location.href = "./index.html";
+ *   deleteUser("user123");
  * } catch (error) {
- *   handleUserError(error);
+ *   console.log("Errore eliminazione");
  * }
  */
 export function deleteUser(userId){
@@ -196,22 +188,21 @@ export function deleteUser(userId){
 // ============================================================================
 
 /**
- * Aggiorna username utente loggato con validation duplicati
+ * Aggiorna username utente con validation duplicati
  * API pubblica per modifica profilo con controlli atomici
  * 
  * @async
+ * @param {string} userId - ID utente da aggiornare
  * @param {string} newUsername - Nuovo username desiderato
  * @returns {Promise<boolean>} true se aggiornamento completato
  * @throws {UsersManagementError} Se username già in uso (tipo "VALIDATION")
  * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
- * // Aggiornamento username da form profilo
  * try {
- *   await updateUserUsername("nuovoUsername");
- *   showSuccessMessage("Username aggiornato!");
+ *   await updateUserUsername("user123", "nuovoUsername");
  * } catch (error) {
- *   showErrorMessage(error.message);
+ *   console.log("Errore aggiornamento username");
  * }
  */
 export async function updateUserUsername(userId, newUsername){
@@ -226,22 +217,21 @@ export async function updateUserUsername(userId, newUsername){
 }
 
 /**
- * Aggiorna email utente loggato con validation duplicati
+ * Aggiorna email utente con validation duplicati
  * API pubblica per modifica profilo con controlli atomici
  * 
  * @async
+ * @param {string} userId - ID utente da aggiornare
  * @param {string} newEmail - Nuova email desiderata
  * @returns {Promise<boolean>} true se aggiornamento completato
  * @throws {UsersManagementError} Se email già in uso (tipo "VALIDATION")
  * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
- * // Aggiornamento email da form profilo
  * try {
- *   await updateUserEmail("nuovaemail@esempio.com");
- *   showSuccessMessage("Email aggiornata!");
+ *   await updateUserEmail("user123", "nuovaemail@esempio.com");
  * } catch (error) {
- *   showErrorMessage(error.message);
+ *   console.log("Errore aggiornamento email");
  * }
  */
 export async function updateUserEmail(userId, newEmail){
@@ -257,22 +247,21 @@ export async function updateUserEmail(userId, newEmail){
 }
 
 /**
- * Aggiorna password utente loggato con hashing automatico
+ * Aggiorna password utente con hashing automatico
  * API pubblica per cambio password sicuro
  * 
  * @async
+ * @param {string} userId - ID utente da aggiornare
  * @param {string} newPassword - Nuova password in chiaro
  * @returns {Promise<boolean>} true se aggiornamento completato
  * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * @throws {Error} Se errori durante hashing
  * 
  * @example
- * // Cambio password da form profilo
  * try {
- *   await updateUserPassword("nuovaPassword123");
- *   showSuccessMessage("Password aggiornata!");
+ *   await updateUserPassword("user123", "nuovaPassword123");
  * } catch (error) {
- *   showErrorMessage("Errore nell'aggiornamento password");
+ *   console.log("Errore aggiornamento password");
  * }
  */
 export async function updateUserPassword(userId, newPassword){
@@ -290,20 +279,17 @@ export async function updateUserPassword(userId, newPassword){
  * API pubblica per gestione ricette preferite con logica toggle
  * 
  * @async
+ * @param {string} userId - ID utente da aggiornare
  * @param {string} recipeId - ID ricetta da aggiungere/rimuovere dai preferiti
  * @returns {Promise<boolean>} true se operazione completata
- * @throws {UsersManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
+ * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
  * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
  * 
  * @example
- * // Toggle preferiti da pagina ricetta
  * try {
- *   await updateUserFavourites("recipe_52772");
- *   const user = searchUserById(getLoggedUserId());
- *   const isFav = user.favourites.includes("recipe_52772");
- *   updateFavouriteButton(isFav ? "remove" : "add");
+ *   await updateUserFavourites("user123", "recipe_52772");
  * } catch (error) {
- *   showErrorMessage("Errore nell'aggiornamento preferiti");
+ *   console.log("Errore aggiornamento preferiti");
  * }
  */
 export async function updateUserFavourites(userId, recipeId){
@@ -343,19 +329,10 @@ export async function updateUserFavourites(userId, recipeId){
  * @throws {Error} Se errori durante hashing password fornita
  * 
  * @example
- * // Flusso login completo
  * try {
- *   const user = searchUserbyName("mario");
- *   const isAuthenticated = await admitUser(user.id, inputPassword);
- *   
- *   if (isAuthenticated) {
- *     updateLoggedUser(user.id);
- *     window.location.href = "./pages/landing.html";
- *   } else {
- *     showErrorMessage("Password errata");
- *   }
+ *   const isAuthenticated = await admitUser("user123", "password123");
  * } catch (error) {
- *   handleUserError(error);
+ *   console.log("Errore autenticazione");
  * }
  */
 export async function admitUser(userId, providedPassword){
@@ -387,14 +364,8 @@ export async function admitUser(userId, providedPassword){
  * @throws {Error} Se Web Crypto API non disponibile o errori di processing
  * 
  * @example
- * // Hash password per storage sicuro
  * const hashedPassword = await hashString("password123");
- * console.log(hashedPassword); // "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f"
- * 
- * @example
- * // Uso in verifica credenziali
- * const inputHash = await hashString(userInput);
- * const isValid = inputHash === storedHash;
+ * console.log(hashedPassword.length); // 64
  */
 export async function hashString(originalString) {
     // Encoding stringa → byte array per Web Crypto API
@@ -587,3 +558,59 @@ export async function updateUserNotes(userId, recipeId = null, text = null, note
         throw error;
     }    
 }
+
+// ============================================================================
+// NOTE ARCHITETTURALI E LIMITI
+// ============================================================================
+
+/**
+ * ARCHITETTURA E PATTERN:
+ * 
+ * PATTERN IMPLEMENTATI:
+ * - Repository Pattern: getRegisteredUsers() come data access layer con astrazione storage
+ * - Factory Pattern: createUserObject() per costruzione oggetti User standardizzata
+ * - Command Pattern: updateUserData() polivalente per aggiornamenti campi diversi
+ * - Immutability: structuredClone() previene mutazioni accidentali dati
+ * - Atomic Operations: read-modify-write per consistency storage
+ * 
+ * BUSINESS RULES:
+ * - Unicità: Username e email unici nel sistema
+ * - Sicurezza: Password hashate SHA-256, no storage in chiaro
+ * - Toggle Favourites: Add/remove automatico basato su presenza ricetta
+ * - CRUD Notes: Operazioni separate per aggiunta/rimozione note
+ * - Validation Chain: Controlli duplicati prima creazione/aggiornamento
+ * 
+ * DIPENDENZE:
+ * - errorsManagement.js: UsersManagementError per errori tipizzati business
+ * - data-models.js: Classi User/Note per validazione e costruzione oggetti
+ * - storageManagement.js: StorageManagement per persistenza localStorage
+ * 
+ * PERFORMANCE:
+ * - Cache Locale: registeredUsers aggiornata ad ogni accesso (trade-off freshness vs performance)
+ * - Linear Search: findIndex() accettabile per MVP, ottimizzabile con Map per scale
+ * - Atomic Updates: Lettura completa array per ogni modifica (consistency over performance)
+ * - Hashing Overhead: SHA-256 computazionalmente costoso ma sicuro
+ * 
+ * LIMITAZIONI:
+ * - No Session Expiry: Utenti persistono indefinitamente
+ * - No Concurrency: Operazioni sequenziali, no locking per multi-tab
+ * - No Password Recovery: Sistema solo verifica, no reset mechanism
+ * - No Email Validation: Controllo formato lasciato a upstream
+ * - No Rate Limiting: Nessun limite tentativi login/fail
+ * 
+ * SICUREZZA:
+ * - Password Hashing: SHA-256 con Web Crypto API (standard sicuro)
+ * - No Plain Text: Password mai memorizzate in chiaro
+ * - Input Sanitization: Validation duplicati previene injection indiretta
+ * - Error Handling: Messaggi errori non rivelano info sensibili
+ * 
+ * FUTURI MIGLIORAMENTI:
+ * - Caching intelligente: Map per lookup O(1) utenti
+ * - Session Management: Expiry automatico con refresh token
+ * - Password Recovery: Email reset con token temporaneo
+ * - Rate Limiting: Blocco tentativi falliti ripetuti
+ * - Concurrency Control: Optimistic locking per multi-tab
+ * - Email Verification: Conferma registrazione via email
+ * - Password Strength: Validazione complessità client-side
+ * - Audit Logging: Tracciamento operazioni sensibili
+ */
