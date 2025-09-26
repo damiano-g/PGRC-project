@@ -97,9 +97,9 @@ export function validatePassword(inputObject) {
 
         const inputString = String(inputObject.DOMelement.value);
 
-        const upCase = /[A-Z]/g;
-        const lowCase = /[a-z]/g;
-        const num = /[0-9]/g;
+        const upCase = /[A-Z]/;
+        const lowCase = /[a-z]/;
+        const num = /[0-9]/;
     
         if(inputString.match(upCase)){
                 document.getElementById("upCase").classList.add("valid-text");
