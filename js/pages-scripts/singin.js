@@ -7,23 +7,23 @@ import { formatInputField, validateBtn, validateEmail, validatePassConfirm, vali
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione
 const signinUsernameInput = {
-        DOMelement: document.getElementById("username"),
-        inputStatus: 0,
+    DOMelement: document.getElementById("username"),
+    inputStatus: 0,
 }
 
 const signinEmailInput = {
-        DOMelement: document.getElementById("email"),
-        inputStatus: 0,
+    DOMelement: document.getElementById("email"),
+    inputStatus: 0,
 }
 
 const signinPasswordInput = {
-        DOMelement: document.getElementById("password"),
-        inputStatus: 0,
+    DOMelement: document.getElementById("password"),
+    inputStatus: 0,
 }
 
 const signinConfPassInput = {
-        DOMelement: document.getElementById("confirmPassword"),
-        inputStatus: 0,
+    DOMelement: document.getElementById("confirmPassword"),
+    inputStatus: 0,
 } 
 
 // Riferimenti ai pulsanti del form di registrazione
@@ -60,12 +60,12 @@ requiredInputFields.forEach(inputObject => inputObject.DOMelement.addEventListen
 
 // Gestisce il reset completo del form alla condizione iniziale
 signinClearBtn.addEventListener("click", () => {
-        requiredInputFields.forEach(item => {
-                item.inputStatus = 0;
-                formatInputField(item);
-        });
-        signinConfPassInput.DOMelement.disabled = true;
-        validateBtn(requiredInputFields, signinSubBtn);       
+    requiredInputFields.forEach(item => {
+        item.inputStatus = 0;
+        formatInputField(item);
+    });
+    signinConfPassInput.DOMelement.disabled = true;
+    validateBtn(requiredInputFields, signinSubBtn);       
 });
 
 // ============================================================================
