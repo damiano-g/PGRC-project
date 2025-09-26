@@ -604,13 +604,4 @@ export async function updateUserNotes(userId, recipeId = null, text = null, note
  * - Input Sanitization: Validation duplicati previene injection indiretta
  * - Error Handling: Messaggi errori non rivelano info sensibili
  * 
- * FUTURI MIGLIORAMENTI:
- * - Caching intelligente: Map per lookup O(1) utenti
- * - Session Management: Expiry automatico con refresh token
- * - Password Recovery: Email reset con token temporaneo
- * - Rate Limiting: Blocco tentativi falliti ripetuti
- * - Concurrency Control: Optimistic locking per multi-tab
- * - Email Verification: Conferma registrazione via email
- * - Password Strength: Validazione complessità client-side
- * - Audit Logging: Tracciamento operazioni sensibili
  */
