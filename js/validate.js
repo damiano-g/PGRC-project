@@ -58,8 +58,12 @@ export function validateEmail(inputObject){
         const inputString = String(inputObject.DOMelement.value);
 
         // Pattern regex per validazione email:
-        // ^(?!.*\.\.) - Non doppi punti consecutivi
+        // ^ -> validazione su tutta la stringa
+        // [\w.-] -> \w caratteri alfanumerici e underscore - ".-" iteral dot e hypen 
+        // (?!.*\.\.) - Non doppi punti consecutivi - 
         // (?!.*\.\@) - Non punto prima di @
+        // ?! negative lockahead - .* qualsiasi numero di caratteri
+        // {2,}$ -> {2,} almeno due del gruppo di caratteri precedente - $ il match è vincolato al termine della stringa
         // [\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$ - Formato standard email
         const pattern = /^(?!.*\.\.)(?!.*\.\@)[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/
 
