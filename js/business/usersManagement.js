@@ -9,7 +9,7 @@
 
 import { UsersManagementError, } from "../errorsManagement.js";
 import { User, Note } from "../data-models.js";
-import { StorageManagement } from "../storageManagement.js";
+import { StorageOperations } from "../storageManagement.js";
 
 // ============================================================================
 // CONFIGURAZIONE E COSTANTI
@@ -21,18 +21,13 @@ import { StorageManagement } from "../storageManagement.js";
  */
 const USERS_DB_KEY = "users";
 
+const USERS_STORAGE_OPTS = {storageLocation: "local", dataType: "array"};
+
 
 
 // ============================================================================
 // VARIABILI DI STATO CACHE
 // ============================================================================
-
-/**
- * Cache locale array utenti - aggiornata ad ogni accesso
- * Mantiene copia sincronizzata con localStorage per performance
- * @type {Array<User>}
- */
-let registeredUsers = [];
 
 
 // ============================================================================
@@ -52,11 +47,10 @@ let registeredUsers = [];
  */
 export function getRegisteredUsers() {
     try{
-        registeredUsers = StorageManagement.get(USERS_DB_KEY, {storageLocation: "local", dataType: "array"});
+        const registeredUsers = StorageOperations.get(USERS_DB_KEY, USERS_STORAGE_OPTS);
         return structuredClone(registeredUsers);
     }catch(error){
         console.error("Errore recupero utenti:", error);
-        registeredUsers = [];
         throw error;
     }
 };
@@ -138,9 +132,9 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
         const newUser = await createUserObject(chosenUsername, chosenEmail, chosenPassword);
         
         // Storage atomico: read → modify → write
-        const actualRegUsersArray = StorageManagement.get(USERS_DB_KEY, {storageLocation: "local", dataType: "array"});
+        const actualRegUsersArray = StorageOperations.get(USERS_DB_KEY, USERS_STORAGE_OPTS);
         actualRegUsersArray.push(newUser);
-        StorageManagement.set(USERS_DB_KEY, actualRegUsersArray, {storageLocation: "local", dataType: "array"});
+        StorageOperations.set(USERS_DB_KEY, actualRegUsersArray, USERS_STORAGE_OPTS);
         
         return newUser;
     } catch (error) {
@@ -176,7 +170,7 @@ export function deleteUser(userId){
         }
         
         actualRegUsersArray.splice(index, 1);
-        StorageManagement.set(USERS_DB_KEY, actualRegUsersArray, {storageLocation: "local", dataType: "array"});
+        StorageOperations.set(USERS_DB_KEY, actualRegUsersArray, USERS_STORAGE_OPTS);
     } catch (error) {
         console.error(error);
         throw error;
@@ -337,7 +331,7 @@ export async function updateUserFavourites(userId, recipeId){
  */
 export async function admitUser(userId, providedPassword){
     try {
-        const actualRegUsersArray = StorageManagement.get(USERS_DB_KEY, {storageLocation: "local", dataType: "array"});
+        const actualRegUsersArray = StorageOperations.get(USERS_DB_KEY, USERS_STORAGE_OPTS);
         const index = actualRegUsersArray.findIndex(user => user.id === userId);
         
         if(index < 0){
@@ -400,7 +394,7 @@ export async function hashString(originalString) {
  * @throws {UsersManagementError} Se errori di lettura storage (tipo "STORAGE")
  */
 function authUsername(chosenUsername){
-    const actualRegUsersArray = StorageManagement.get(USERS_DB_KEY, {storageLocation: "local", dataType: "array"});
+    const actualRegUsersArray = StorageOperations.get(USERS_DB_KEY, USERS_STORAGE_OPTS);
     if(actualRegUsersArray.some(user => user.username === chosenUsername)){
         throw new UsersManagementError("VALIDATION", "Username già in uso");
     }
@@ -419,7 +413,7 @@ function authUsername(chosenUsername){
  * @throws {UsersManagementError} Se errori di lettura storage (tipo "STORAGE")
  */
 function authEmail(chosenEmail){
-    const actualRegUsersArray = StorageManagement.get(USERS_DB_KEY, {storageLocation: "local", dataType: "array"});
+    const actualRegUsersArray = StorageOperations.get(USERS_DB_KEY, USERS_STORAGE_OPTS);
     if(actualRegUsersArray.some(user => user.email === chosenEmail)){
         throw new UsersManagementError("VALIDATION", "Email già in uso");
     }
@@ -505,7 +499,7 @@ async function updateUserData(userId, field, newValue, needsHashing = null) {
         const processedValue = (needsHashing ? await hashString(newValue) : newValue);
         
         actualRegUsersArray[index][field] = processedValue;
-        StorageManagement.set(USERS_DB_KEY, actualRegUsersArray, {storageLocation: "local", dataType: "array"});
+        StorageOperations.set(USERS_DB_KEY, actualRegUsersArray, USERS_STORAGE_OPTS);
         
     } catch (error) {
         console.error(error);
