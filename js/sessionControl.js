@@ -265,6 +265,7 @@ export const LoggedUser = {
     deleteAccount: () => {
         try {
             UsersManagement.deleteUser(LoggedUser.getId());
+            LoggedUser.endSession();
         } catch (error) {
             throw error;
         }

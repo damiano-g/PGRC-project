@@ -131,7 +131,7 @@ ReviewsManagementError.prototype.constructor = ReviewsManagementError;
  * );
  */
 export function StorageManagementError(type, message, details = null){
-        this.name = "StorageManagementError"; // ← FIX: Era "ReviewsManagementError"
+        this.name = "StorageManagementError";
         this.type = type;
         this.message = message;
         this.details = details;
@@ -187,9 +187,7 @@ StorageManagementError.prototype.constructor = StorageManagementError;
  *   handleUserError(error); // Gestisce qualsiasi errore nella chain
  * }
  * 
- * @todo Considera aggiungere logging levels (debug, info, warn, error)
  * @todo Implementa toast notifications invece di alert per UX migliore
- * @todo Aggiungi error reporting remoto per production monitoring
  */
 export function handleUserError(error) {
 

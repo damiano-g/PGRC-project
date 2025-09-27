@@ -23,13 +23,6 @@ const USERS_DB_KEY = "users";
 
 const USERS_STORAGE_OPTS = {storageLocation: "local", dataType: "array"};
 
-
-
-// ============================================================================
-// VARIABILI DI STATO CACHE
-// ============================================================================
-
-
 // ============================================================================
 // API PUBBLICA - ACCESSO DATI E GESTIONE SESSIONE
 // ============================================================================
@@ -39,7 +32,8 @@ const USERS_STORAGE_OPTS = {storageLocation: "local", dataType: "array"};
  * API pubblica per accesso read-only ai dati utenti
  * 
  * @returns {Array<User>} Deep copy array utenti (safe da modifiche esterne)
- * @throws {UsersManagementError} Se errori di lettura, fallback array vuoto
+ * @see {@link StorageOperations} - Per operazioni di lettura e scrittura web storage
+ * @throws {Error} Se errori di lettura - from {@link StorageOperations}
  * 
  * @example
  * const users = getRegisteredUsers();
@@ -50,7 +44,6 @@ export function getRegisteredUsers() {
         const registeredUsers = StorageOperations.get(USERS_DB_KEY, USERS_STORAGE_OPTS);
         return structuredClone(registeredUsers);
     }catch(error){
-        console.error("Errore recupero utenti:", error);
         throw error;
     }
 };
@@ -63,6 +56,7 @@ export function getRegisteredUsers() {
  * Ricerca utente per username con deep copy safety
  * API pubblica per lookup utenti durante login
  * 
+ * @deprecated Wrapper superfluo
  * @param {string} username - Username da cercare
  * @returns {User} Deep copy oggetto utente (safe da modifiche)
  * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
@@ -75,13 +69,18 @@ export function getRegisteredUsers() {
  * }
  */
 export function searchUserbyName(username) {
-    return searchUser("username", username);
+    try {
+        return searchUser("username", username);
+    } catch (error) {
+        throw error;
+    }
 }
 
 /**
  * Ricerca utente per ID con deep copy safety
  * API pubblica per lookup by ID (es. da sessione)
  * 
+ * @deprecated wrapper superfluo
  * @param {string} userId - ID univoco da cercare
  * @returns {User} Deep copy oggetto utente (safe da modifiche)
  * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
@@ -94,7 +93,11 @@ export function searchUserbyName(username) {
  * }
  */
 export function searchUserById(userId){
-    return searchUser("id", userId);
+    try {
+        return searchUser("id", userId);
+    } catch (error) {
+        throw error;
+    }
 }
 
 // ============================================================================
@@ -110,9 +113,13 @@ export function searchUserById(userId){
  * @param {string} chosenEmail - Email desiderata
  * @param {string} chosenPassword - Password in chiaro
  * @returns {Promise<User>} Utente creato e salvato
- * @throws {UsersManagementError} Se username/email già in uso (tipo "VALIDATION")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
- * @throws {Error} Se errori durante hashing
+ * @see {@link authField} - Per gestione valori duplicati
+ * @see {@link getRegisteredUsers} - Lettura database utenti (deep copy)
+ * @see {@link StorageOperations.set} - Aggiornamento database utenti
+ * @see {@link createUserObject} - Creazione nuovo oggetto utente
+ * @throws {Error} Se username/email già in uso - from {@link authField} 
+ * @throws {Error} Se errori di storage - from {@link StorageOperations} or {@link getRegisteredUsers}
+ * @throws {Error} Se errori durante hashing - from {@link createUserObject}
  * 
  * @example
  * try {
@@ -125,8 +132,8 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
 
     try {
         // Validation chain: username + email duplicati
-        authUsername(chosenUsername);
-        authEmail(chosenEmail);
+        authField("username", chosenUsername);
+        authField("email", chosenEmail);
         
         // User creation con hashing automatico
         const newUser = await createUserObject(chosenUsername, chosenEmail, chosenPassword);
@@ -138,7 +145,6 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
         
         return newUser;
     } catch (error) {
-        console.error(error);
         throw error;
     }
 }
@@ -148,8 +154,9 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
  * Operazione atomica per eliminazione account
  * 
  * @param {string} userId - ID utente da eliminare
- * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {new Error} Se utente non trovato
+ * @throws {Error} Se errori di storage - from {@link getRegisteredUsers} o {@link StorageOperations}
+ * @throws {new Error} Se utente non trovato
  * 
  * @example
  * try {
@@ -166,13 +173,14 @@ export function deleteUser(userId){
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            throw new UsersManagementError("NOT_FOUND", "Utente non trovato per eliminazione");
+            const userError = new Error("User non found");
+            console.error(userError);
+            throw userError;
         }
         
         actualRegUsersArray.splice(index, 1);
         StorageOperations.set(USERS_DB_KEY, actualRegUsersArray, USERS_STORAGE_OPTS);
     } catch (error) {
-        console.error(error);
         throw error;
     }
 }
@@ -189,8 +197,8 @@ export function deleteUser(userId){
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newUsername - Nuovo username desiderato
  * @returns {Promise<boolean>} true se aggiornamento completato
- * @throws {UsersManagementError} Se username già in uso (tipo "VALIDATION")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {Error} Se username già in uso from {@link authUsername}
+ * @throws {Error} Se errori di storage {@link StorageOperations}
  * 
  * @example
  * try {
@@ -203,9 +211,7 @@ export async function updateUserUsername(userId, newUsername){
     try {
         authUsername(newUsername); // Validation duplicati
         await updateUserData(userId, "username", newUsername);
-        return true;
     } catch (error) {
-        console.error(error);
         throw error;
     }
 }
@@ -218,8 +224,8 @@ export async function updateUserUsername(userId, newUsername){
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newEmail - Nuova email desiderata
  * @returns {Promise<boolean>} true se aggiornamento completato
- * @throws {UsersManagementError} Se email già in uso (tipo "VALIDATION")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {Error} Se username già in uso from {@link authEmail}
+ * @throws {Error} Se errori di storage {@link StorageOperations}
  * 
  * @example
  * try {
@@ -232,9 +238,7 @@ export async function updateUserEmail(userId, newEmail){
     try {
         authEmail(newEmail); // Validation duplicati
         await updateUserData(userId, "email", newEmail);
-        return true;
     } catch (error) {
-        console.error(error);
         throw error;
     }
     
@@ -248,8 +252,7 @@ export async function updateUserEmail(userId, newEmail){
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newPassword - Nuova password in chiaro
  * @returns {Promise<boolean>} true se aggiornamento completato
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
- * @throws {Error} Se errori durante hashing
+ * @throws {Error} Se errori durante hashing o errori di storage - from {@link updateUserData}
  * 
  * @example
  * try {
@@ -261,9 +264,7 @@ export async function updateUserEmail(userId, newEmail){
 export async function updateUserPassword(userId, newPassword){
     try {
         await updateUserData(userId, "password", newPassword, true); // needsHashing = true
-        return true;
     } catch (error) {
-        console.error(error);
         throw error;
     }
 }
@@ -275,9 +276,7 @@ export async function updateUserPassword(userId, newPassword){
  * @async
  * @param {string} userId - ID utente da aggiornare
  * @param {string} recipeId - ID ricetta da aggiungere/rimuovere dai preferiti
- * @returns {Promise<boolean>} true se operazione completata
- * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
+ * @throws {Error} Se utente non trovato o se errori di storage (r/w) - from {@link searchUser} o {@link updateUserData}
  * 
  * @example
  * try {
@@ -288,18 +287,17 @@ export async function updateUserPassword(userId, newPassword){
  */
 export async function updateUserFavourites(userId, recipeId){
     try {
-        const userFavouritesArray = searchUserById(userId).favourites;
-        const index = userFavouritesArray.findIndex(element => element === recipeId);
+        const userFavourites = searchUser("id", userId).favourites;
+        const index = userFavourites.findIndex(element => element === recipeId);
 
         if(index < 0){
-            userFavouritesArray.push(recipeId);
+            userFavourites.push(recipeId);
         }else{
-            userFavouritesArray.splice(index, 1);
+            userFavourites.splice(index, 1);
         }
-        await updateUserData(userId, "favourites", userFavouritesArray); 
-        return true;
+
+        await updateUserData(userId, "favourites", userFavourites); 
     } catch (error) {
-        console.error(error);
         throw error;
     }
     
@@ -314,13 +312,15 @@ export async function updateUserFavourites(userId, recipeId){
  * Verifica credenziali utente tramite confronto hash password
  * Core function per autenticazione sicura durante login
  * 
+ * NB - A differenza delle altre funzioni del modulo ritorna valori booleani (invece di logica successo/errori)
+ *      per consentire una gestione di ammissione esplicita upstream
+ * 
  * @async
  * @param {string} userId - ID univoco utente da autenticare
  * @param {string} providedPassword - Password in chiaro fornita
  * @returns {Promise<boolean>} true se credenziali corrette, false altrimenti
- * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
- * @throws {Error} Se errori durante hashing password fornita
+ * @throws {Error} Se utente non trovato o errori di lettura da storage - from {@link searchUser}
+ * @throws {Error} Se errori durante hashing password fornita - from {@link hashString}
  * 
  * @example
  * try {
@@ -331,19 +331,10 @@ export async function updateUserFavourites(userId, recipeId){
  */
 export async function admitUser(userId, providedPassword){
     try {
-        const actualRegUsersArray = StorageOperations.get(USERS_DB_KEY, USERS_STORAGE_OPTS);
-        const index = actualRegUsersArray.findIndex(user => user.id === userId);
-        
-        if(index < 0){
-            throw new UsersManagementError("NOT_FOUND", "Utente non trovato per autenticazione");
-        }
-        
-        const storedHash = actualRegUsersArray[index].password;
+        const storedHash = searchUser("id", userId).password;
         const providedHash = await hashString(providedPassword);
-    
         return storedHash === providedHash;
     } catch (error) {
-        console.error(error);
         throw error;
     }  
 }
@@ -362,21 +353,26 @@ export async function admitUser(userId, providedPassword){
  * console.log(hashedPassword.length); // 64
  */
 export async function hashString(originalString) {
-    // Encoding stringa → byte array per Web Crypto API
-    const data = new TextEncoder().encode(originalString);
+    try {
+        // Encoding stringa → byte array per Web Crypto API
+        const data = new TextEncoder().encode(originalString);
+        
+        // Calcolo hash SHA-256 (ArrayBuffer)
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        
+        // Conversione ArrayBuffer → Array di byte per manipolazione
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        
+        // Formattazione esadecimale: byte → hex string (2 cifre, zero-padded)
+        const hashPassword = hashArray
+            .map(byte => byte.toString(16).padStart(2, "0"))
+            .join("");
     
-    // Calcolo hash SHA-256 (ArrayBuffer)
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    
-    // Conversione ArrayBuffer → Array di byte per manipolazione
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    
-    // Formattazione esadecimale: byte → hex string (2 cifre, zero-padded)
-    const hashPassword = hashArray
-        .map(byte => byte.toString(16).padStart(2, "0"))
-        .join("");
-
-    return hashPassword;
+        return hashPassword;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }
 
 // ============================================================================
@@ -387,6 +383,7 @@ export async function hashString(originalString) {
  * Verifica disponibilità username nel database (no duplicati)
  * Controllo atomico con lettura fresh dal localStorage
  * 
+ * @deprecated Logica gestibile tramite funzione generica {@link authField}
  * @private
  * @param {string} chosenUsername - Username da verificare
  * @returns {boolean} true se disponibile
@@ -398,7 +395,6 @@ function authUsername(chosenUsername){
     if(actualRegUsersArray.some(user => user.username === chosenUsername)){
         throw new UsersManagementError("VALIDATION", "Username già in uso");
     }
-    
     return true;
 }
 
@@ -406,6 +402,7 @@ function authUsername(chosenUsername){
  * Verifica disponibilità email nel database (no duplicati)
  * Controllo atomico con lettura fresh dal localStorage
  * 
+ * @deprecated Logica gestibile tramite funzione generica {@link authField}
  * @private
  * @param {string} chosenEmail - Email da verificare
  * @returns {boolean} true se disponibile
@@ -419,6 +416,38 @@ function authEmail(chosenEmail){
     }
 
     return true;
+}
+
+/**
+ * Verifica disponibilità del valore per il campo scelto per evitare duplicati
+ * Controllo atomico con lettura fresh dal localStorage
+ * 
+ * @private
+ * @param {"username"|"email"} fieldType - Campo da verificare
+ * @param {string} fieldValue - Valore fornito per il campo
+ * @see {@link getRegisteredUsers} - Per lettura array utenti registrati
+ * @throws {new Error} Se valore già in uso per il campo selezionato
+ * @throws {Error} Se errori di lettura storage - from {@link getRegisteredUsers}
+ */
+function authField(fieldType, fieldValue){
+    try {
+        const acceptedFields = ["username", "email"];
+        if(!acceptedFields.includes(fieldType)){
+            const dataTypeError = new Error(`${fieldType} not supported`);
+            console.error(error);
+            throw dataTypeError;
+        }
+
+        const registeredUsers = getRegisteredUsers();
+
+        if(registeredUsers.some(user => user[fieldType] === fieldValue)){
+            const duplicatedValue = new Error(`${fieldType} ${fieldValue} already in use`);
+            console.error(duplicatedValue);
+            throw duplicatedValue;
+        }    
+    } catch (error) {
+        throw error;
+    }
 }
 
 // ============================================================================
@@ -435,11 +464,15 @@ function authEmail(chosenEmail){
  * @param {string} chosenEmail - Email già validata
  * @param {string} chosenPassword - Password in chiaro da hashare
  * @returns {Promise<User>} Istanza User completa pronta per storage
- * @throws {Error} Se errori durante hashing password
+ * @throws {Error} Se errori durante hashing password - from {@link hashString}
  */
 async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
-    const hashPassword = await hashString(chosenPassword);
-    return new User(chosenUsername, chosenEmail, hashPassword);
+    try {
+        const hashPassword = await hashString(chosenPassword);
+        return new User(chosenUsername, chosenEmail, hashPassword);
+    } catch (error) {
+        throw error;
+    }
 }
 
 // ============================================================================
@@ -451,24 +484,31 @@ async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
  * Utility interna per query flessibili con deep copy safety
  * 
  * @private
- * @param {string} searchField - Campo da usare per ricerca ("username", "id", "email")
+ * @param {"username"|"id"|"email"} searchField - Campo da usare per ricerca - campi univoci
  * @param {string} searchValue - Valore da cercare nel campo
  * @returns {User} Deep copy oggetto utente trovato
- * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
- * @throws {UsersManagementError} Se errori di lettura (tipo "STORAGE")
+ * @throws {new Error} Se utente non trovato o se field non supportato
+ * @throws {Error} Se errori di lettura - from {@link getRegisteredUsers}
  */
 function searchUser(searchField, searchValue){
     try {
+        const acceptedFields = ["username", "id", "email"];
+        if(!acceptedFields.includes(searchField)){
+            const fieldError = new Error(`${searchField} is not an accepted field`);
+            console.error(fieldError);
+            throw fieldError;
+        }
         const actualRegUsersArray = getRegisteredUsers();
         const index = actualRegUsersArray.findIndex(user => user[searchField] === searchValue);
      
         if(index < 0){
-            throw new UsersManagementError("NOT_FOUND", `Utente non trovato per ${searchField}: ${searchValue}`);
+            const userError = new Error(`User not found for ${searchField}: ${searchValue}`);
+            console.error(userError);
+            throw userError;
         }
 
         return structuredClone(actualRegUsersArray[index]);
     } catch (error) {
-        console.error(error);
         throw error;
     }
 }
@@ -479,21 +519,31 @@ function searchUser(searchField, searchValue){
  * 
  * @private
  * @async
- * @param {string} field - Nome campo da aggiornare
+ * @param {"username"|"email"|"password"|"favourites"|"notes"} field - Nome campo da aggiornare
  * @param {string|Array} newValue - Nuovo valore da assegnare
- * @param {boolean} [needsHashing=false] - Se true, applica hash SHA-256
- * @throws {UsersManagementError} Se utente non trovato (tipo "NOT_FOUND")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
+ * @param {boolean} [needsHashing=false] - Se true, applica hash SHA-256 (necessario per processamento password)
+ * @throws {new Error} Se parametro field errato o utente non trovato
+ * @throws {Error} Se errori di storage from {@link getRegisteredUsers} o {@link StorageOperations}
+ * @throws {Error} Se errori di hashing - from {@link hashString}
+ * 
  */
-async function updateUserData(userId, field, newValue, needsHashing = null) {
+export async function updateUserData(userId, field, newValue, needsHashing = null) {
     try {
+        const userFields = ["username", "email", "password", "favourites", "notes"]
+        if(!userFields.includes(field)){
+            const fieldError = new Error("Field parameter not accepted");
+            console.error(fieldError);
+            throw fieldError;
+        }
         // Atomic update operation
         const actualRegUsersArray = getRegisteredUsers();
         const currentUserId = userId;
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            throw new UsersManagementError("NOT_FOUND", "Utente loggato non trovato per aggiornamento");
+            const userError = new Error("User id not found");
+            console.error(userError);
+            throw userError;
         }
 
         const processedValue = (needsHashing ? await hashString(newValue) : newValue);
@@ -502,53 +552,52 @@ async function updateUserData(userId, field, newValue, needsHashing = null) {
         StorageOperations.set(USERS_DB_KEY, actualRegUsersArray, USERS_STORAGE_OPTS);
         
     } catch (error) {
-        console.error(error);
         throw error;
     }
 }
 
 /**
- * Engine interno per gestione note utente con operazioni CRUD
- * Utility privata per aggiunta/rimozione note con validazione parametri
+ * Gestisce toggle note utente per ricetta specifica (add/remove automatico)
+ * API pubblica per gestione note utente con logica toggle
  * 
- * @private
  * @async
+ * @param {string} userId - ID utente
  * @param {string|null} recipeId - ID ricetta per aggiunta nota (null per rimozione)
  * @param {string|null} text - Testo nota per aggiunta (null per rimozione)
  * @param {string|null} noteId - ID nota per rimozione (null per aggiunta)
- * @returns {Promise<boolean>} true se operazione completata
- * @throws {UsersManagementError} Se utente loggato non trovato (tipo "NOT_FOUND")
- * @throws {UsersManagementError} Se errori di storage (tipo "STORAGE")
+ * @see {@link searchUser} Per recupero note utente
+ * @see {@link updateUserData} Per aggiornamento note utente
+ * @throws {Error} Se utente loggato non trovato - from {@link searchUser} 
+ * @throws {Error} Se errori di storage - from {@link searchUser} or {@link updateUserData}
  * @throws {Error} Se formato parametri non valido
  * 
  * @example
- * // Uso interno per aggiunta nota
+ * Aggiunta nota
  * await updateUserNotes("recipe_123", "Testo nota", null);
  * 
- * @example  
- * // Uso interno per rimozione nota
+ * @example
+ * Rimozione nota  
  * await updateUserNotes(null, null, "note_456");
  */
 export async function updateUserNotes(userId, recipeId = null, text = null, noteId = null){
     try {
-        const userNotesArray = searchUserById(userId).notes;
+        const userNotes = searchUser("id", userId).notes;
  
         if((text && recipeId) && !noteId){
-            userNotesArray.push(new Note(recipeId, text));
+            userNotes.push(new Note(recipeId, text));
         }else{
             if(!(text && recipeId) && noteId){
-                const index = userNotesArray.findIndex(element => element.id === noteId);
-                userNotesArray.splice(index, 1);
+                const index = userNotes.findIndex(element => element.id === noteId);
+                userNotes.splice(index, 1);
             }else{
-                throw new Error("Wrong data format");
-                
+                const dataFormatError = new Error("Wrong data format");
+                console.error(dataFormatError);
+                throw dataFormatError;   
             }
         }
         
-        await updateUserData(userId, "notes", userNotesArray);
-        return true;
+        await updateUserData(userId, "notes", userNotes);
     } catch (error) {
-        console.error(error);
         throw error;
     }    
 }

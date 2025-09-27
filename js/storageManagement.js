@@ -1,12 +1,7 @@
 /**
  * @fileoverview Gestione centralizzata operazioni storage (localStorage/sessionStorage)
  * @description Modulo unificato per operazioni CRUD su web storage con supporto multi-tipo
- * @author damia
- * @version 1.0.0
- * @since 2025-09-01
  */
-
-import { StorageManagementError } from "./errorsManagement.js";
 
 /**
  * Manager centralizzato per operazioni web storage
@@ -14,7 +9,7 @@ import { StorageManagementError } from "./errorsManagement.js";
  * 
  * @namespace StorageManagement
  */
-export const StorageManagement = {
+export const StorageOperations = {
     
     /**
      * Recupera dati da web storage con deserializzazione automatica basata su tipo
@@ -44,7 +39,6 @@ export const StorageManagement = {
         const {storageLocation, dataType} = options;
 
         try {
-
             let retrievedData;
 
             // Selezione storage engine basato su parametro
@@ -56,7 +50,7 @@ export const StorageManagement = {
                     retrievedData = sessionStorage.getItem(storageKey);
                     break;
                 default:
-                    throw new StorageManagementError("VALIDATION", `Unsupported storage location: ${storageLocation}`);
+                    throw new Error(`Unsupported storage location: ${storageLocation}`);
             }
 
             // Deserializzazione basata su tipo dato richiesto
@@ -68,9 +62,10 @@ export const StorageManagement = {
                     // Return stringa con fallback stringa vuota se null/undefined
                     return retrievedData || "";
                 default:
-                    throw new StorageManagementError("VALIDATION", `Unsupported data type: ${dataType}`);
+                    throw new Error(`Unsupported data type: ${dataType}`);
             }
         } catch (error) {
+            console.error(error);
             // Re-throw errori per propagazione a business logic layer
             throw error;
         }
@@ -117,7 +112,7 @@ export const StorageManagement = {
                     processedData = data;
                     break;
                 default:
-                    throw new StorageManagementError("VALIDATION", `Unsupported data type: ${dataType}`);
+                    throw new Error(`Unsupported data type: ${dataType}`);
             }
 
             // Persistenza su storage engine selezionato
@@ -129,9 +124,10 @@ export const StorageManagement = {
                     sessionStorage.setItem(storageKey, processedData);
                     break;
                 default:    
-                    throw new StorageManagementError("VALIDATION", `Unsupported storage location: ${storageLocation}`);
+                    throw new Error(`Unsupported storage location: ${storageLocation}`);
             }
         } catch (error) {
+            console.error(error);
             // Re-throw errori per propagazione a business logic layer
             throw error;
         }
