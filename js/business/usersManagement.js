@@ -8,6 +8,7 @@
 
 import { Note, User } from "../data-models.js";
 import { StorageOperations } from "../storageManagement.js";
+import * as ErrorsManagement from "../errorsManagement.js";
 
 // ============================================================================
 // CONFIGURAZIONE E COSTANTI
@@ -127,9 +128,7 @@ export function deleteUser(userId){
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            const userError = new Error("User non found");
-            console.error(userError);
-            throw userError;
+            throw new ErrorsManagement.NotFound("user")
         }
         
         actualRegUsersArray.splice(index, 1);
@@ -313,11 +312,9 @@ export async function updateUserNotes(userId, recipeId = null, text = null, note
  * Verifica credenziali utente tramite confronto hash password
  * Core function per autenticazione sicura durante login
  * 
- * NB - A differenza delle altre funzioni del modulo ritorna valori booleani (invece di logica successo/errori)
- *      per consentire una gestione di ammissione esplicita upstream (session control)
- * 
  * @async
- * @param {string} userId - ID univoco utente da autenticare
+ * @param {"id"|"username"|"email"} idField - Parametro di identificazione utente
+ * @param {string} idValue - Valore di identificazione
  * @param {string} providedPassword - Password in chiaro fornita
  * @returns {Promise<boolean>} true se credenziali corrette, false altrimenti
  * @see {@link searchUser} Lettura dati utente
@@ -327,14 +324,18 @@ export async function updateUserNotes(userId, recipeId = null, text = null, note
  * 
  * @example
  * try {
- *   const isAuthenticated = await admitUser("user123", "password123");
+ *   if(await admitUser("user123", "password123")){
+ *      console.log("Utente autenticato con successo")
+ *      }else{
+ *      console.log("Autenticazione fallita")
+ *      }
  * } catch (error) {
- *   console.log("Errore autenticazione");
+ *   console.log("Errore");
  * }
  */
-export async function admitUser(userId, providedPassword){
+export async function admitUser(idField, idValue, providedPassword){
     try {
-        const storedHash = searchUser("id", userId).password;
+        const storedHash = searchUser(idField, idValue).password;
         const providedHash = await hashString(providedPassword);
         return storedHash === providedHash;
     } catch (error) {

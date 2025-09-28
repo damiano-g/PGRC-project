@@ -2,11 +2,9 @@
  * @fileoverview Gestione sessione utente e stato ricette
  * @description Modulo per controllo autenticazione, gestione sessione e query stato ricette.
  * Fornisce interfacce per login/logout, operazioni utente e verifica stato ricette.
- * @author damia
- * @version 1.0.0
- * @since 2025-08-28
  * @requires ./business/reviewsManagement.js - Gestione recensioni
  * @requires ./business/usersManagement.js - Gestione utenti
+ * @requires ./business/recipesManagement.js - Gestione utenti
  * @requires ./storageManagement.js - Gestione storage
  */
 
@@ -18,23 +16,40 @@ import { StorageOperations } from "./storageManagement.js";
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
 const LOGGED_USER_KEY = "loggedUser";
 
+/**@deprecated */
 let loggedUserId = "";
 
 /**
  * Aggiorna ID utente loggato in storage e cache locale
  * @private
  * @param {string} userId - ID utente da salvare
- * @throws {UsersManagementError} Se errore storage
+ * @see {@link StorageOperations} Per aggiornamento session storage
+ * @throws {Error} Se errore storage - from {@link StorageOperations}
  */
 function updateLoggedUser(userId){
     try{
         StorageOperations.set(LOGGED_USER_KEY, userId, {storageLocation: "session", dataType: "string"});
-        loggedUserId = userId; // Aggiorna cache locale
     }catch(error){
-        throw new UsersManagementError("STORAGE", "Errore aggiornamento sessione", error);
+        throw error;
     }
 }
 
+/**
+ * Accumula oggetti ricetta completi da array di ID ricette
+ * Utility per recupero batch di ricette da lista ID
+ * 
+ * @private
+ * @async
+ * @param {Array<string>} idsArray - Array di ID ricette da recuperare
+ * @returns {Promise<Array<FullRecipe>>} Array di oggetti ricetta completi
+ * @see {@link RecipesManagement.searchRecipeById} Per ricerca ricetta
+ * @throws {Error} Se errore recupero singola ricetta - from {@link RecipesManagement.searchRecipeById}
+ * 
+ * @example
+ * const ids = ["52772", "52773"];
+ * const recipes = await recipesAccumulator(ids);
+ * // recipes contiene array di oggetti FullRecipe per le ricette richieste
+ */
 async function recipesAccumulator(idsArray){
     try {
         const accumulatorArray = [];
@@ -58,23 +73,24 @@ export const NewUser = {
 
     /**
      * Avvia sessione utente con credenziali fornite
+     * 
      * @async
      * @param {string} username - Nome utente
      * @param {string} password - Password
      * @returns {Promise<boolean>} True se login riuscito
-     * @throws {Error} Se errore autenticazione
+     * @throws {Error} Se errore utente non trovato o dati errati - from {@link searchUser}
+     * 
+     * @todo Valutare upstream se implementare autenticazione tramite email
      */
     startSession: async (username, password) => {
         try {
-            const foundId = UsersManagement.searchUser("username",username).id;
-            const admitted = await UsersManagement.admitUser(foundId, password);
+            const admitted = await UsersManagement.admitUser("username", username, password);
 
             if(admitted){
-                updateLoggedUser(foundId);
-                return true;
-            }else{
-                return false;
-            };
+                updateLoggedUser(UsersManagement.searchUser("username", username).id);
+            }
+
+            return admitted;
         } catch (error) {
             throw error;
         };
@@ -107,15 +123,13 @@ export const LoggedUser = {
     /**
      * Recupera ID utente loggato da storage
      * @returns {string} ID utente o stringa vuota
-     * @throws {Error} Se errore recupero storage
+     * @see {@link StorageOperations} Per lettura dati utente
+     * @throws {Error} Se errore recupero storage - from {@link StorageOperations}
      */
     getId: () => {
         try {
-            loggedUserId = StorageOperations.get(LOGGED_USER_KEY, {storageLocation: "session", dataType: "string"});
-            return loggedUserId;
+            return StorageOperations.get(LOGGED_USER_KEY, {storageLocation: "session", dataType: "string"});
         } catch (error) {
-            console.error("Errore recupero sessione:", error);
-            loggedUserId = "";
             throw error;
         } 
     },
@@ -123,7 +137,9 @@ export const LoggedUser = {
     /**
      * Verifica se utente è attualmente loggato
      * @returns {boolean} True se utente loggato valido
-     * @throws {Error} Se errore verifica
+     * @see {@link LoggedUser.getId} Per lettura id utente loggato
+     * @see {@link UsersManagement.getRegisteredUsers} Per lettura database utenti
+     * @throws {Error} Se errore lettura da storage - from {@link LoggedUser.getId} o {@link UsersManagement.getRegisteredUsers}
      */
     isLogged: () => {
         try {
@@ -131,13 +147,13 @@ export const LoggedUser = {
             return Boolean(loggedUserId && UsersManagement.getRegisteredUsers().some(item => item.id === loggedUserId));
         } catch (error) {
             throw error;
-        };
+        }
     },
     
     /**
-     * Recupera dati completi utente loggato
+     * Recupera dati completi utente loggato - funzione wrapper
      * @returns {Object} Dati utente
-     * @throws {Error} Se errore recupero
+     * @throws {Error} Se errore recupero - 
      */
     getData: () => {
         try {
