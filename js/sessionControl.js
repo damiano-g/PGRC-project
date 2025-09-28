@@ -13,7 +13,7 @@
 import * as RecipesManagement from "./business/recipesManagement.js";
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
-import { StorageManagement } from "./storageManagement.js";
+import { StorageOperations } from "./storageManagement.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
 const LOGGED_USER_KEY = "loggedUser";
@@ -28,7 +28,7 @@ let loggedUserId = "";
  */
 function updateLoggedUser(userId){
     try{
-        StorageManagement.set(LOGGED_USER_KEY, userId, {storageLocation: "session", dataType: "string"});
+        StorageOperations.set(LOGGED_USER_KEY, userId, {storageLocation: "session", dataType: "string"});
         loggedUserId = userId; // Aggiorna cache locale
     }catch(error){
         throw new UsersManagementError("STORAGE", "Errore aggiornamento sessione", error);
@@ -111,7 +111,7 @@ export const LoggedUser = {
      */
     getId: () => {
         try {
-            loggedUserId = StorageManagement.get(LOGGED_USER_KEY, {storageLocation: "session", dataType: "string"});
+            loggedUserId = StorageOperations.get(LOGGED_USER_KEY, {storageLocation: "session", dataType: "string"});
             return loggedUserId;
         } catch (error) {
             console.error("Errore recupero sessione:", error);
@@ -293,7 +293,7 @@ export const LoggedUser = {
      */
     endSession: () => {
         try{
-            StorageManagement.set(LOGGED_USER_KEY, "", {storageLocation: "session", dataType: "string"});
+            StorageOperations.set(LOGGED_USER_KEY, "", {storageLocation: "session", dataType: "string"});
             loggedUserId = LoggedUser.getId(); // Aggiorna cache locale
             if(LoggedUser.getId === ""){
                 return true;
