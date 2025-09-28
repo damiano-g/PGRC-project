@@ -2,9 +2,7 @@
  * @fileoverview Data models per ricette e categorie - costruttori e utilità per oggetti business
  * @description Fornisce classi unificate per gestire dati provenienti da TheMealDB API
  * con normalizzazione campi e pattern di fallback per gestione dati incompleti
- * @author damia
- * @version 1.0.0
- * @since 2025-08-28
+
  * @requires Nessuna dipendenza esterna - modulo self-contained
  */
 
@@ -21,19 +19,15 @@
  * @returns {string} ID univoco formato: "tipo_timestamp_random4digit"
  * 
  * @description
- * Strategia ID generation per garantire unicità across sessions e browser.
+ * Strategia di generazione ID standardizzata per garantire unicità.
  * - Timestamp Unix: garantisce unicità temporale (millisecondi)
  * - Random 4-digit: riduce probabilità collisioni simultanee
- * - Prefisso tipo: debugging e categorizzazione visuale
+ * - Prefisso tipo: tipo di dato
  * 
  * @example
  * generateItemId("user") → "user_1693747200000_1234"
  * generateItemId("note") → "note_1693747201500_5678"
  * 
- * @todo Considerare crypto.randomUUID() per browser moderni
- * @todo Aggiungere validazione itemType parameter
- * 
- * @since 1.0.0
  */
 function generateItemId(itemType) {
     const timestamp = Date.now(); // Timestamp Unix in millisecondi
@@ -46,57 +40,49 @@ function generateItemId(itemType) {
 // ================================================================================================
 
 /**
- * @typedef {Object} User
- * @property {string} id - ID univoco generato automaticamente
- * @property {string} username - Nome utente
- * @property {string} email - Email utente  
- * @property {string} password - Password hashata
- * @property {Array<string>} favourites - Array ID ricette preferite
- * @property {Array<Note>} notes - Array note personali utente
- * @property {string} creationDate - Data creazione ISO string
- */
-
-/**
- * Costruttore per oggetti utente del sistema con dati pre-validati
- * 
- * @constructor
- * @function User
+ * Classe per oggetti utente del sistema con dati pre-validati
+ *  
+ * @class
  * @param {string} validUsername - Username già validato upstream
- * @param {string} validEmail - Email già validata upstream  
+ * @param {string} validEmail - Email già validata upstream
  * @param {string} hashedPassword - Password già hashata per sicurezza
- * 
+ *
  * @description
  * Factory per utenti con validazione delegata a layer superiore.
  * - ID auto-generato per unicità garantita
  * - Arrays vuoti per favourites/notes (populate on-demand)
  * - Timestamp ISO per audit trail
  * - Password management delegato a auth layer
- * 
+ *
  * @example
  * const hashedPwd = await hashPassword("mypassword");
  * const newUser = new User("john_doe", "john@example.com", hashedPwd);
- * 
- * @todo Aggiungere validazione format email/username
- * @todo Implementare user preferences object
- * @todo Considerare soft delete flag
- * 
- * @since 1.0.0
  */
-export function User(validUsername, validEmail, hashedPassword){
-    this.id = generateItemId("user"),
-    this.username = validUsername, // Username fornito (già validato)
-    this.email = validEmail, // Email fornita (già validata)
-    this.password = hashedPassword, // Password hashata
-    this.favourites = [],
-    this.notes = [],
-    this.creationDate = new Date().toISOString()
-}
+export class User {
+
+    /** @type {string} */ id;
+    /** @type {string} */ username;
+    /** @type {string} */ email;
+    /** @type {string} */ password;
+    /** @type {Array<string>} */ favourites;
+    /** @type {Array<Note>} */ notes;
+    /** @type {string} */ creationDate;
+
+    constructor(validUsername, validEmail, hashedPassword) {
+        this.id = generateItemId("user");
+        this.username = validUsername; // Username fornito (già validato)
+        this.email = validEmail; // Email fornita (già validata)
+        this.password = hashedPassword; // Password hashata
+        this.favourites = [];
+        this.notes = [];
+        this.creationDate = new Date().toISOString();
+    }
+};
 
 /**
- * Costruttore per note personali utente legate a ricette specifiche
+ * Classe per note personali utente legate a ricette specifiche
  * 
- * @constructor
- * @function Note
+ * @class
  * @param {string} recipeId - ID ricetta a cui è associata la nota
  * @param {string} text - Contenuto testuale della nota
  * 
@@ -108,29 +94,30 @@ export function User(validUsername, validEmail, hashedPassword){
  * 
  * @example
  * const userNote = new Note("52772", "Ricetta facile, aggiungere più sale");
- * 
- * @todo Aggiungere validazione lunghezza text
- * @todo Implementare formatting HTML per rich text
- * @todo Considerare categorizzazione note (tipo: commento, modifica, rating)
- * 
- * @since 1.0.0
  */
-export function Note(recipeId, text){
-    this.recipeId = recipeId,
-    this.text = text
-    this.date = new Date().toDateString(),
-    this.id = generateItemId("note");
-}
+export class Note {
+
+    /** @type {string} */ id;
+    /** @type {string} */ recipeId;
+    /** @type {string} */ text;
+    /** @type {string} */ date;
+
+    constructor(recipeId, text){
+        this.id = generateItemId("note");
+        this.recipeId = recipeId;
+        this.text = text;
+        this.date = new Date().toDateString();
+    }
+};
 
 /**
- * Costruttore per recensioni utente con rating duali (gusto + difficoltà)
+ * Classe per recensioni utente con rating duali (gusto + difficoltà)
  * 
- * @constructor
- * @function Review
+ * @class
  * @param {string} recipeId - ID ricetta recensita
  * @param {string} userId - ID utente autore recensione
- * @param {number} tasteRate - Rating gusto (1-5)
- * @param {number} difficultyRate - Rating difficoltà preparazione (1-5)
+ * @param {number} tasteRate - Rating gusto
+ * @param {number} difficultyRate - Rating difficoltà preparazione
  * 
  * @description
  * Factory per recensioni con business rule validation.
@@ -141,57 +128,42 @@ export function Note(recipeId, text){
  * @example
  * const review = new Review("52772", "user123", 4, 3);
  * // Rating gusto 4/5, difficoltà 3/5
- * 
- * @todo Aggiungere validazione range rating (1-5)
- * @todo Implementare optional text comment
- * @todo Considerare rating categories aggiuntive (presentazione, tempo)
- * 
- * @since 1.0.0
  */
-export function Review(recipeId, userId, tasteRate, difficultyRate){
-    this.recipeId = recipeId;
-    this.userId = userId;
-    this.tasteRate = tasteRate;
-    this.difficultyRate = difficultyRate;
-    this.id = generateItemId("review");
-    this.date = new Date().toDateString();
-}
+export class Review {
+    
+    /** @type {string} */ id;
+    /** @type {string} */ recipeId;
+    /** @type {string} */ userId;
+    /** @type {number} */ tasteRate;
+    /** @type {number} */ difficultyRate;
+    /** @type {string} */ dateAdded;
+    
+    constructor(recipeId, userId, tasteRate, difficultyRate){
+        this.id = generateItemId("review");
+        this.recipeId = recipeId;
+        this.userId = userId;
+        this.tasteRate = tasteRate;
+        this.difficultyRate = difficultyRate;
+        this.dateAdded = new Date().toDateString();
+    }
+};
 
 // ================================================================================================
 // API DATA MODELS - PREVIEW OBJECTS
 // ================================================================================================
 
 /**
- * Costruttore per oggetti preview unificati (ricette + categorie)
+ * Classe per oggetti categoria
  * 
- * @constructor
- * @function ItemPreview
- * @param {Object} rawObj - Oggetto raw da API TheMealDB (ricetta o categoria)
- * @param {string} [rawObj.idMeal] - ID ricetta (se oggetto ricetta)
- * @param {string} [rawObj.strCategory] - ID categoria (se oggetto categoria): NB-> TMDB usa nome categoria come ID per ricerche
- * @param {string} [rawObj.strMeal] - Nome ricetta (se oggetto ricetta)
- * @param {string} [rawObj.strCategory] - Nome categoria (se oggetto categoria)
- * @param {string} [rawObj.strMealThumb] - URL immagine ricetta (se oggetto ricetta)
- * @param {string} [rawObj.strCategoryThumb] - URL immagine categoria (se oggetto categoria)
- * @param {string} itemType - Tipo oggetto per classificazione ("meals", "categories", "reviews", "notes")
- * 
- * @property {string} type - Tipo oggetto per business logic routing
- * @property {string} id - ID univoco dell'elemento (ricetta o categoria)
- * @property {string} name - Nome display dell'elemento
- * @property {string} image - URL immagine thumbnail con fallback
+ * @class
+ * @param {Object} rawObj - Oggetto categoria raw da API TheMealDB
+ * @param {string} [rawObj.strCategory] - ID categoria NB -> id categoria utile esclusivamente per consistenza struttura dati
+ * @param {string} [rawObj.strCategory] - Nome categoria
+ * @param {string} [rawObj.strCategoryThumb] - URL immagine categoria
  * 
  * @description
- * Adapter pattern per normalizzare diverse strutture API TheMealDB.
- * Gestisce polimorfismo per ricette/categorie tramite fallback chain
- * intelligente con graceful degradation per dati incompleti.
- * 
- * @example
- * // Uso con oggetto ricetta da API
- * const recipePreview = new ItemPreview({
- *   idMeal: "52772",
- *   strMeal: "Teriyaki Chicken Casserole", 
- *   strMealThumb: "https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg"
- * }, "meals");
+ * Normalizzazione della struttura peculiare TheMealDB API per oggetto categoria.
+ * Gestisce dati incompleti tramite fallback chain
  * 
  * @example
  * // Uso con oggetto categoria da API  
@@ -207,27 +179,30 @@ export function Review(recipeId, userId, tasteRate, difficultyRate){
  *   strMeal: "Pizza"
  *   // id e image saranno stringhe vuote e fallback image
  * }, "meals");
- * 
- * @todo Aggiungere validazione itemType enum
- * @todo Implementare caching image per fallback migliore
- * @todo Considerare lazy loading per image URL validation
- * 
- * @since 1.0.0
  */
-export function Category(rawObj){
-    this.id = rawObj.strCategory || "",
-    this.name = rawObj.strCategory || "",
-    this.image = rawObj.strCategoryThumb || "../assets/images/no_image.jpg"
-}
+export class Category {
+
+    /** @type {string} */ id;
+    /** @type {string} */ name;
+    /** @type {string} */ image;
+    /** @type {string} */ dateAdded;
+
+    constructor(rawCategoryObj){
+        this.id = rawCategoryObj.strCategory || "";
+        this.name = rawCategoryObj.strCategory || "";
+        this.image = rawCategoryObj.strCategoryThumb || "../assets/images/no_image.jpg";
+        this.dateAdded = new Date().toISOString();
+    }
+};
 
 // ================================================================================================
 // API DATA MODELS - FULL RECIPE OBJECTS
 // ================================================================================================
 
 /**
- * Costruttore per oggetti ricetta completi con tutti i dettagli
+ * Classe per oggetti ricetta
  * 
- * @constructor
+ * @class
  * @function FullRecipe
  * @param {Object} rawRecipeObj - Oggetto ricetta completo da API TheMealDB
  * @param {string} rawRecipeObj.idMeal - ID univoco ricetta
@@ -237,6 +212,8 @@ export function Category(rawObj){
  * @param {string} [rawRecipeObj.strIngredient1-20] - Ingredienti (fino a 20 campi API)
  * @param {string} [rawRecipeObj.strMeasure1-20] - Misure corrispondenti (fino a 20 campi API)
  * 
+ * @see {@link FullRecipe.getIngredients} Per dettagli processamento ingredienti
+ * 
  * @property {string} id - ID univoco ricetta
  * @property {string} name - Nome display ricetta  
  * @property {string} image - URL immagine ricetta
@@ -245,9 +222,8 @@ export function Category(rawObj){
  * @property {Array<{name: string, measure: string}>} ingredients - Array ingredienti processati
  * 
  * @description
- * Factory completa per ricette con processamento ingredienti automatico.
- * Include normalizzazione della struttura peculiare TheMealDB API
- * (20 campi separati per ingredienti) in array strutturato user-friendly.
+ * Normalizzazione della struttura peculiare TheMealDB API per oggetto ricetta.
+ * Gestisce dati incompleti tramite fallback chain
  * 
  * @example
  * // Creazione da risposta API lookup
@@ -261,100 +237,77 @@ export function Category(rawObj){
  * //   {name: "water", measure: "1/2 cup"},
  * //   ...
  * // ]
- * 
- * @todo Aggiungere parsing nutritional info se disponibile
- * @todo Implementare tags extraction da strTags
- * @todo Considerare multi-language support per instructions
- * 
- * @see {@link FullRecipe.prototype.getIngredients} Per dettagli processamento ingredienti
- * 
- * @since 1.0.0
  */
-export function FullRecipe(rawRecipeObj){
-    /** @type {string} ID univoco ricetta dal database TheMealDB */
-    this.id = rawRecipeObj.idMeal || "",
-
-    /** @type {string} Nome completo ricetta */
-    this.name = rawRecipeObj.strMeal || "",
-
-    this.category = rawRecipeObj.strCategory || "",
-
-    /** @type {string} URL immagine alta risoluzione */
-    this.image = rawRecipeObj.strMealThumb || "",
-
-    /** @type {string} Istruzioni preparazione complete (possono essere molto lunghe) */
-    this.instructions = rawRecipeObj.strInstructions || "",
-
-    /** @type {string} ISO timestamp creazione oggetto locale (non da API) */
-    this.dateAdded = new Date().toISOString(),
-
+export class FullRecipe {
+    
+    /** @type {string} ID univoco ricetta dal database TheMealDB */ id;
+    /** @type {string} Nome completo ricetta */ name;
+    /** @type {string} Categoria di appartenenza */ category;
+    /** @type {string} URL immagine */ image; 
+    /** @type {string} Istruzioni preparazione complete */ instructions;
+    /** @type {string} ISO timestamp creazione oggetto locale (non da API) */ dateAdded;
     /** 
      * @type {Array<{name: string, measure: string}>} 
      * Array ingredienti processati - chiamata al metodo prototype durante costruzione
+     */ ingredients;
+
+    constructor(rawRecipeObj){
+        this.id = rawRecipeObj.idMeal || "";
+        this.name = rawRecipeObj.strMeal || "";
+        this.category = rawRecipeObj.strCategory || "";
+        this.image = rawRecipeObj.strMealThumb || "";
+        this.instructions = rawRecipeObj.strInstructions || "";
+        this.dateAdded = new Date().toISOString();
+        this.ingredients = this.getIngredients(rawRecipeObj);
+    };
+
+    /**
+     * Metodo di processamento ingredienti raw da API in array strutturato
+     * @method
+     * @param {Object} rawRecipeObj - Oggetto ricetta raw da API
+     * @returns {Array<{name: string, measure: string}>} Array ingredienti normalizzati
+     * 
+     * * @description
+     * Gestisce la struttura peculiare di TheMealDB API che usa 20 campi separati:
+     * - strIngredient1, strIngredient2, ... strIngredient20  
+     * - strMeasure1, strMeasure2, ... strMeasure20
+     * 
+     * Workflow processamento:
+     * 1. Itera sui 20 possibili slot ingredienti (loop fisso)
+     * 2. Filtra slot vuoti o con solo whitespace (trim + truthy check)
+     * 3. Combina nome ingrediente + misura in oggetti strutturati
+     * 4. Normalizza spacing con trim() su entrambi i campi
+     * 
+     * * @note 
+     * - Ingredienti senza nome vengono automaticamente esclusi
+     * - Misure senza nome ingrediente vengono mantenute come stringa vuota
+     * - Ingredienti mantengono ordine API (strIngredient1 → index 0)
+     * 
+     * @example
+     * // Uso interno durante costruzione FullRecipe
+     * const ingredients = FullRecipe.prototype.getIngredients.call(this, rawData);
+     * 
+     * // Risultato tipico:
+     * // [
+     * //   {name: "chicken breast", measure: "1 lb"},
+     * //   {name: "soy sauce", measure: "1/4 cup"},
+     * //   {name: "honey", measure: "2 tbsp"}
+     * // ]
      */
-    this.ingredients = FullRecipe.prototype.getIngredients.call(this, rawRecipeObj)
-}
+    getIngredients(rawRecipeObj){
+        /** @type {Array<{name: string, measure: string}>} Array accumulator per ingredienti validi */
+        const array = [];
 
-/**
- * Metodo prototype per processare ingredienti raw da API in array strutturato
- * 
- * @method getIngredients
- * @memberof FullRecipe.prototype
- * @param {Object} rawRecipeObj - Oggetto ricetta raw da API
- * @returns {Array<{name: string, measure: string}>} Array ingredienti normalizzati
- * 
- * @description
- * Gestisce la struttura peculiare di TheMealDB API che usa 20 campi separati:
- * - strIngredient1, strIngredient2, ... strIngredient20  
- * - strMeasure1, strMeasure2, ... strMeasure20
- * 
- * Workflow processamento:
- * 1. Itera sui 20 possibili slot ingredienti (loop fisso)
- * 2. Filtra slot vuoti o con solo whitespace (trim + truthy check)
- * 3. Combina nome ingrediente + misura in oggetti strutturati
- * 4. Normalizza spacing con trim() su entrambi i campi
- * 
- * @example
- * // Uso interno durante costruzione FullRecipe
- * const ingredients = FullRecipe.prototype.getIngredients.call(this, rawData);
- * 
- * // Risultato tipico:
- * // [
- * //   {name: "chicken breast", measure: "1 lb"},
- * //   {name: "soy sauce", measure: "1/4 cup"},
- * //   {name: "honey", measure: "2 tbsp"}
- * // ]
- * 
- * @performance
- * - Loop fisso 20 iterazioni (non dipendente da input size)
- * - String operations minimali (solo trim necessario)
- * - Memory allocation proporzionale a ingredienti effettivi (non 20)
- * 
- * @note 
- * - Ingredienti senza nome vengono automaticamente esclusi
- * - Misure senza nome ingrediente vengono mantenute come stringa vuota
- * - Order preserving: ingredienti mantengono ordine API (strIngredient1 → index 0)
- * 
- * @todo Aggiungere parsing automatico quantità numeriche da strMeasure
- * @todo Implementare normalizzazione unità di misura (cup→ml, lb→kg)
- * @todo Considerare validation ingredienti vs database nutritional
- * 
- * @since 1.0.0
- */
-FullRecipe.prototype.getIngredients = function (rawRecipeObj){
-    /** @type {Array<{name: string, measure: string}>} Array accumulator per ingredienti validi */
-    const array = [];
-
-    for(let i=1; i<=20; i++){
-        const name = (rawRecipeObj["strIngredient"+i] || "").trim();
-        if(name){
-            const measure = (rawRecipeObj["strMeasure"+i] || "").trim();
-            array.push({name, measure}); //js costruisce l'oggetto con key->nome variabile value->valore variabile
+        for(let i=1; i<=20; i++){
+            const name = (rawRecipeObj["strIngredient"+i] || "").trim();
+            if(name){
+                const measure = (rawRecipeObj["strMeasure"+i] || "").trim();
+                array.push({name, measure}); //js costruisce l'oggetto con key->nome variabile value->valore variabile
+            }
         }
+        return array;
     }
-    return array;
-}
-
+};
 
 // ================================================================================================
 // ARCHITECTURE NOTES
