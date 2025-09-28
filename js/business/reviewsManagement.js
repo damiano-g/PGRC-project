@@ -4,12 +4,10 @@
  * calcoli statistici aggregati e persistenza localStorage. Gestisce business rules come unicità
  * recensioni per utente/ricetta e validazione parametri.
  * @requires data-models.js - Classe Review per costruzione oggetti recensione
- * @requires errorsManagement.js - Classe ReviewsManagementError per errori tipizzati
  * @requires storageManagement.js - Modulo StorageManagement per persistenza dati
  */
 
 import { Review } from "../data-models.js";
-import { ReviewsManagementError } from "../errorsManagement.js";
 import { StorageOperations } from "../storageManagement.js";
 
 // ===============================
@@ -23,15 +21,11 @@ import { StorageOperations } from "../storageManagement.js";
 const REVIEWS_DB_KEY = "reviews";
 
 /**
- * Cache in-memory per recensioni caricate da localStorage
- * @type {Array<Review>}
- * @private
+ * Opzioni di storage DB recensioni
+ * @constant {Object}
+ * @see {@link StorageOperations}
  */
-let storedReviews = [];
-
-// ================================================================================================
-// STORAGE OPERATIONS
-// ================================================================================================
+const REVIEWS_STORAGE_OPTS = {storageLocation: "local", dataType: "array"};
 
 // ===============================
 // OPERAZIONI STORAGE
@@ -43,62 +37,38 @@ let storedReviews = [];
  * 
  * @public
  * @returns {Array<Review>} Clone profondo dell'array recensioni
- * @throws {Error} Se localStorage inaccessibile o dati corrotti
+ * @see {@link StorageOperations} Per lettura dati da web storage
+ * @throws {Error} Se errori di storage - from {@link StorageOperations}
  * 
  * @example
  * const reviews = getStoredReviews();
  */
 export function getStoredReviews(){
     try{
-        storedReviews = StorageOperations.get(REVIEWS_DB_KEY, {storageLocation: "local", dataType: "array"});
+        const storedReviews = StorageOperations.get(REVIEWS_DB_KEY, REVIEWS_STORAGE_OPTS);
         return structuredClone(storedReviews);
     }catch(error){
-        console.error("Errore recupero recensioni:", error);
-        storedReviews = [];
         throw error;
     }
-}
-
-// ================================================================================================
-// PRIVATE HELPER FUNCTIONS
-// ================================================================================================
+};
 
 // ===============================
 // FUNZIONI HELPER PRIVATE
 // ===============================
 
 /**
- * Recupera recensioni per combinazione specifica ricetta-utente
- * Business rule: max 1 recensione per coppia utente-ricetta
- * 
- * @private
- * @param {string} recipeId - ID ricetta target
- * @param {string} userId - ID utente target
- * @returns {Array<Review>} Array recensioni filtrate (max 1 elemento)
- * 
- * @example
- * const userReview = getReviewId("52772", "user123");
- */
-function getReviewId(recipeId, userId){
-    try {
-        const actualStoredReviews = getStoredReviews();
-        return actualStoredReviews.filter(element => element.recipeId === recipeId && element.userId === userId);
-    } catch (error) {
-        // @todo Implementare gestione errore specifica
-    }
-}
-
-/**
  * Motore CRUD per operazioni su recensioni con validazione business rules
- * Supporta ADD (con rating) e DELETE (senza rating) basandosi su presenza parametri
+ * Toggle automatico per ADD (con rating) e DELETE (senza rating) basato su presenza parametri
  * 
  * @public
  * @param {string} userId - ID utente che esegue operazione
  * @param {string} recipeId - ID ricetta target
  * @param {number|null} [tasteRate=null] - Rating gusto (1-5) per ADD, null per DELETE
  * @param {number|null} [difficultyRate=null] - Rating difficoltà (1-5) per ADD, null per DELETE
- * @returns {boolean} True se operazione completata
- * @throws {ReviewsManagementError} Se validazione fallisce o recensione non trovata
+ * @see {@link getStoredReviews} Per lettura database recensioni
+ * @see {@link StorageOperations} Per aggionamento database recensioni
+ * @throws {new Error} Se parametri passati non corretti o recensione non trovata
+ * @throws {Error} Per errori di storage - from {@link getStoredReviews} o {@link StorageOperations}
  * 
  * @example
  * // ADD recensione
@@ -120,24 +90,26 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
                 // DELETE MODE: Rimuovi recensione esistente
                 const index = recipeReviewsArray.findIndex(element => (element.recipeId === recipeId) && (element.userId === userId));
                 if(index < 0){
-                    throw new ReviewsManagementError("NOT_FOUND", "Recensione non trovata");
+                    const notFound = new Error(`Review non found for user ${userId} and recipe ${recipeId}`);
+                    console.error(notFound);
+                    throw notFound;
                 }else{
                     recipeReviewsArray.splice(index, 1);
                 }
             }else{
                 // VALIDATION ERROR: Parametri malformati
-                throw new ReviewsManagementError("VALIDATION", "Wrong data format"); 
+                const dataFormat = new Error("Wrong data format");
+                console.error(dataFormat);
+                throw dataFormat; 
             }
         }
         
         // Persistenza dati aggiornati
-        StorageOperations.set(REVIEWS_DB_KEY, recipeReviewsArray, {storageLocation: "local", dataType: "array"});
-        return true;
+        StorageOperations.set(REVIEWS_DB_KEY, recipeReviewsArray, REVIEWS_STORAGE_OPTS);
     } catch (error) {
-        console.error(error);
         throw error;
     }    
-}
+};
 
 /**
  * Calcola rating medio per ricetta su tipo specificato
@@ -145,9 +117,10 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
  * 
  * @public
  * @param {string} recipeId - ID ricetta per calcolo
- * @param {string} ratingType - Tipo rating ("tasteRate"|"difficultyRate")
- * @returns {string} Media aritmetica formattata a 1 decimale, "NaN" se nessuna recensione
- * @throws {Error} Se accesso storage fallisce
+ * @param {"tasteRate"|"difficultyRate"} ratingType - Tipo rating
+ * @returns {number} Media aritmetica formattata a 1 decimale, 0 se nessuna recensione
+ * @see {@link getStoredReviews} Per lettura database ricette
+ * @throws {Error} Se accesso storage fallisce - from {@link getStoredReviews}
  * 
  * @example
  * const avgTaste = recipeAvgRate("52772", "tasteRate"); // "4.2"
@@ -156,15 +129,19 @@ export function recipeAvgRate (recipeId, ratingType) {
     try {
         let sum = 0;
         let totalReviews = 0;
+        let avgRate = 0;
+
         getStoredReviews().forEach(review => {
             if(review.recipeId === recipeId){
                 sum += Number(review[ratingType]);
                 totalReviews++;
             }
         });
-        return (sum/totalReviews).toFixed(1);
+        if(totalReviews > 0){
+            avgRate = (sum/totalReviews);
+        }
+        return avgRate.toFixed(1);
     } catch (error) {
-        console.error(error);
         throw error;
     }
 };
@@ -176,9 +153,10 @@ export function recipeAvgRate (recipeId, ratingType) {
  * @public
  * @param {string} recipeId - ID ricetta target
  * @param {string} userId - ID utente target
- * @param {string} ratingType - Tipo rating ("tasteRate"|"difficultyRate")
- * @returns {string|undefined} Rating formattato a 1 decimale o undefined se non recensita
- * @throws {Error} Se accesso storage fallisce
+ * @param {"tasteRate"|"difficultyRate"} ratingType - Tipo rating
+ * @returns {number} Rating formattato a 1 decimale, 0 se non recensita
+ * @see {@link getStoredReviews} Per lettura database recensioni
+ * @throws {Error} Se accesso storage fallisce - from {@link getStoredReviews} 
  * 
  * @example
  * const userTaste = recipeUserRate("52772", "user123", "tasteRate"); // "4.0"
@@ -186,9 +164,8 @@ export function recipeAvgRate (recipeId, ratingType) {
 export function recipeUserRate(recipeId, userId, ratingType) {
     try {
         const review = getStoredReviews().find(element => element.recipeId === recipeId && element.userId === userId);
-        return review ? Number(review[ratingType]).toFixed(1) : undefined;
+        return review ? Number(review[ratingType]).toFixed(1) : 0;
     } catch (error) {
-        console.error(error);
         throw error;
     }
 }

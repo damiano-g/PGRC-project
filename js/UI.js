@@ -273,7 +273,7 @@ function createNoteCard(userNote) {
 const CardDisplayStrategy = {
 
    withGlobalRating: function (itemObj) {
-      return cardRatingContent(Recipe.avgTasteRate(itemObj.id), Recipe.avgTasteRate(itemObj.id), "Global ratings");
+      return cardRatingContent(Recipe.avgTasteRate(itemObj.id), Recipe.avgDifficultyRate(itemObj.id), "Global ratings");
    },
 
    withUserRating: function (itemObj) {
