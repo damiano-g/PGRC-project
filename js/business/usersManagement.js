@@ -196,8 +196,7 @@ export async function updateUserEmail(userId, newEmail){
         await updateUserData(userId, "email", newEmail);
     } catch (error) {
         throw error;
-    }
-    
+    }   
 }
 
 /**
@@ -457,7 +456,7 @@ async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
  * @throws {new Error} Se utente non trovato o se field non supportato
  * @throws {Error} Se errori di lettura - from {@link getRegisteredUsers}
  */
-function searchUser(searchField, searchValue){
+export function searchUser(searchField, searchValue){
     try {
         const acceptedFields = ["username", "id", "email"];
         if(!acceptedFields.includes(searchField)){

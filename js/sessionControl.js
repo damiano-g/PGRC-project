@@ -66,7 +66,7 @@ export const NewUser = {
      */
     startSession: async (username, password) => {
         try {
-            const foundId = UsersManagement.searchUserbyName(username).id;
+            const foundId = UsersManagement.searchUser("username",username).id;
             const admitted = await UsersManagement.admitUser(foundId, password);
 
             if(admitted){
@@ -141,7 +141,7 @@ export const LoggedUser = {
      */
     getData: () => {
         try {
-            return UsersManagement.searchUserById(LoggedUser.getId());
+            return UsersManagement.searchUser("id", LoggedUser.getId());
         } catch (error) {
             throw error;
         }
@@ -155,7 +155,7 @@ export const LoggedUser = {
      */
     getRecipeNotes: (recipeId) => {
         try{
-            return UsersManagement.searchUserById(LoggedUser.getId()).notes.filter(note => note.recipeId === recipeId) || [];
+            return UsersManagement.searchUser("id", LoggedUser.getId()).notes.filter(note => note.recipeId === recipeId) || [];
         }catch(error){
             console.error(error);
             throw error;
@@ -321,7 +321,7 @@ export const Recipe = {
     isFavourite: (recipeId) => {
         try {
             const loggedUserId = LoggedUser.getId();
-            return Boolean(loggedUserId && UsersManagement.searchUserById(loggedUserId).favourites.some(element => element === recipeId));
+            return Boolean(loggedUserId && UsersManagement.searchUser("id", loggedUserId).favourites.some(element => element === recipeId));
         } catch (error) {
             throw error;
         }
