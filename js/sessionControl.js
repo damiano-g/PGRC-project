@@ -442,7 +442,7 @@ export const PreviewArray = {
     
     categories: async () => {
         try {
-            return {type: "categories", items: await RecipesManagement.getAllCategories()};
+            return {type: "categories", items: await RecipesManagement.getData("categories")};
         } catch (error) {
             throw error;
         }
@@ -520,7 +520,7 @@ export const PreviewArray = {
     mostPopular: async (quantity) => {
         try {
             const allReviews = ReviewsManagement.getStoredReviews();
-            const allRecipes = await RecipesManagement.getAllRecipes();
+            const allRecipes = await RecipesManagement.getData("recipes");
 
             const revPerRecipe = [];
 

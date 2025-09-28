@@ -19,6 +19,11 @@ import { StorageOperations } from "../storageManagement.js";
  */
 const USERS_DB_KEY = "users";
 
+/**
+ * Opzioni di storage DB utenti
+ * @constant {Object}
+ * @see {@link StorageOperations}
+ */
 const USERS_STORAGE_OPTS = {storageLocation: "local", dataType: "array"};
 
 // ============================================================================
