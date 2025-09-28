@@ -10,7 +10,7 @@
 
 import { Review } from "../data-models.js";
 import { ReviewsManagementError } from "../errorsManagement.js";
-import { StorageManagement } from "../storageManagement.js";
+import { StorageOperations } from "../storageManagement.js";
 
 // ===============================
 // CONFIGURAZIONE STORAGE
@@ -50,7 +50,7 @@ let storedReviews = [];
  */
 export function getStoredReviews(){
     try{
-        storedReviews = StorageManagement.get(REVIEWS_DB_KEY, {storageLocation: "local", dataType: "array"});
+        storedReviews = StorageOperations.get(REVIEWS_DB_KEY, {storageLocation: "local", dataType: "array"});
         return structuredClone(storedReviews);
     }catch(error){
         console.error("Errore recupero recensioni:", error);
@@ -131,7 +131,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
         }
         
         // Persistenza dati aggiornati
-        StorageManagement.set(REVIEWS_DB_KEY, recipeReviewsArray, {storageLocation: "local", dataType: "array"});
+        StorageOperations.set(REVIEWS_DB_KEY, recipeReviewsArray, {storageLocation: "local", dataType: "array"});
         return true;
     } catch (error) {
         console.error(error);

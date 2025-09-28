@@ -7,7 +7,7 @@
  */
 
 import { Category, FullRecipe } from "../data-models.js";
-import { StorageManagement } from "../storageManagement.js";
+import { StorageOperations } from "../storageManagement.js";
 
 // ===============================
 // CONFIGURAZIONE ENDPOINT API
@@ -146,7 +146,7 @@ async function createLocalRecipesDB() {
             }
         }
     
-        StorageManagement.set(RECIPES_DB_KEY, accumulator, {storageLocation: "local", dataType: "array"});
+        StorageOperations.set(RECIPES_DB_KEY, accumulator, {storageLocation: "local", dataType: "array"});
 
         return accumulator;
     } catch (error) {
@@ -173,7 +173,7 @@ async function createLocalCategoriesDB() {
         console.log(fetchedOBJ);
         const catArray = [];
         fetchedOBJ.categories.forEach(item => catArray.push(new Category(item)));
-        StorageManagement.set(CATEGORIES_DB_KEY, catArray, {storageLocation: "local", dataType: "array"});
+        StorageOperations.set(CATEGORIES_DB_KEY, catArray, {storageLocation: "local", dataType: "array"});
         return catArray;
     } catch (error) {
         console.error(error);
@@ -201,7 +201,7 @@ async function createLocalCategoriesDB() {
  */
 async function getData(storageKey) {
     try {
-        let dataArray = StorageManagement.get(storageKey, {storageLocation: "local", dataType: "array"});
+        let dataArray = StorageOperations.get(storageKey, {storageLocation: "local", dataType: "array"});
         
         // Se cache vuota, inizializza da API
         if(dataArray.length < 1){
