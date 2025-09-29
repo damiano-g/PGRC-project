@@ -103,8 +103,7 @@ async function fetchRecipes(URL, options, specifier = null){
  * @returns {Promise<Array<FullRecipe>>} Array ricette salvate localmente
  * @see {@link fetchRecipes}
  * @see {@link StorageOperations}
- * @throws {Error} Rilancia errori critici durante creazione - from {@link fetchRecipes}
- * @throws {Error} Rilancia errori di storage - from {@link StorageOperations}
+ * @throws {Error} Rilancia errori critici ed errori di storage
  * 
  * @example
  * const recipes = await createLocalRecipesDB(); // ~500+ ricette
@@ -138,8 +137,7 @@ async function createLocalRecipesDB() {
  * @returns {Promise<Array<Category>>} Array categorie salvate localmente
  * @see {@link fetchRecipes} Fetch ricette da TMDB API
  * @see {@link StorageOperations} Gestione web storage
- * @throws {Error} Rilancia errori critici durante creazione - from {@link fetchRecipes}
- * @throws {Error} Rilancia errori di storage - from {@link StorageOperations}
+ * @throws {Error} Rilancia errori critici e di storage
  * 
  * @example
  * const categories = await createLocalCategoriesDB(); // ~14 categorie
@@ -173,8 +171,8 @@ async function createLocalCategoriesDB() {
  * @see {@link createLocalCategoriesDB} Creazione DB categorie in web storage
  * @see {@link createLocalRecipesDB} Creazione DB ricette in web storage
  * @see {@link StorageOperations} Lettura dati da web storage
- * @throws {new Error} Se chiave non supportata
- * @throws {Error} Se errori critici o errori di storage - from {@link createLocalRecipesDB} o {@link createLocalRecipesDB} o {@link StorageOperations}
+ * @throws {Error} Se chiave non supportata
+ * @throws {Error} Rilancia errori critici e di storage
  * 
  * @example
  * const recipes = await getData("recipes"); // Carica da cache o API
@@ -214,7 +212,7 @@ export async function getData(dataType) {
  * @returns {Promise<FullRecipe>} Oggetto ricetta trovato
  * @see {@link getData} Per recupero DB ricette
  * @throws {ErrorsManagement.NotFound} Se ricetta non trovata
- * @throws {Error} Se errori critici, errori di storage o data type non supportato - from {@link getData} 
+ * @throws {Error} Se errori critici, errori di storage o data type non supportato
  * 
  * @example
  * const recipe = await searchRecipeById(52772);
@@ -243,7 +241,7 @@ export async function searchRecipeById(recipeId) {
  * @param {string} query - Termine/i ricerca (supporta multi-parola)
  * @returns {Promise<Array<FullRecipe>>} Array ricette filtrate e ordinate per score
  * @see {@link getData} Per recupero DB ricette
- * @throws {Error} Se errori critici, errori di storage o data type non supportato - from {@link getData} 
+ * @throws {Error} Se errori critici, errori di storage o data type non supportato 
  * 
  * @example
  * const results = await searchRecipesByName("chicken curry");
@@ -311,7 +309,7 @@ export async function searchRecipesByName(query) {
  * @param {number} quantity - Numero ricette da estrarre
  * @returns {Promise<Array<FullRecipe>>} Array ricette casuali uniche
  * @see {@link getData} Per recupero DB ricette
- * @throws {Error} Se errori critici, errori di storage o data type non supportato - from {@link getData} 
+ * @throws {Error} Se errori critici, errori di storage o data type non supportato
  * 
  * @example
  * const randomRecipes = await rndSearch(5);
@@ -348,7 +346,7 @@ export async function rndSearch(quantity){
  * @param {string} category - Nome categoria da filtrare
  * @returns {Promise<Array<FullRecipe>>} Array ricette della categoria
  * @see {@link getData} Per recupero DB ricette
- * @throws {Error} Se errori critici, errori di storage o data type non supportato - from {@link getData} 
+ * @throws {Error} Se errori critici, errori di storage o data type non supportato
  * 
  * @example
  * const pastaRecipes = await searchRecipesByCategory("pasta");

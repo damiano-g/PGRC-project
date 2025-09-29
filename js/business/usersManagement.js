@@ -37,7 +37,7 @@ const USERS_STORAGE_OPTS = {storageLocation: "local", dataType: "array"};
  * 
  * @returns {Array<User>} Deep copy array utenti (safe da modifiche esterne)
  * @see {@link StorageOperations} - Per operazioni di lettura e scrittura web storage
- * @throws {Error} Se errori di lettura - from {@link StorageOperations}
+ * @throws {Error} Se errori di lettura database
  * 
  * @example
  * const users = getRegisteredUsers();
@@ -70,9 +70,8 @@ export function getRegisteredUsers() {
  * @see {@link getRegisteredUsers} - Lettura database utenti (deep copy)
  * @see {@link StorageOperations.set} - Aggiornamento database utenti
  * @see {@link createUserObject} - Creazione nuovo oggetto utente
- * @throws {ErrorsManagement.Duplicated} Se username/email già in uso - from {@link authField} 
- * @throws {Error} Se errori di storage - from {@link StorageOperations} or {@link getRegisteredUsers}
- * @throws {Error} Se errori durante hashing - from {@link createUserObject}
+ * @throws {ErrorsManagement.Duplicated} Se username/email già in uso
+ * @throws {Error} Se errori di storage o hashing
  * 
  * @example
  * try {
@@ -109,8 +108,8 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
  * @param {string} userId - ID utente da eliminare
  * @see {@link getRegisteredUsers} Per lettura db utenti
  * @see {@link StorageOperations} Per aggiornamento db utenti
- * @throws {ErrorsManagement.NotFound} Se utente non trovato
- * @throws {Error} Se errori di storage - from {@link getRegisteredUsers} o {@link StorageOperations}
+ * @throws {new ErrorsManagement.NotFound} Se utente non trovato
+ * @throws {Error} Se errori di storage
  * 
  * @example
  * try {
@@ -150,9 +149,9 @@ export function deleteUser(userId){
  * @param {string} newUsername - Nuovo username desiderato
  * @see {@link authField} Per controllo valori duplicati
  * @see {@link updateUserData} Per aggiornamento dati utente
- * @throws {ErrorsManagement.Duplicated} Se username già in uso - from {@link authField}
- * @throws {ErrorsManagement.NotFound} Se utente non trovato o
- * @throws {Error} se errori di storage, parametri errati o utente non trovato {@link updateUserData}
+ * @throws {ErrorsManagement.Duplicated} Se username già in uso
+ * @throws {ErrorsManagement.NotFound} Se utente non trovato
+ * @throws {Error} se errori di storage, parametri errati
  * 
  * @example
  * try {
@@ -179,9 +178,9 @@ export async function updateUserUsername(userId, newUsername){
  * @param {string} newEmail - Nuova email desiderata
  * @see {@link authField} Per controllo valori duplicati
  * @see {@link updateUserData} Per aggiornamento db utenti 
- * @throws {ErrorsManagement.Duplicated} Se username già in uso - from {@link authField}
- * @throws {Error} Se errori di storage, parametri errati o 
- * @throws {ErrorsManagement.NotFound} se utente non trovato - from {@link updateUserData}
+ * @throws {ErrorsManagement.Duplicated} Se email già in uso
+ * @throws {Error} Se errori di storage, parametri errati 
+ * @throws {ErrorsManagement.NotFound} se utente non trovato
  * 
  * @example
  * try {
@@ -207,7 +206,7 @@ export async function updateUserEmail(userId, newEmail){
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newPassword - Nuova password in chiaro
  * @throws {Error} Se errori durante hashing, errori di storage, parametri errati
- * @throws {ErrorsManagement.NotFound} se utente non trovato - from {@link updateUserData}
+ * @throws {ErrorsManagement.NotFound} se utente non trovato
  * 
  * @example
  * try {
@@ -233,8 +232,8 @@ export async function updateUserPassword(userId, newPassword){
  * @param {string} recipeId - ID ricetta da aggiungere/rimuovere dai preferiti
  * @see {@link searchUser} Per lettura dati utente
  * @see {@link updateUserData} Per aggiornamento dati utente
- * @throws {Error} Se errori di storage (r/w) o
- * @throws {ErrorsManagement.NotFound} se utente non trovato - from  {@link updateUserData} o {@link searchUser}
+ * @throws {Error} Se errori di storage (r/w)
+ * @throws {ErrorsManagement.NotFound} se utente non trovato
  * 
  * @example
  * try {
@@ -272,9 +271,8 @@ export async function updateUserFavourites(userId, recipeId){
  * @param {string|null} noteId - ID nota per rimozione (null per aggiunta)
  * @see {@link searchUser} Per recupero note utente
  * @see {@link updateUserData} Per aggiornamento note utente
- * @throws {ErrorsManagement.NotFound} Se utente loggato non trovato - from {@link searchUser} 
- * @throws {Error} Se errori di storage - from {@link searchUser} or {@link updateUserData}
- * @throws {Error} Se formato parametri non valido
+ * @throws {ErrorsManagement.NotFound} Se utente loggato non trovato 
+ * @throws {Error} Se errori di storage
  * 
  * @example
  * Aggiunta nota
@@ -322,9 +320,8 @@ export async function updateUserNotes(userId, recipeId = null, text = null, note
  * @returns {Promise<boolean>} true se credenziali corrette, false altrimenti
  * @see {@link searchUser} Lettura dati utente
  * @see {@link hashString} Per hashing password
- * @throws {ErrorsManagement.NotFound} Se utente non trovato - from {@link searchUser} 
- * @throws {Error} errori di lettura da storage - from {@link searchUser}
- * @throws {Error} Se errori durante hashing password fornita - from {@link hashString}
+ * @throws {ErrorsManagement.NotFound} Se utente non trovato 
+ * @throws {Error} errori di lettura da storage o hashing
  * 
  * @example
  * try {
@@ -396,7 +393,7 @@ export async function hashString(originalString) {
  * @param {string} fieldValue - Valore fornito per il campo
  * @see {@link getRegisteredUsers} - Per lettura array utenti registrati
  * @throws {ErrorsManagement.Duplicated} Se valore già in uso per il campo selezionato
- * @throws {Error} Se errori di lettura storage - from {@link getRegisteredUsers}
+ * @throws {Error} Se errori di lettura storage
  */
 function authField(fieldType, fieldValue){
     try {
@@ -432,7 +429,7 @@ function authField(fieldType, fieldValue){
  * @param {string} chosenPassword - Password in chiaro da hashare
  * @returns {Promise<User>} Istanza User completa pronta per storage
  * @see {@link hashString} Per hashing password
- * @throws {Error} Se errori durante hashing password - from {@link hashString}
+ * @throws {Error} Se errori durante hashing password
  */
 async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
     try {
@@ -457,8 +454,7 @@ async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
  * @returns {User} Deep copy oggetto utente trovato
  * @see {@link getRegisteredUsers} Per lettura db utenti
  * @throws {ErrorsManagement.NotFound} Se utente non trovato
- * @throws {Error} se field non supportato
- * @throws {Error} Se errori di lettura - from {@link getRegisteredUsers}
+ * @throws {Error} se field non supportato o errori di storage (read)
  */
 export function searchUser(searchField, searchValue){
     try {
@@ -493,10 +489,8 @@ export function searchUser(searchField, searchValue){
  * @see {@link getRegisteredUsers} Per lettura db utenti
  * @see {@link hashString} Per hashing password
  * @see {@link StorageOperations} Per aggiornamento db utenti
- * @throws {Error} Se parametro field errato
  * @throws {ErrorsManagement.NotFound} se utente non trovato
- * @throws {Error} Se errori di storage from {@link getRegisteredUsers} o {@link StorageOperations}
- * @throws {Error} Se errori di hashing - from {@link hashString}
+ * @throws {Error} Se errori di storage, hashing o parametri errati
  * 
  */
 async function updateUserData(userId, field, newValue, needsHashing = null) {

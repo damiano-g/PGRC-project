@@ -39,7 +39,7 @@ const REVIEWS_STORAGE_OPTS = {storageLocation: "local", dataType: "array"};
  * @public
  * @returns {Array<Review>} Clone profondo dell'array recensioni
  * @see {@link StorageOperations} Per lettura dati da web storage
- * @throws {Error} Se errori di storage - from {@link StorageOperations}
+ * @throws {Error} Se errori di storage
  * 
  * @example
  * const reviews = getStoredReviews();
@@ -68,9 +68,8 @@ export function getStoredReviews(){
  * @param {number|null} [difficultyRate=null] - Rating difficoltà (1-5) per ADD, null per DELETE
  * @see {@link getStoredReviews} Per lettura database recensioni
  * @see {@link StorageOperations} Per aggionamento database recensioni
- * @throws {Error} Se parametri passati non corretti 
- * @throws {ErrorsManagment.NotFound} se recensione non trovata
- * @throws {Error} Per errori di storage - from {@link getStoredReviews} o {@link StorageOperations}
+ * @throws {Error} Se parametri passati non corretti e rilancia errori di storage
+ * @throws {ErrorsManagment.NotFound} se recensione non trovata 
  * 
  * @example
  * // ADD recensione
@@ -120,7 +119,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
  * @param {"tasteRate"|"difficultyRate"} ratingType - Tipo rating
  * @returns {number} Media aritmetica formattata a 1 decimale, 0 se nessuna recensione
  * @see {@link getStoredReviews} Per lettura database ricette
- * @throws {Error} Se accesso storage fallisce - from {@link getStoredReviews}
+ * @throws {Error} Rilancia errori di storage
  * 
  * @example
  * const avgTaste = recipeAvgRate("52772", "tasteRate"); // "4.2"
@@ -156,7 +155,7 @@ export function recipeAvgRate (recipeId, ratingType) {
  * @param {"tasteRate"|"difficultyRate"} ratingType - Tipo rating
  * @returns {number} Rating formattato a 1 decimale, 0 se non recensita
  * @see {@link getStoredReviews} Per lettura database recensioni
- * @throws {Error} Se accesso storage fallisce - from {@link getStoredReviews} 
+ * @throws {Error} Rilancia errori di storage 
  * 
  * @example
  * const userTaste = recipeUserRate("52772", "user123", "tasteRate"); // "4.0"

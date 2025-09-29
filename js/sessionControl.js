@@ -16,15 +16,12 @@ import { StorageOperations } from "./storageManagement.js";
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
 const LOGGED_USER_KEY = "loggedUser";
 
-/**@deprecated */
-let loggedUserId = "";
-
 /**
  * Aggiorna ID utente loggato in storage e cache locale
  * @private
  * @param {string} userId - ID utente da salvare
  * @see {@link StorageOperations} Per aggiornamento session storage
- * @throws {Error} Se errore storage - from {@link StorageOperations}
+ * @throws {Error} Rilancia errori di stroage
  */
 function updateLoggedUser(userId){
     try{
@@ -43,7 +40,8 @@ function updateLoggedUser(userId){
  * @param {Array<string>} idsArray - Array di ID ricette da recuperare
  * @returns {Promise<Array<FullRecipe>>} Array di oggetti ricetta completi
  * @see {@link RecipesManagement.searchRecipeById} Per ricerca ricetta
- * @throws {Error} Se errore recupero singola ricetta - from {@link RecipesManagement.searchRecipeById}
+ * @throws {NotFound} Se ricetta non trovata
+ * @throws {Error} Rilancia errori critici e di storage
  * 
  * @example
  * const ids = ["52772", "52773"];
@@ -78,9 +76,12 @@ export const NewUser = {
      * @param {string} username - Nome utente
      * @param {string} password - Password
      * @returns {Promise<boolean>} True se login riuscito
-     * @throws {Error} Se errore utente non trovato o dati errati - from {@link searchUser}
+     * @see {@link UsersManagement.admitUser} per autenticazione utente
+     * @see {@link UsersManagement.searchUser} per lettura dati utente
+     * @see {@link updateLoggedUser}
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori critici e di storage
      * 
-     * @todo Valutare upstream se implementare autenticazione tramite email
      */
     startSession: async (username, password) => {
         try {
@@ -102,8 +103,10 @@ export const NewUser = {
      * @param {string} username - Nome utente
      * @param {string} email - Email utente
      * @param {string} password - Password
+     * @see {@link UsersManagement.addNewUser} Per aggiornamento database utenti
      * @returns {Promise<Object>} Dati utente creato
-     * @throws {Error} Se errore creazione utente
+     * @throws {ErrorsManagement.Duplicated} Per parametri utente duplicati 
+     * @throws {Error} Rilancia errori di storage ed errori critici
      */
     addToDB: async (username, email, password) => { // Solo wrapper
         try {
@@ -124,7 +127,7 @@ export const LoggedUser = {
      * Recupera ID utente loggato da storage
      * @returns {string} ID utente o stringa vuota
      * @see {@link StorageOperations} Per lettura dati utente
-     * @throws {Error} Se errore recupero storage - from {@link StorageOperations}
+     * @throws {Error} Rilancia errori di storage
      */
     getId: () => {
         try {
@@ -139,7 +142,7 @@ export const LoggedUser = {
      * @returns {boolean} True se utente loggato valido
      * @see {@link LoggedUser.getId} Per lettura id utente loggato
      * @see {@link UsersManagement.getRegisteredUsers} Per lettura database utenti
-     * @throws {Error} Se errore lettura da storage - from {@link LoggedUser.getId} o {@link UsersManagement.getRegisteredUsers}
+     * @throws {Error} Rilancia errori di storage
      */
     isLogged: () => {
         try {
@@ -153,7 +156,9 @@ export const LoggedUser = {
     /**
      * Recupera dati completi utente loggato - funzione wrapper
      * @returns {Object} Dati utente
-     * @throws {Error} Se errore recupero - 
+     * @see {@link usersManagement.searchUser} per lettura dati utente
+     * @throws {ErrorsManagement.NotFound} se utente non trovato
+     * @throws {Error} Rilancia errori di storage 
      */
     getData: () => {
         try {
@@ -167,7 +172,8 @@ export const LoggedUser = {
      * Recupera note utente per ricetta specifica o tutte
      * @param {string} [recipeId] - ID ricetta opzionale per filtro
      * @returns {Array<Object>} Array note filtrate
-     * @throws {Error} Se errore recupero
+     * @throws {ErrorsManagement.NotFound} se utente non trovato
+     * @throws {Error} Errori di storage o parametri errati 
      */
     getRecipeNotes: (recipeId) => {
         try{
@@ -181,7 +187,8 @@ export const LoggedUser = {
     /**
      * Recupera recensioni utente
      * @returns {Array<Object>} Array recensioni utente
-     * @throws {Error} Se errore recupero
+     * @see {@link ReviewsManagement.getStoredReviews} Per lettura database ricette
+     * @throws {Error} Rilancia errori di storage
      */
     getReviews: () => {
         try {
@@ -192,9 +199,12 @@ export const LoggedUser = {
     },
     
     /**
-     * Aggiorna username utente
+     * Aggiorna username utente - funzione wrapper
      * @param {string} newUsername - Nuovo username
-     * @throws {Error} Se errore aggiornamento
+     * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
+     * @throws {ErrorsManagement.Duplicated} Se username già in uso
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     changeUsername: (newUsername) => {
         try {
@@ -205,9 +215,12 @@ export const LoggedUser = {
     },
 
     /**
-     * Aggiorna email utente
+     * Aggiorna email utente - funzione wrapper
      * @param {string} newEmail - Nuova email
-     * @throws {Error} Se errore aggiornamento
+     * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
+     * @throws {ErrorsManagement.Duplicated} Se email già in uso
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     changeEmail: (newEmail) => {
         try {
@@ -218,25 +231,27 @@ export const LoggedUser = {
     },
     
     /**
-     * Aggiorna password utente
+     * Aggiorna password utente - funzione wrapper
      * @async
      * @param {string} newPassword - Nuova password
-     * @returns {Promise<boolean>} True se aggiornamento riuscito
-     * @throws {Error} Se errore aggiornamento
+     * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     changePassword: async (newPassword) => {
         try {
             await UsersManagement.updateUserPassword(LoggedUser.getId(), newPassword);
-            return true;
         } catch (error) {
             throw error;
         };
     },
 
     /**
-     * Aggiorna lista preferiti utente
+     * Aggiorna lista preferiti utente - funzione wrapper
      * @param {string} recipeId - ID ricetta da aggiungere/rimuovere
-     * @throws {Error} Se errore aggiornamento
+     * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     updateFavourites: (recipeId) => {
         try {
@@ -247,10 +262,12 @@ export const LoggedUser = {
     }, 
 
     /**
-     * Aggiunge nota per ricetta
+     * Aggiunge nota per ricetta - funzione wrapper
      * @param {string} recipeId - ID ricetta
      * @param {string} text - Testo nota
-     * @throws {Error} Se errore aggiunta
+     * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     addNote: (recipeId, text) => {
         try {
@@ -261,10 +278,11 @@ export const LoggedUser = {
     },
 
     /**
-     * Elimina nota specifica
+     * Elimina nota specifica - funzione wrapper
      * @param {string} recipeId - ID ricetta
-     * @param {string} noteId - ID nota da eliminare
-     * @throws {Error} Se errore eliminazione
+     * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     deleteNote: (noteId) => {
         try {
@@ -276,7 +294,10 @@ export const LoggedUser = {
 
     /**
      * Elimina account utente
-     * @throws {Error} Se errore eliminazione
+     * @see {@link UsersManagement.deleteUser} Elimina account utente
+     * @see {@link LoggedUser.endSession} Termina sessione per utente loggato
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     deleteAccount: () => {
         try {
@@ -288,11 +309,13 @@ export const LoggedUser = {
     },
 
     /**
-     * Operazioni di autenticazione con password
+     * Operazioni di autenticazione con password - wrapper
      * @async
      * @param {string} password - Password fornita
      * @returns {Promise<boolean>} True se autenticazione riuscita
-     * @throws {Error} Se errore autenticazione
+     * @see {@link UsersManagement.admitUser} Per autenticazione utente
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     authOperations: async (password) => {
         try {
@@ -304,20 +327,14 @@ export const LoggedUser = {
 
     /**
      * Termina sessione utente
-     * @returns {boolean} True se logout riuscito
-     * @throws {UsersManagementError} Se errore storage
+     * @see {@link StorageOperations.set} Per aggiornamento web storage
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     endSession: () => {
         try{
             StorageOperations.set(LOGGED_USER_KEY, "", {storageLocation: "session", dataType: "string"});
-            loggedUserId = LoggedUser.getId(); // Aggiorna cache locale
-            if(LoggedUser.getId === ""){
-                return true;
-            }else{
-                return false;
-            }
         }catch(error){
-            throw new Error("Errore aggiornamento sessione");
+            throw error;
         }
     }
 };
@@ -331,8 +348,11 @@ export const Recipe = {
     /**
      * Verifica se ricetta è nei preferiti utente
      * @param {string} recipeId - ID ricetta
-     * @returns {boolean} True se nei preferiti
-     * @throws {Error} Se errore verifica
+     * @returns {boolean} True se ricetta presente tra preferiti utente
+     * @see {@link LoggedUser.getId} Per id utente loggato
+     * @see {@link UsersManagement.searchUser} Per lettura dati utente
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     isFavourite: (recipeId) => {
         try {
@@ -344,31 +364,36 @@ export const Recipe = {
     },
 
     /**
-     * Verifica se utente ha recensito ricetta
+     * Verifica se utente loggato ha recensito ricetta
      * @param {string} recipeId - ID ricetta
-     * @returns {boolean} True se recensita
-     * @throws {Error} Se errore verifica
+     * @returns {boolean} True se ricetta recensita da utente loggato
+     * @see {@link LoggedUser.getId} Per id utente loggato
+     * @see {@link ReviewsManagement.getStoredReviews} Per lettura dati recensioni 
+     * @throws {ErrorsManagement.NotFound} Se utente non trovato
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     isReviewed: (recipeId) => {
         try {
             const loggedUserId = LoggedUser.getId();
-            const actualStoredReviews = ReviewsManagement.getStoredReviews(); 
-            return Boolean(loggedUserId && actualStoredReviews && actualStoredReviews.some(element => (element.userId === loggedUserId) && (element.recipeId === recipeId))); 
+            const storedReviews = ReviewsManagement.getStoredReviews(); 
+            return Boolean(loggedUserId && storedReviews && storedReviews.some(element => (element.userId === loggedUserId) && (element.recipeId === recipeId))); 
         } catch (error) {
             throw error;
         }
     },
     
     /**
-     * Recupera rating gusto utente per ricetta
+     * Recupera rating utente loggato per gusto ricetta
      * @param {string} recipeId - ID ricetta
      * @returns {number} Rating gusto (0-5)
+     * @see {@link ReviewsManagement.recipeUserRate} Per lettura dati recensione utente
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     userTasteRate: (recipeId) => {
         try {
             return ReviewsManagement.recipeUserRate(recipeId, LoggedUser.getId(), "tasteRate");
         } catch (error) {
-            console.error(error);
+            throw error;
         };
     },
 
@@ -376,12 +401,14 @@ export const Recipe = {
      * Recupera rating difficoltà utente per ricetta
      * @param {string} recipeId - ID ricetta
      * @returns {number} Rating difficoltà (0-5)
+     * @see {@link ReviewsManagement.recipeUserRate} Per lettura dati recensione utente 
+     * @throws {Error} Rilancia errori di storage o parametri errati 
      */
     userDifficulyRate: (recipeId) => {
         try {
             return ReviewsManagement.recipeUserRate(recipeId, LoggedUser.getId(), "difficultyRate");
         } catch (error) {
-            console.error(error);
+            throw error;
         }
     },
 
@@ -389,13 +416,14 @@ export const Recipe = {
      * Calcola rating gusto medio ricetta
      * @param {string} recipeId - ID ricetta
      * @returns {number} Rating medio gusto
+     * @see {@link ReviewsManagement.recipeAvgRate} Per calcolo media valutazioni ricetta 
+     * @throws {Error} Rilancia errori di storage o parametri errati  
      */
     avgTasteRate: (recipeId) => {
         try {
             return ReviewsManagement.recipeAvgRate(recipeId, "tasteRate");
         } catch (error) {
-            console.error(error);
-            // @todo Valutare se rethrow errori critici
+            throw error;
         }
     },
 
@@ -403,6 +431,8 @@ export const Recipe = {
      * Calcola rating difficoltà medio ricetta
      * @param {string} recipeId - ID ricetta
      * @returns {number} Rating medio difficoltà
+     * @see {@link ReviewsManagement.recipeAvgRate} Per calcolo media valutazioni ricetta 
+     * @throws {Error} Rilancia errori di storage o parametri errati 
      */
     avgDifficultyRate: (recipeId) => {
         try {
@@ -413,12 +443,12 @@ export const Recipe = {
     },
 
     /**
-     * Aggiunge recensione utente per ricetta
+     * Aggiunge recensione utente loggato per ricetta
      * @param {string} recipeId - ID ricetta
      * @param {number} tasteRate - Rating gusto (0-5)
      * @param {number} difficultyRate - Rating difficoltà (0-5)
-     * @returns {boolean} True se aggiunta riuscita
-     * @throws {Error} Se errore aggiunta
+     * @see {@link ReviewsManagement.updateRecipeReviews} Per aggiunta recesnione utente
+     * @throws {Error} Rilancia errori di storage o parametri errati
      */
     addUserReview: (recipeId, tasteRate, difficultyRate) => {
         try {
@@ -431,20 +461,30 @@ export const Recipe = {
     },
 
     /**
-     * Elimina recensione utente per ricetta
+     * Elimina recensione utente loggato per ricetta
      * @param {string} recipeId - ID ricetta
-     * @throws {Error} Se errore eliminazione
+     * @see {@link ReviewsManagement.updateRecipeReviews} Per rimozione recensione utente
+     * @throws {Error} Rilancia errori di storage o parametri errati
+     * @throws {ErrorsManagement.NotFound} Se recensione non trovata
      */
     deleteUserReview: (recipeId) => {
         try {
-            ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId)
-            // @todo Aggiungere return true esplicito
+            ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId);
         } catch (error) {
             console.error(error);
             throw error;
         }
     },
 
+    /**
+     * Recupera dati completi ricetta per ID fornito
+     * @async
+     * @param {string} recipeId - ID ricetta da recuperare
+     * @returns {Promise<FullRecipe>} Oggetto ricetta completo
+     * @see {@link RecipesManagement.searchRecipeById} Per ricerca ricetta
+     * @throws {ErrorsManagement.NotFound} Se ricetta non trovata
+     * @throws {Error} Rilancia errori critici e di storage
+    */
     getFullData: async (recipeId) => {
         try {
             return RecipesManagement.searchRecipeById(recipeId);
@@ -454,8 +494,20 @@ export const Recipe = {
     }
 };
 
+/**
+ * Namespace per generazione array di preview ricette
+ * Fornisce metodi per recuperare e organizzare dati ricette in formato preview
+ * @namespace PreviewArray
+*/
 export const PreviewArray = {
     
+    /**
+     * Recupera categorie disponibili per navigazione
+     * @async
+     * @returns {Promise<Object>} Oggetto con type "categories" e array categorie
+     * @see {@link RecipesManagement.getData} Per lettura categorie dal database
+     * @throws {Error} Rilancia errori di storage o connessione
+     */
     categories: async () => {
         try {
             return {type: "categories", items: await RecipesManagement.getData("categories")};
@@ -464,6 +516,15 @@ export const PreviewArray = {
         }
     },
 
+    /**
+     * Cerca ricette per nome fornito
+     * @async
+     * @param {string} searchedName - Nome ricetta da cercare
+     * @returns {Promise<Object>} Oggetto con type "meals" e array ricette trovate
+     * @see {@link RecipesManagement.searchRecipesByName} Per ricerca ricette
+     * @throws {ErrorsManagement.NotFound} Se nessuna ricetta trovata
+     * @throws {Error} Rilancia errori di storage o connessione
+     */
     mealsByName: async (searchedName) => {
         try {
             return {type: "meals", items: await RecipesManagement.searchRecipesByName(searchedName)};
@@ -472,6 +533,15 @@ export const PreviewArray = {
         }
     },
 
+    /**
+     * Recupera ricette per categoria specifica
+     * @async
+     * @param {string} category - Nome categoria
+     * @returns {Promise<Object>} Oggetto con type "meals" e array ricette categoria
+     * @see {@link RecipesManagement.searchRecipesByCategory} Per ricerca per categoria
+     * @throws {ErrorsManagement.NotFound} Se categoria non trovata
+     * @throws {Error} Rilancia errori di storage o connessione
+     */
     mealsByCategory: async (category) => {
         try {
             return {type: "meals", items: await RecipesManagement.searchRecipesByCategory(category)};
@@ -480,6 +550,15 @@ export const PreviewArray = {
         }
     },
 
+    /**
+     * Recupera ricette da array di ID forniti
+     * @async
+     * @param {Array<string>} idsArray - Array di ID ricette
+     * @returns {Promise<Object>} Oggetto con type "meals" e array ricette complete
+     * @see {@link recipesAccumulator} Per accumulo ricette da ID
+     * @throws {ErrorsManagement.NotFound} Se ricetta non trovata
+     * @throws {Error} Rilancia errori di storage o connessione
+     */
     mealsById: async (idsArray) => {
         try {
             return {type: "meals", items: await recipesAccumulator(idsArray)};
@@ -488,6 +567,14 @@ export const PreviewArray = {
         }
     },
 
+    /**
+     * Recupera ricette casuali per quantità specificata
+     * @async
+     * @param {number} quantity - Numero ricette da recuperare
+     * @returns {Promise<Object>} Oggetto con type "meals" e array ricette casuali
+     * @see {@link RecipesManagement.rndSearch} Per ricerca casuale
+     * @throws {Error} Rilancia errori di storage o connessione
+     */
     rndMeals: async (quantity) => {
         try {
             return {type: "meals", items: await RecipesManagement.rndSearch(quantity)};
@@ -496,6 +583,15 @@ export const PreviewArray = {
         }
     },
 
+    /**
+     * Recupera ricette recensite dall'utente loggato
+     * @async
+     * @returns {Promise<Object>} Oggetto con type "reviews" e array ricette recensite
+     * @see {@link LoggedUser.getReviews} Per lettura recensioni utente
+     * @see {@link recipesAccumulator} Per accumulo ricette da ID
+     * @throws {ErrorsManagement.NotFound} Se ricetta non trovata
+     * @throws {Error} Rilancia errori di storage o connessione
+     */
     fromUserReviews: async () => {
         try {
             const recipesIdsArray = [];
@@ -508,6 +604,15 @@ export const PreviewArray = {
         }
     },
 
+    /**
+     * Recupera ricette preferite dall'utente loggato
+     * @async
+     * @returns {Promise<Object>} Oggetto con type "meals" e array ricette preferite
+     * @see {@link LoggedUser.getData} Per lettura dati utente
+     * @see {@link recipesAccumulator} Per accumulo ricette da ID
+     * @throws {ErrorsManagement.NotFound} Se ricetta non trovata
+     * @throws {Error} Rilancia errori di storage o connessione
+     */
     fromUserFavourites: async () => {
         try {
             return {type: "meals", items: await recipesAccumulator(LoggedUser.getData().favourites)};
@@ -516,6 +621,15 @@ export const PreviewArray = {
         }
     },
 
+    /**
+     * Recupera ricette con note dall'utente loggato
+     * @async
+     * @returns {Promise<Object>} Oggetto con type "notes" e array ricette con note
+     * @see {@link LoggedUser.getData} Per lettura dati utente
+     * @see {@link recipesAccumulator} Per accumulo ricette da ID
+     * @throws {ErrorsManagement.NotFound} Se ricetta non trovata
+     * @throws {Error} Rilancia errori di storage o connessione
+     */
     fromAllUserNotes: async () => {
         try {
             const recipesIdsArray = [];
@@ -533,6 +647,15 @@ export const PreviewArray = {
         }
     },
 
+    /**
+     * Recupera ricette più popolari per numero recensioni
+     * @async
+     * @param {number} quantity - Numero ricette da recuperare
+     * @returns {Promise<Object>} Oggetto con type "meals" e array ricette ordinate per popolarità
+     * @see {@link ReviewsManagement.getStoredReviews} Per lettura recensioni
+     * @see {@link RecipesManagement.getData} Per lettura ricette
+     * @throws {Error} Rilancia errori di storage o connessione
+     */
     mostPopular: async (quantity) => {
         try {
             const allReviews = ReviewsManagement.getStoredReviews();
