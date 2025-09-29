@@ -3,11 +3,13 @@
  * @description Modulo unificato per operazioni CRUD su web storage con supporto multi-tipo
  */
 
+
+
 /**
  * Manager centralizzato per operazioni web storage
  * Fornisce API unificata per localStorage e sessionStorage con supporto tipi multipli
  * 
- * @namespace StorageManagement
+ * @namespace StorageOperations
  */
 export const StorageOperations = {
     
@@ -19,7 +21,7 @@ export const StorageOperations = {
      * @param {("local"|"session")} options.storageLocation - Tipo storage da utilizzare
      * @param {("array"|"string")} options.dataType - Tipo dato per deserializzazione
      * @returns {Array|string} Dati deserializzati secondo dataType specificato
-     * @throws {StorageManagementError} Se parametri non validi o errori storage
+     * @throws {Error} Se parametri non validi o errori storage
      * 
      * @example
      * // Recupero array utenti da localStorage
@@ -79,7 +81,7 @@ export const StorageOperations = {
      * @param {Object} options - Configurazione operazione storage
      * @param {("local"|"session")} options.storageLocation - Tipo storage da utilizzare
      * @param {("array"|"string")} options.dataType - Tipo dato per serializzazione
-     * @throws {StorageManagementError} Se parametri non validi o errori storage
+     * @throws {Error} Se parametri non validi o errori storage
      * 
      * @example
      * // Salvataggio array utenti in localStorage

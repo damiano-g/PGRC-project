@@ -70,7 +70,7 @@ export function getRegisteredUsers() {
  * @see {@link getRegisteredUsers} - Lettura database utenti (deep copy)
  * @see {@link StorageOperations.set} - Aggiornamento database utenti
  * @see {@link createUserObject} - Creazione nuovo oggetto utente
- * @throws {Error} Se username/email già in uso - from {@link authField} 
+ * @throws {ErrorsManagement.Duplicated} Se username/email già in uso - from {@link authField} 
  * @throws {Error} Se errori di storage - from {@link StorageOperations} or {@link getRegisteredUsers}
  * @throws {Error} Se errori durante hashing - from {@link createUserObject}
  * 
@@ -109,9 +109,8 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
  * @param {string} userId - ID utente da eliminare
  * @see {@link getRegisteredUsers} Per lettura db utenti
  * @see {@link StorageOperations} Per aggiornamento db utenti
- * @throws {new Error} Se utente non trovato
+ * @throws {ErrorsManagement.NotFound} Se utente non trovato
  * @throws {Error} Se errori di storage - from {@link getRegisteredUsers} o {@link StorageOperations}
- * @throws {new Error} Se utente non trovato
  * 
  * @example
  * try {
@@ -128,7 +127,7 @@ export function deleteUser(userId){
         const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            throw new ErrorsManagement.NotFound("user")
+            throw new ErrorsManagement.NotFound("User", "id", userId);
         }
         
         actualRegUsersArray.splice(index, 1);
@@ -151,8 +150,9 @@ export function deleteUser(userId){
  * @param {string} newUsername - Nuovo username desiderato
  * @see {@link authField} Per controllo valori duplicati
  * @see {@link updateUserData} Per aggiornamento dati utente
- * @throws {Error} Se username già in uso from {@link authField}
- * @throws {Error} Se errori di storage, parametri errati o utente non trovato {@link updateUserData}
+ * @throws {ErrorsManagement.Duplicated} Se username già in uso - from {@link authField}
+ * @throws {ErrorsManagement.NotFound} Se utente non trovato o
+ * @throws {Error} se errori di storage, parametri errati o utente non trovato {@link updateUserData}
  * 
  * @example
  * try {
@@ -179,8 +179,9 @@ export async function updateUserUsername(userId, newUsername){
  * @param {string} newEmail - Nuova email desiderata
  * @see {@link authField} Per controllo valori duplicati
  * @see {@link updateUserData} Per aggiornamento db utenti 
- * @throws {Error} Se username già in uso from {@link authField}
- * @throws {Error} Se errori di storage, parametri errati o utente non trovato {@link updateUserData}
+ * @throws {ErrorsManagement.Duplicated} Se username già in uso - from {@link authField}
+ * @throws {Error} Se errori di storage, parametri errati o 
+ * @throws {ErrorsManagement.NotFound} se utente non trovato - from {@link updateUserData}
  * 
  * @example
  * try {
@@ -205,7 +206,8 @@ export async function updateUserEmail(userId, newEmail){
  * @async
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newPassword - Nuova password in chiaro
- * @throws {Error} Se errori durante hashing, errori di storage, parametri errati o utente non trovato - from {@link updateUserData}
+ * @throws {Error} Se errori durante hashing, errori di storage, parametri errati
+ * @throws {ErrorsManagement.NotFound} se utente non trovato - from {@link updateUserData}
  * 
  * @example
  * try {
@@ -231,7 +233,8 @@ export async function updateUserPassword(userId, newPassword){
  * @param {string} recipeId - ID ricetta da aggiungere/rimuovere dai preferiti
  * @see {@link searchUser} Per lettura dati utente
  * @see {@link updateUserData} Per aggiornamento dati utente
- * @throws {Error} Se utente non trovato o se errori di storage (r/w) - from {@link searchUser} o {@link updateUserData}
+ * @throws {Error} Se errori di storage (r/w) o
+ * @throws {ErrorsManagement.NotFound} se utente non trovato - from  {@link updateUserData} o {@link searchUser}
  * 
  * @example
  * try {
@@ -269,7 +272,7 @@ export async function updateUserFavourites(userId, recipeId){
  * @param {string|null} noteId - ID nota per rimozione (null per aggiunta)
  * @see {@link searchUser} Per recupero note utente
  * @see {@link updateUserData} Per aggiornamento note utente
- * @throws {Error} Se utente loggato non trovato - from {@link searchUser} 
+ * @throws {ErrorsManagement.NotFound} Se utente loggato non trovato - from {@link searchUser} 
  * @throws {Error} Se errori di storage - from {@link searchUser} or {@link updateUserData}
  * @throws {Error} Se formato parametri non valido
  * 
@@ -319,7 +322,8 @@ export async function updateUserNotes(userId, recipeId = null, text = null, note
  * @returns {Promise<boolean>} true se credenziali corrette, false altrimenti
  * @see {@link searchUser} Lettura dati utente
  * @see {@link hashString} Per hashing password
- * @throws {Error} Se utente non trovato o errori di lettura da storage - from {@link searchUser}
+ * @throws {ErrorsManagement.NotFound} Se utente non trovato - from {@link searchUser} 
+ * @throws {Error} errori di lettura da storage - from {@link searchUser}
  * @throws {Error} Se errori durante hashing password fornita - from {@link hashString}
  * 
  * @example
@@ -391,7 +395,7 @@ export async function hashString(originalString) {
  * @param {"username"|"email"} fieldType - Campo da verificare
  * @param {string} fieldValue - Valore fornito per il campo
  * @see {@link getRegisteredUsers} - Per lettura array utenti registrati
- * @throws {new Error} Se valore già in uso per il campo selezionato
+ * @throws {ErrorsManagement.Duplicated} Se valore già in uso per il campo selezionato
  * @throws {Error} Se errori di lettura storage - from {@link getRegisteredUsers}
  */
 function authField(fieldType, fieldValue){
@@ -406,9 +410,7 @@ function authField(fieldType, fieldValue){
         const registeredUsers = getRegisteredUsers();
 
         if(registeredUsers.some(user => user[fieldType] === fieldValue)){
-            const duplicatedValue = new Error(`${fieldType} ${fieldValue} already in use`);
-            console.error(duplicatedValue);
-            throw duplicatedValue;
+            throw new ErrorsManagement.Duplicated("User", fieldType, fieldValue);
         }    
     } catch (error) {
         throw error;
@@ -454,7 +456,8 @@ async function createUserObject(chosenUsername, chosenEmail, chosenPassword){
  * @param {string} searchValue - Valore da cercare nel campo
  * @returns {User} Deep copy oggetto utente trovato
  * @see {@link getRegisteredUsers} Per lettura db utenti
- * @throws {new Error} Se utente non trovato o se field non supportato
+ * @throws {ErrorsManagement.NotFound} Se utente non trovato
+ * @throws {Error} se field non supportato
  * @throws {Error} Se errori di lettura - from {@link getRegisteredUsers}
  */
 export function searchUser(searchField, searchValue){
@@ -469,9 +472,7 @@ export function searchUser(searchField, searchValue){
         const index = actualRegUsersArray.findIndex(user => user[searchField] === searchValue);
      
         if(index < 0){
-            const userError = new Error(`User not found for ${searchField}: ${searchValue}`);
-            console.error(userError);
-            throw userError;
+            throw new ErrorsManagement.NotFound("User", searchField, searchValue);
         }
 
         return structuredClone(actualRegUsersArray[index]); // Deep copy assicura consistenza dati in caso di implementazione cache
@@ -492,7 +493,8 @@ export function searchUser(searchField, searchValue){
  * @see {@link getRegisteredUsers} Per lettura db utenti
  * @see {@link hashString} Per hashing password
  * @see {@link StorageOperations} Per aggiornamento db utenti
- * @throws {new Error} Se parametro field errato o utente non trovato
+ * @throws {Error} Se parametro field errato
+ * @throws {ErrorsManagement.NotFound} se utente non trovato
  * @throws {Error} Se errori di storage from {@link getRegisteredUsers} o {@link StorageOperations}
  * @throws {Error} Se errori di hashing - from {@link hashString}
  * 
@@ -511,9 +513,7 @@ async function updateUserData(userId, field, newValue, needsHashing = null) {
         const index = registeredUsers.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            const userError = new Error("User id not found");
-            console.error(userError);
-            throw userError;
+            throw new ErrorsManagement.NotFound("User", "id", userId);
         }
 
         const processedValue = (needsHashing ? await hashString(newValue) : newValue);

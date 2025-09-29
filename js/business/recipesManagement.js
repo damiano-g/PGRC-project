@@ -7,6 +7,7 @@
 
 import { Category, FullRecipe } from "../data-models.js";
 import { StorageOperations } from "../storageManagement.js";
+import * as ErrorsManagement from "../errorsManagement.js"
 
 // ===============================
 // CONFIGURAZIONE ENDPOINT API
@@ -84,7 +85,7 @@ async function fetchRecipes(URL, options, specifier = null){
         return JSONFile;
     } catch (error) {
         console.error(error);
-        alert("Fetch error");
+        throw error;
     }
 }
 
@@ -172,7 +173,7 @@ async function createLocalCategoriesDB() {
  * @see {@link createLocalCategoriesDB} Creazione DB categorie in web storage
  * @see {@link createLocalRecipesDB} Creazione DB ricette in web storage
  * @see {@link StorageOperations} Lettura dati da web storage
- * @throws {new Error} Se chiave non supportata o errori critici
+ * @throws {new Error} Se chiave non supportata
  * @throws {Error} Se errori critici o errori di storage - from {@link createLocalRecipesDB} o {@link createLocalRecipesDB} o {@link StorageOperations}
  * 
  * @example
@@ -212,7 +213,7 @@ export async function getData(dataType) {
  * @param {string|number} recipeId - ID ricetta da cercare
  * @returns {Promise<FullRecipe>} Oggetto ricetta trovato
  * @see {@link getData} Per recupero DB ricette
- * @throws {new Error} Se ricetta non trovata
+ * @throws {ErrorsManagement.NotFound} Se ricetta non trovata
  * @throws {Error} Se errori critici, errori di storage o data type non supportato - from {@link getData} 
  * 
  * @example
@@ -225,9 +226,7 @@ export async function searchRecipeById(recipeId) {
         if(index >= 0){
             return structuredClone(allRecipes[index]);
         }else{
-            const notFound = new Error(`Recipe ${recipeId} not found`);
-            console.error(notFound);
-            throw notFound;
+            throw new ErrorsManagement.NotFound("Recipe", "id", recipeId);
         }
     } catch (error) {
         throw error;

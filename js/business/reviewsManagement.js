@@ -9,6 +9,7 @@
 
 import { Review } from "../data-models.js";
 import { StorageOperations } from "../storageManagement.js";
+import * as ErrorsManagment from "../errorsManagement.js";
 
 // ===============================
 // CONFIGURAZIONE STORAGE
@@ -67,7 +68,8 @@ export function getStoredReviews(){
  * @param {number|null} [difficultyRate=null] - Rating difficoltà (1-5) per ADD, null per DELETE
  * @see {@link getStoredReviews} Per lettura database recensioni
  * @see {@link StorageOperations} Per aggionamento database recensioni
- * @throws {new Error} Se parametri passati non corretti o recensione non trovata
+ * @throws {Error} Se parametri passati non corretti 
+ * @throws {ErrorsManagment.NotFound} se recensione non trovata
  * @throws {Error} Per errori di storage - from {@link getStoredReviews} o {@link StorageOperations}
  * 
  * @example
@@ -90,9 +92,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
                 // DELETE MODE: Rimuovi recensione esistente
                 const index = recipeReviewsArray.findIndex(element => (element.recipeId === recipeId) && (element.userId === userId));
                 if(index < 0){
-                    const notFound = new Error(`Review non found for user ${userId} and recipe ${recipeId}`);
-                    console.error(notFound);
-                    throw notFound;
+                    throw new ErrorsManagment.NotFound("Review", "id", userId);
                 }else{
                     recipeReviewsArray.splice(index, 1);
                 }
