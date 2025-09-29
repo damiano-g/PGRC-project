@@ -113,14 +113,14 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
 /**
  * Calcola rating medio per ricetta su tipo specificato
  * Itera tutte recensioni per aggregazione real-time
- * Intercetta e gestisce eventuali errori provenienti dai moduli downstream
- * senza interrompere il flusso delle funzioni chiamanti.
  * 
  * @public
  * @param {string} recipeId - ID ricetta per calcolo
  * @param {"tasteRate"|"difficultyRate"} ratingType - Tipo rating
  * @returns {number} Media aritmetica formattata a 1 decimale, 0 se nessuna recensione o errori
  * @see {@link getStoredReviews} Per lettura database ricette
+ * 
+ * @throws {Error} Rilancia errori critici e di storage
  *
  * @example
  * const avgTaste = recipeAvgRate("52772", "tasteRate"); // "4.2"
@@ -142,15 +142,12 @@ export function recipeAvgRate (recipeId, ratingType) {
         }
         return avgRate.toFixed(1);
     } catch (error) {
-        console.log("Error catched. Returned fallback value 0");
-        return 0; // Fallback
+        throw error;
     }
 };
 
 /**
  * Recupera rating specifico utente per ricetta e tipo
- * Intercetta e gestisce eventuali errori provenienti dai moduli downstream
- * senza interrompere il flusso delle funzioni chiamanti.
  * 
  * @public
  * @param {string} recipeId - ID ricetta target
@@ -158,6 +155,8 @@ export function recipeAvgRate (recipeId, ratingType) {
  * @param {"tasteRate"|"difficultyRate"} ratingType - Tipo rating
  * @returns {number} Rating formattato a 1 decimale, 0 se non recensita o in caso di errore
  * @see {@link getStoredReviews} Per lettura database recensioni
+ * 
+ * @throws {Error} Rilancia errori critici e di storage
  *
  * @example
  * const userTaste = recipeUserRate("52772", "user123", "tasteRate"); // "4.0"
@@ -167,8 +166,7 @@ export function recipeUserRate(recipeId, userId, ratingType) {
         const review = getStoredReviews().find(element => element.recipeId === recipeId && element.userId === userId);
         return review ? Number(review[ratingType]).toFixed(1) : 0;
     } catch (error) {
-        console.log("Error catched. Returned fallback value 0");
-        return 0; // Fallback
+        throw error;
     }
 }
 

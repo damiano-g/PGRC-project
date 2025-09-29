@@ -21,20 +21,12 @@ const slideshow = document.querySelector(".carousel-inner");
 /** @type {HTMLElement} Container griglia categorie */
 const catContainer = document.getElementById("categories-container");
 
-let indexNavbarReady = true;
 
 // ===============================
 // INIZIALIZZAZIONE DASHBOARD
 // ===============================
 
-document.addEventListener("DOMContentLoaded", () => {
-    try {
-        initializeNavbar(document.querySelector("body"), document.querySelector("nav"));
-    } catch (error) {
-        indexNavbarReady = false;
-        alert("Something went wrong! Please reload the page");
-    }
-});
+document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 
 /**
  * Event listener per caricamento iniziale della dashboard
@@ -42,26 +34,24 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 window.addEventListener("load", async () => {
     
-    if(indexNavbarReady){
-        // ===============================
-        // POPOLAZIONE CAROUSEL RICETTE CASUALI
-        // ===============================
-    
-        populateCarousel(await PreviewArray.mostPopular(5), slideshow);
-    
-        // Attiva il primo slide del carousel (Bootstrap requirement)
-        requestAnimationFrame(() => {
-            const firstSlide = document.querySelector(".carousel-inner .carousel-item");
-            if (firstSlide) {
-                firstSlide.classList.add("active");
-            }
-        });
-    
-        // ===============================
-        // POPOLAZIONE GRIGLIA CATEGORIE
-        // ===============================
-        populatePreviewContainer(await PreviewArray.categories(), catContainer);
-    }
+    // ===============================
+    // POPOLAZIONE CAROUSEL RICETTE CASUALI
+    // ===============================
+
+    populateCarousel(await PreviewArray.mostPopular(5), slideshow);
+
+    // Attiva il primo slide del carousel (Bootstrap requirement)
+    requestAnimationFrame(() => {
+        const firstSlide = document.querySelector(".carousel-inner .carousel-item");
+        if (firstSlide) {
+            firstSlide.classList.add("active");
+        }
+    });
+
+    // ===============================
+    // POPOLAZIONE GRIGLIA CATEGORIE
+    // ===============================
+    populatePreviewContainer(await PreviewArray.categories(), catContainer);
 });
 
 

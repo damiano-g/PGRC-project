@@ -520,7 +520,6 @@ export const PreviewArray = {
      * @param {string} searchedName - Nome ricetta da cercare
      * @returns {Promise<Object>} Oggetto con type "meals" e array ricette trovate
      * @see {@link RecipesManagement.searchRecipesByName} Per ricerca ricette
-     * @throws {ErrorsManagement.NotFound} Se nessuna ricetta trovata
      * @throws {Error} Rilancia errori di storage o connessione
      */
     mealsByName: async (searchedName) => {
@@ -678,7 +677,6 @@ export const PreviewArray = {
             return {type: "meals", items: revPerRecipe.map(recipe => recipe.obj)};
 
         } catch (error) {
-            console.error(error);
             throw error;
         }
     }

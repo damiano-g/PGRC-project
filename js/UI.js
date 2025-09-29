@@ -107,7 +107,7 @@ function cardRatingContent(tasteRate, difficultyRate, title) {
    reviews.innerHTML = content;
 
    return reviews;
-}
+};
 
 /**
  * Utility generica per popolamento container con array di card
@@ -118,6 +118,8 @@ function cardRatingContent(tasteRate, difficultyRate, title) {
  * 
  * @see {@link createPreviewCard} Per creazione singola card
  * @see {@link CardDisplayStrategy} Per strategie contenuto body
+ * 
+ * @throws {Error} Se tipo oggetto errato
  * 
  * @description
  * Popolazione sequenziale container con matching 1:1 tra preview e body elements.
@@ -153,7 +155,9 @@ export function populatePreviewContainer (itemsObj, displayContainer, action = n
                case "categories":
                   break;
                default:
-               throw new Error("Wrong data format");
+                  const dataError = new Error("Wrong data format");
+                  console.error(error); 
+                  throw dataError;
             }
             
             displayContainer.appendChild(createPreviewCard(itemsObj.items[i], relatedBodyElement));
@@ -176,10 +180,16 @@ export function populatePreviewContainer (itemsObj, displayContainer, action = n
  * @param {Object} itemsObj - Oggetto con type e array items
  * @param {HTMLElement} displayContainer - Container target
  * 
+ * @throws {Error} Rilancia errore se oggetto passato non conforme
+ * 
  * @see {@link populatePreviewContainer}
  */
 export function addPreviewToContainer(itemsObj, displayContainer){
-   populatePreviewContainer(itemsObj, displayContainer, "add");
+   try {
+      populatePreviewContainer(itemsObj, displayContainer, "add");
+   } catch (error) {
+      throw error;
+   }
 };
 
 /**
@@ -189,10 +199,16 @@ export function addPreviewToContainer(itemsObj, displayContainer){
  * @param {Object} itemsObj - Oggetto con type e array items
  * @param {HTMLElement} displayContainer - Container target
  * 
+ * @throws {Error} Rilancia errore se oggetto passato non conforme
+ * 
  * @see {@link populatePreviewContainer} 
  */
 export function removePreviewFromArray(itemsObj, displayContainer){
-   populatePreviewContainer(itemsObj, displayContainer, "remove");
+   try {
+      populatePreviewContainer(itemsObj, displayContainer, "remove");
+   } catch (error) {
+      throw error;
+   }
 };
 
 
@@ -225,9 +241,19 @@ function createCarouselItem(recipeObj) {
    const carouselItem = document.createElement("div");
    carouselItem.classList.add("carousel-item");
 
-   // Data attribute per identificazione (conversione esplicita a stringa)
-   const tasteAvg = Recipe.avgTasteRate(recipeObj.id)
-   const difficultyAvg = Recipe.avgDifficultyRate(recipeObj.id);
+   let tasteAvg;
+   let difficultyAvg;
+
+   // Graceful degradation: errore trascurabile - non blocca esecuzione e nessun messaggio per utente
+   try {
+      tasteAvg = Recipe.avgTasteRate(recipeObj.id)
+      difficultyAvg = Recipe.avgDifficultyRate(recipeObj.id);
+   } catch (error) {
+      tasteAvg = 0;
+      difficultyAvg = 0;
+      console.error(error);
+   }
+
    carouselItem.dataset.itemId = String(recipeObj.id);
 
    const image = document.createElement("img");
@@ -325,13 +351,24 @@ const CardDisplayStrategy = {
     * Strategia display per ricette con rating globale calcolato.
     * - Recupero rating tramite Recipe.avgTasteRate e avgDifficultyRate
     * - Rendering con icone stella e forchetta
+    * - Gestisce errori con graceful degradation - rate = 0 - non bloccante
     * 
     * @example
     * const ratingElement = CardDisplayStrategy.withGlobalRating(recipeObj);
     * card.appendChild(ratingElement);
     */
    withGlobalRating: function (itemObj) {
-      return cardRatingContent(Recipe.avgTasteRate(itemObj.id), Recipe.avgDifficultyRate(itemObj.id), "Global ratings");
+      let tasteRate;
+      let difficultyRate;
+      try {
+         tasteRate = Recipe.avgTasteRate(itemObj.id);
+         difficultyRate = Recipe.avgDifficultyRate(itemObj.id);
+      } catch (error) {
+         tasteRate = 0;
+         difficultyRate = 0;
+         console.error(error);
+      }
+      return cardRatingContent(tasteRate, difficultyRate, "Global ratings");
    },
 
    /**
@@ -350,13 +387,24 @@ const CardDisplayStrategy = {
     * Strategia display per ricette con rating personale dell'utente.
     * - Recupero rating tramite Recipe.userTasteRate e userDifficulyRate
     * - Rendering con icone stella e forchetta
+    * - Gestisce errori con graceful degradation - rate = 0 - non bloccante
     * 
     * @example
     * const ratingElement = CardDisplayStrategy.withUserRating(recipeObj);
     * card.appendChild(ratingElement);
     */
    withUserRating: function (itemObj) {
-      return cardRatingContent(Recipe.userTasteRate(itemObj.id), Recipe.userDifficulyRate(itemObj.id), "Your rating");
+      let tasteRate;
+      let difficultyRate;
+      try {
+         tasteRate = Recipe.userTasteRate(itemObj.id);
+         difficultyRate = Recipe.userDifficulyRate(itemObj.id);
+      } catch (error) {
+         tasteRate = 0;
+         difficultyRate = 0;
+         console.error(error);
+      }
+      return cardRatingContent(tasteRate, difficultyRate, "Your rating");
    },
 
    /**
@@ -373,6 +421,7 @@ const CardDisplayStrategy = {
     * Strategia display per ricette con note testuali dell'utente.
     * - Recupero note tramite LoggedUser.getRecipeNotes()
     * - Rendering come lista con truncate per testi lunghi
+    * - Gestisce eccezioni con messaggio di errore in card non bloccante
     * 
     * @example
     * const notesElement = CardDisplayStrategy.withNotes(recipeObj);
@@ -381,14 +430,19 @@ const CardDisplayStrategy = {
    withNotes: function (itemObj) {
       const notesContainer = document.createElement("ul");
 
-      LoggedUser.getRecipeNotes(itemObj.id).forEach(note => {
-         const noteDOMObj = document.createElement("li");
-         const noteInner = document.createElement("span");
-         noteInner.classList.add("text-truncate", "d-block");
-         noteInner.innerText = note.text;
-         noteDOMObj.appendChild(noteInner);
-         notesContainer.appendChild(noteDOMObj);
-      });
+      try {
+         LoggedUser.getRecipeNotes(itemObj.id).forEach(note => {
+            const noteDOMObj = document.createElement("li");
+            const noteInner = document.createElement("span");
+            noteInner.classList.add("text-truncate", "d-block");
+            noteInner.innerText = note.text;
+            noteDOMObj.appendChild(noteInner);
+            notesContainer.appendChild(noteDOMObj);
+         });
+      } catch (error) {
+         notesContainer.innerHTML = "Oooops! Something went wrong";
+         console.error(error);
+      }
 
       return notesContainer;
    }
@@ -490,23 +544,28 @@ export function populateRecipeNotes(userNotesArray, container) {
  * - UserStatus.isLogged() && RecipeStatus.isFavourite(recipeId) → bi-heart-fill (pieno)
  * - Altri casi → bi-heart (vuoto)
  * - Gestione automatica aggiunta/rimozione classi CSS
- * Intercetta e gestisce eventuali errori provenienti dai moduli downstream
- * senza interrompere il flusso delle funzioni chiamanti.
+ * - Intercetta e gestisce eventuali errori provenienti dai moduli downstream
+ *   senza interrompere il flusso delle funzioni chiamanti -> graceful degradation: icona vuota
  * 
  * @example
  * favBtnDisplay(iconElement, "52772");
  */
 export function favBtnDisplay(btn, recipeId) {
+   let condition;
+   
    try {
-      if(LoggedUser.isLogged() && Recipe.isFavourite(recipeId)){
-         btn.classList.remove("bi-heart");
-         btn.classList.add("bi-heart-fill");
-      }else{
-         btn.classList.remove("bi-heart-fill");
-         btn.classList.add("bi-heart");
-      }
+      condition = LoggedUser.isLogged() && Recipe.isFavourite(recipeId);
    } catch (error) {
-      // NB -> log di eventuali errori gestito downstream
+      condition = false;
+      console.error(error);
+   }
+   
+   if(condition){
+      btn.classList.remove("bi-heart");
+      btn.classList.add("bi-heart-fill");
+   }else{
+      btn.classList.remove("bi-heart-fill");
+      btn.classList.add("bi-heart");
    }
 };
 
@@ -523,8 +582,8 @@ export function favBtnDisplay(btn, recipeId) {
  * State management per pulsante toggle recensione.
  * - UserStatus.isLogged() && RecipeStatus.isReviewed(recipeId) → "Delete review"
  * - Altri casi → "Add review"
- * Intercetta e gestisce eventuali errori provenienti dai moduli downstream
- * senza interrompere il flusso delle funzioni chiamanti.
+ * - Intercetta e gestisce eventuali errori provenienti dai moduli downstream
+ *   senza interrompere il flusso delle funzioni chiamanti -> graceful degradation: nessun testo per btn
  * 
  * @example
  * revBtnDisplay(reviewButton, "52772");
@@ -537,7 +596,7 @@ export function revBtnDisplay(btn, recipeId) {
          btn.innerText = "Add review";
       }
    } catch (error) {
-      // Gestione log errori downstream
+      console.error(error);
    }
 };
 
@@ -562,6 +621,8 @@ export function revBtnDisplay(btn, recipeId) {
  * @example
  * const overview = createRecipeOverview(recipeData);
  * recipeContainer.appendChild(overview);
+ * 
+ * @todo Implementare strategia gestione errori
  */
 export function createRecipeOverview(recipeObj) {
    
@@ -602,13 +663,21 @@ export function createRecipeOverview(recipeObj) {
  * - Gestione link homepage, personale, impostazioni, login/logout
  * - Prefissi path dinamici per navigazione tra pagine
  * - Event listeners per click e navigazione
+ * - Gestisce errori come user not logged - non bloccante
  * 
  * @example
  * initializeNavbar(document.body, document.querySelector("nav"));
  */
 export function initializeNavbar(bodyDOMObject, navBarDOMObject){
+   
    let linkPrefix = "./";
-   const userLogged = LoggedUser.isLogged();
+   let userLogged;
+   try {
+      userLogged = LoggedUser.isLogged();
+   } catch (error) {
+      userLogged = false;
+      console.error("Error during navbar inizialization", error);
+   }
 
    const homepageLink = navBarDOMObject.querySelector("#home-link");
 
@@ -658,11 +727,16 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
    if(userLogged){
       const logoutLink = navBarDOMObject.querySelector("#logout-link"); 
       logoutLink.addEventListener("click", () => {
-         LoggedUser.endSession();
-         if(bodyDOMObject.id != "index-page" && bodyDOMObject.id != "search-page"){
-            window.location.href = "../index.html";
-         }else{
-            window.location.reload();
+         try {
+            LoggedUser.endSession();
+            if(bodyDOMObject.id != "index-page" && bodyDOMObject.id != "search-page"){
+               window.location.href = "../index.html";
+            }else{
+               window.location.reload();
+            }
+         } catch (error) {
+            alert("Something went wrong. Try again to end session properly");
+            console.error("Error during session ending", error);
          }
       });
       logoutLink.classList.remove("d-none");
