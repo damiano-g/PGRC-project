@@ -1,11 +1,8 @@
 /**
  * @fileoverview Componenti UI per rendering card e popolamento container
  * @description Fornisce funzioni per creare elementi DOM delle card preview
- * e gestire il popolamento dei container con layout Bootstrap
- * @author damia
- * @version 1.0.0
- * @since 2025-08-28
- * @requires data-models - ItemPreview objects per input standardizzato
+ * e gestire il popolamento dei contenuti nelle pagine
+ * @requires sessionControl
  */
 
 import { LoggedUser, Recipe } from "./sessionControl.js";
@@ -15,31 +12,32 @@ import { LoggedUser, Recipe } from "./sessionControl.js";
 // ================================================================================================
 
 /**
- * Crea una singola card preview da oggetto ItemPreview normalizzato
+ * Crea elemento card preview da oggetto ItemPreview con contenuto opzionale
  * 
  * @function createPreviewCard
  * @private
- * @param {import('./data-models.js').ItemPreview} itemObj - Oggetto dati normalizzato
- * @param {string} itemPreviewObj.id - ID univoco per data attribute
- * @param {string} itemPreviewObj.name - Nome da mostrare nel titolo
- * @param {string} itemPreviewObj.image - URL immagine per card
- * @param {HTMLElement|null} [bodyElement=null] - Elemento aggiuntivo da appendere al card-body
- * @returns {HTMLElement} Card Bootstrap pronta per inserimento nel DOM
+ * @param {Object} itemObj - Oggetto dati con proprietà id, image, name
+ * @param {HTMLElement|null} [bodyElement=null] - Elemento DOM opzionale da aggiungere al card-body
+ * @returns {HTMLElement} Elemento card Bootstrap pronto per inserimento DOM
+ * 
+ * @see {@link favBtnDisplay} Per gestione stato icona preferiti
+ * @see {@link CardDisplayStrategy} Per strategie contenuto body
  * 
  * @description
- * Factory function per card Bootstrap responsive con layout 5/7 colonne.
- * - Immagine sinistra (col-5) responsive con .img-fluid
- * - Contenuto destro (col-7) con titolo e spazio per elementi aggiuntivi
- * - Data attribute per identificazione durante event delegation
- * - Compatibile con CSS Grid per layout affiancato automatico
- * - Se bodyElement fornito, aggiunge button preferiti con icona Bootstrap
+ * Factory per card preview con layout responsive e contenuto dinamico.
+ * - Struttura base: immagine + titolo + body opzionale
+ * - Data attribute dataset.itemId per event delegation
+ * - Icona preferiti aggiunta automaticamente se bodyElement fornito
+ * - Styling Bootstrap per consistenza UI
  * 
  * @example
- * const recipe = new ItemPreview({idMeal: "123", strMeal: "Pasta"});
- * const extraContent = document.createElement("div");
- * const cardElement = createPreviewCard(recipe, extraContent);
+ * const recipe = {id: "52772", image: "pizza.jpg", name: "Pizza Margherita"};
+ * const ratingElement = createRatingDiv(4.5, 3.2);
+ * const card = createPreviewCard(recipe, ratingElement);
+ * container.appendChild(card);
  * 
- * @since 1.0.0
+ * @todo Aggiungere validazione input per itemObj
+ * @todo Considerare lazy loading per immagini
  */
 function createPreviewCard (itemObj, bodyElement = null) { 
    const card = document.createElement("div");
@@ -69,13 +67,33 @@ function createPreviewCard (itemObj, bodyElement = null) {
    return card;
  };
 
- function cardRatingContent(tasteRate, difficultyRate, title) {
+ /**
+ * Crea elemento DOM per card con visualizzazione valutazioni ricetta
+ * 
+ * @private
+ * @param {number} tasteRate - Valutazione sapore (0-5)
+ * @param {number} difficultyRate - Valutazione difficoltà (0-5)
+ * @param {string} title - Titolo sezione (es. "Global ratings")
+ * @returns {HTMLElement} Div con contenuto valutazione formattato
+ * 
+ * @description
+ * Factory per elemento rating con icone Bootstrap e testo.
+ * - Mostra titolo sezione
+ * - Se valutazioni > 0: icone stella e forchetta con valori
+ * - Altrimenti: messaggio "Ancora nessuna recensione"
+ * - Styling Bootstrap per layout responsive
+ * 
+ * @example
+ * const ratingDiv = cardRatingContent(4.2, 3.1, "Global ratings");
+ * cardBody.appendChild(ratingDiv);
+ */
+function cardRatingContent(tasteRate, difficultyRate, title) {
    const reviews = document.createElement("div");
       
    reviews.classList.add("container", "px-0", "rate-container");
-   
+
    let content = `<span>${title}</span><br>`;
-   
+
    if(Number(tasteRate) > 0 && Number(difficultyRate) > 0){
       content += `
       <div>
@@ -86,32 +104,32 @@ function createPreviewCard (itemObj, bodyElement = null) {
    }else{
       content += "Ancora nessuna recensione";
    }
-   
+
    reviews.innerHTML = content;
-   
+
    return reviews;
- }
+}
 
 /**
  * Utility generica per popolamento container con array di card
  * 
- * @function populatePreviewContainer
- * @private
- * @param {Array<import('./data-models.js').ItemPreview>} itemsObj - Array oggetti normalizzati
+ * @param {Object} itemsObj - Oggetto con type e array items
  * @param {HTMLElement} displayContainer - Container target per inserimento card
- * @param {Array<HTMLElement>|null} [bodyElementsArray=null] - Array elementi body opzionali
- * @returns {void}
+ * @param {string|null} [action=null] - Azione speciale: "add" o "remove"
+ * 
+ * @see {@link createPreviewCard} Per creazione singola card
+ * @see {@link CardDisplayStrategy} Per strategie contenuto body
  * 
  * @description
  * Popolazione sequenziale container con matching 1:1 tra preview e body elements.
- * - Reset completo container (innerHTML = "")
+ * - Reset completo container (innerHTML = "") se action non "add"
  * - Iterazione con indice per matching array paralleli
  * - Creazione card con body element corrispondente se fornito
+ * - Supporto rimozione selettiva per action "remove"
  * 
- * @todo Aggiungere validazione lunghezza array per mismatch
- * @todo Considerare batch DOM insertion per performance
- * 
- * @since 1.0.0
+ * @example
+ * const recipes = await PreviewArray.mealsByName("pasta");
+ * populatePreviewContainer(recipes, document.getElementById("results-container"));
  */
 export function populatePreviewContainer (itemsObj, displayContainer, action = null) {
    if(action != "remove"){
@@ -150,12 +168,30 @@ export function populatePreviewContainer (itemsObj, displayContainer, action = n
          };
       });
    }
-}
+};
 
+/**
+ * Aggiunge preview al container esistente senza reset
+ * 
+ * @function addPreviewToContainer
+ * @param {Object} itemsObj - Oggetto con type e array items
+ * @param {HTMLElement} displayContainer - Container target
+ * 
+ * @see {@link populatePreviewContainer}
+ */
 export function addPreviewToContainer(itemsObj, displayContainer){
    populatePreviewContainer(itemsObj, displayContainer, "add");
 };
 
+/**
+ * Aggiunge preview al container esistente senza reset
+ * 
+ * @function addPreviewToContainer
+ * @param {Object} itemsObj - Oggetto con type e array items
+ * @param {HTMLElement} displayContainer - Container target
+ * 
+ * @see {@link populatePreviewContainer} 
+ */
 export function removePreviewFromArray(itemsObj, displayContainer){
    populatePreviewContainer(itemsObj, displayContainer, "remove");
 };
@@ -164,44 +200,47 @@ export function removePreviewFromArray(itemsObj, displayContainer){
 /**
  * Crea elemento slide per carousel Bootstrap da oggetto ItemPreview
  * 
- * @function createCarouselItem
  * @private
- * @param {import('./data-models.js').ItemPreview} fullRecipeObj - Oggetto dati normalizzato
+ * @param {Object} recipeObj - Oggetto dati con id, image, name
  * @returns {HTMLElement} Elemento carousel-item pronto per carousel Bootstrap
+ * 
+ * @see {@link favBtnDisplay} Per gestione icona preferiti
+ * @see {@link Recipe.avgTasteRate} Per calcolo rating medio
  * 
  * @description
  * Factory per slide carousel con caption overlay e icona preferiti.
  * - Immagine full-width responsive (d-block w-100)
- * - Caption overlay nascosta su mobile (d-none d-md-block)
- * - Icona preferiti Bootstrap (bi-heart) con stato dinamico
+ * - Caption overlay con titolo e rating se disponibili
+ * - Icona preferiti Bootstrap con stato dinamico
  * - Data attribute per event delegation
- * - Progress bars per rating commentate nel codice
  * 
  * @example
- * const recipe = new ItemPreview({idMeal: "456", strMeal: "Pizza"});
- * const slideElement = createCarouselItem(recipe, GlobalRatingFunctions);
+ * const recipe = {id: "456", image: "pizza.jpg", name: "Pizza Margherita"};
+ * const slideElement = createCarouselItem(recipe);
+ * carouselInner.appendChild(slideElement);
  * 
- * @since 1.0.0
+ * @todo Aggiungere validazione input per recipeObj
+ * @todo Considerare lazy loading per immagini slide
  */
-function createCarouselItem(fullRecipeObj) { 
+function createCarouselItem(recipeObj) { 
    const carouselItem = document.createElement("div");
    carouselItem.classList.add("carousel-item");
 
    // Data attribute per identificazione (conversione esplicita a stringa)
-   const tasteAvg = Recipe.avgTasteRate(fullRecipeObj.id)
-   const difficultyAvg = Recipe.avgDifficultyRate(fullRecipeObj.id);
-   carouselItem.dataset.itemId = String(fullRecipeObj.id);
+   const tasteAvg = Recipe.avgTasteRate(recipeObj.id)
+   const difficultyAvg = Recipe.avgDifficultyRate(recipeObj.id);
+   carouselItem.dataset.itemId = String(recipeObj.id);
 
    const image = document.createElement("img");
-   image.src = fullRecipeObj.image;
-   image.alt = fullRecipeObj.name;
+   image.src = recipeObj.image;
+   image.alt = recipeObj.name;
    image.classList.add("d-block", "w-100");
    carouselItem.appendChild(image);
 
    const captionContainer = document.createElement("div");
    captionContainer.classList.add("carousel-caption", "start-0", "px-5");
    const recipeTitle = document.createElement("h1");
-   recipeTitle.innerText = fullRecipeObj.name;
+   recipeTitle.innerText = recipeObj.name;
    captionContainer.appendChild(recipeTitle);
    if(tasteAvg > 0 && difficultyAvg > 0){
       const recipeRating = document.createElement("span");
@@ -217,7 +256,7 @@ function createCarouselItem(fullRecipeObj) {
    slideFavBtn.classList.add("bi", "bi-heart", "fs-4", "fav-icon", "position-absolute", "top-0", "end-0");
    carouselItem.appendChild(slideFavBtn);
    
-   favBtnDisplay(slideFavBtn, fullRecipeObj.id);
+   favBtnDisplay(slideFavBtn, recipeObj.id);
 
    return carouselItem;   
 };
@@ -227,7 +266,7 @@ function createCarouselItem(fullRecipeObj) {
  * 
  * @function createNoteCard
  * @private
- * @param {Object} userNote - Oggetto nota utente
+ * @param {Object} userNote - Oggetto nota utente con id e text
  * @param {string} userNote.id - ID univoco nota per data attribute
  * @param {string} userNote.text - Contenuto testuale della nota
  * @returns {HTMLElement} Card Bootstrap con footer e pulsante rimozione
@@ -238,10 +277,12 @@ function createCarouselItem(fullRecipeObj) {
  * - Pulsante rimozione nel footer con data-note-id
  * - Styling Bootstrap standard per consistenza UI
  * 
- * @todo Aggiungere truncate per note lunghe
- * @todo Implementare preview/expand per contenuto esteso
+ * @example
+ * const note = {id: "123", text: "Ricetta facile"};
+ * const card = createNoteCard(note);
+ * notesContainer.appendChild(card);
  * 
- * @since 1.0.0
+ * @todo Aggiungere truncate per note lunghe
  */
 function createNoteCard(userNote) { 
    const noteCard = document.createElement("div");
@@ -259,52 +300,84 @@ function createNoteCard(userNote) {
 // PUBLIC API - DISPLAY STRATEGIES
 // ================================================================================================
 
-
 /**
  * Namespace per strategie di display specializzate per diversi tipi di contenuto
  * 
- * @namespace PreviewDisplayStrategy
+ * @namespace CardDisplayStrategy
  * @description
  * Raccolta di metodi specializzati per rendering preview con contenuto aggiuntivo.
  * Ogni metodo implementa una strategia specifica per tipo di dati e layout.
- * 
- * @since 1.0.0
  */
 const CardDisplayStrategy = {
 
+   /**
+    * Display preview con rating globale
+    * 
+    * @function withGlobalRating
+    * @memberof CardDisplayStrategy
+    * @param {Object} itemObj - Oggetto con id per recuperare rating
+    * @returns {HTMLElement} Elemento rating formattato
+    * 
+    * @see {@link cardRatingContent} Per creazione elemento rating
+    * @see {@link Recipe.avgTasteRate} Per calcolo rating sapore
+    * @see {@link Recipe.avgDifficultyRate} Per calcolo rating difficoltà
+    * 
+    * @description
+    * Strategia display per ricette con rating globale calcolato.
+    * - Recupero rating tramite Recipe.avgTasteRate e avgDifficultyRate
+    * - Rendering con icone stella e forchetta
+    * 
+    * @example
+    * const ratingElement = CardDisplayStrategy.withGlobalRating(recipeObj);
+    * card.appendChild(ratingElement);
+    */
    withGlobalRating: function (itemObj) {
       return cardRatingContent(Recipe.avgTasteRate(itemObj.id), Recipe.avgDifficultyRate(itemObj.id), "Global ratings");
    },
 
+   /**
+    * Display preview con rating utente
+    * 
+    * @function withUserRating
+    * @memberof CardDisplayStrategy
+    * @param {Object} itemObj - Oggetto con id per recuperare rating utente
+    * @returns {HTMLElement} Elemento rating formattato
+    * 
+    * @see {@link cardRatingContent} Per creazione elemento rating
+    * @see {@link Recipe.userTasteRate} Per recupero rating sapore utente
+    * @see {@link Recipe.userDifficulyRate} Per recupero rating difficoltà utente
+    * 
+    * @description
+    * Strategia display per ricette con rating personale dell'utente.
+    * - Recupero rating tramite Recipe.userTasteRate e userDifficulyRate
+    * - Rendering con icone stella e forchetta
+    * 
+    * @example
+    * const ratingElement = CardDisplayStrategy.withUserRating(recipeObj);
+    * card.appendChild(ratingElement);
+    */
    withUserRating: function (itemObj) {
       return cardRatingContent(Recipe.userTasteRate(itemObj.id), Recipe.userDifficulyRate(itemObj.id), "Your rating");
    },
 
-
    /**
     * Display preview con note testuali utente
     * 
-    * @function displayWithNote
-    * @memberof DisplayPreviews
-    * @param {Array<import('./data-models.js').ItemPreview>} itemObj - Array ricette normalizzate
-    * @param {HTMLElement} container - Container target per rendering
-    * @param {Array<Object>} userNotesArray - Array note utente con text property
-    * @returns {void}
+    * @function withNotes
+    * @memberof CardDisplayStrategy
+    * @param {Object} itemObj - Oggetto con id per recuperare note
+    * @returns {HTMLElement} Lista note formattata
+    * 
+    * @see {@link LoggedUser.getRecipeNotes} Per recupero note utente
     * 
     * @description
     * Strategia display per ricette con note testuali dell'utente.
-    * - Matching 1:1 tra preview e note tramite indice array
-    * - Rendering note come paragrafi semplici nel card-body
-    * - Assume corrispondenza ordinata tra array input
+    * - Recupero note tramite LoggedUser.getRecipeNotes()
+    * - Rendering come lista con truncate per testi lunghi
     * 
     * @example
-    * const notes = [{text: "Ricetta facile"}, {text: "Troppo salata"}];
-    * DisplayPreviews.displayWithNote(recipes, container, notes);
-    * 
-    * @todo Validare lunghezza array per mismatch preview/note
-    * @todo Aggiungere formatting HTML per note (bold, italic, links)
-    * 
-    * @since 1.0.0
+    * const notesElement = CardDisplayStrategy.withNotes(recipeObj);
+    * card.appendChild(notesElement);
     */
    withNotes: function (itemObj) {
       const notesContainer = document.createElement("ul");
@@ -329,10 +402,11 @@ const CardDisplayStrategy = {
 /**
  * Popola carousel Bootstrap con array di slide da ItemPreview
  * 
- * @function populateCarousel
- * @param {Array<import('./data-models.js').ItemPreview>} recipesObj - Array oggetti normalizzati
+ * @param {Object} recipesObj - Oggetto con array items
  * @param {HTMLElement} carouselInner - Elemento .carousel-inner di Bootstrap
  * @returns {void}
+ * 
+ * @see {@link createCarouselItem} Per creazione singola slide
  * 
  * @description
  * Popolamento completo carousel con slide e caption.
@@ -343,14 +417,11 @@ const CardDisplayStrategy = {
  * 
  * @example
  * const randomRecipes = await get5RandomRecipes();
- * populateCarousel(randomRecipes, document.querySelector(".carousel-inner"), GlobalRatingFunctions);
+ * populateCarousel(randomRecipes, document.querySelector(".carousel-inner"));
  * // Attivazione manuale primo slide
  * document.querySelector(".carousel-item").classList.add("active");
  * 
- * @todo Aggiungere opzione auto-activate primo slide
  * @todo Implementare lazy loading per immagini slide
- * 
- * @since 1.0.0
  */
 export function populateCarousel(recipesObj, carouselInner) { 
    carouselInner.innerHTML = "";
@@ -367,10 +438,12 @@ export function populateCarousel(recipesObj, carouselInner) {
 /**
  * Gestione container note con logica show/hide automatica
  * 
- * @function populateNotesContainer
+ * @function populateRecipeNotes
  * @param {Array<Object>} userNotesArray - Array note utente
  * @param {HTMLElement} container - Container target per note
  * @returns {void}
+ * 
+ * @see {@link createNoteCard} Per creazione singola card nota
  * 
  * @description
  * Popolamento specializzato per container note con gestione visibilità.
@@ -380,15 +453,13 @@ export function populateCarousel(recipesObj, carouselInner) {
  * 
  * @example
  * // Container nascosto se nessuna nota
- * populateNotesContainer([], notesContainer);
+ * populateRecipeNotes([], notesContainer);
  * 
  * // Container visibile con note
- * populateNotesContainer(userNotes, notesContainer);
+ * populateRecipeNotes(userNotes, notesContainer);
  * 
  * @todo Aggiungere animazioni show/hide
  * @todo Implementare paginazione per molte note
- * 
- * @since 1.0.0
  */
 export function populateRecipeNotes(userNotesArray, container) { 
    container.innerHTML = "";
@@ -409,10 +480,11 @@ export function populateRecipeNotes(userNotesArray, container) {
 /**
  * Aggiorna icona pulsante preferiti in base allo stato utente e ricetta
  * 
- * @function favBtnDisplay
  * @param {HTMLElement} btn - Elemento icona Bootstrap (bi-heart/bi-heart-fill)
  * @param {string} recipeId - ID ricetta per verifica stato
- * @returns {void}
+ * 
+ * @see {@link LoggedUser.isLogged} Per verifica stato login
+ * @see {@link Recipe.isFavourite} Per verifica preferiti
  * 
  * @description
  * State management per icona toggle preferiti con classi Bootstrap Icons.
@@ -422,11 +494,6 @@ export function populateRecipeNotes(userNotesArray, container) {
  * 
  * @example
  * favBtnDisplay(iconElement, "52772");
- * 
- * @todo Aggiungere state icons/loading indicators
- * @todo Implementare animazioni transizioni stato
- * 
- * @since 1.0.0
  */
 export function favBtnDisplay(btn, recipeId) { 
    if(LoggedUser.isLogged() && Recipe.isFavourite(recipeId)){
@@ -441,22 +508,19 @@ export function favBtnDisplay(btn, recipeId) {
 /**
  * Aggiorna testo pulsante recensione in base allo stato utente e ricetta
  * 
- * @function revBtnDisplay
  * @param {HTMLButtonElement} btn - Pulsante recensione da aggiornare
  * @param {string} recipeId - ID ricetta per verifica stato recensione
- * @returns {void}
+ * 
+ * @see {@link LoggedUser.isLogged} Per verifica stato login
+ * @see {@link Recipe.isReviewed} Per verifica recensione
  * 
  * @description
  * State management per pulsante toggle recensione.
- * - UserStatus.isLogged() && RecipeStatus.isReviewed(recipeId) → "Rimuovi recensione"
- * - Altri casi → "Aggiungi recensione"
+ * - UserStatus.isLogged() && RecipeStatus.isReviewed(recipeId) → "Delete review"
+ * - Altri casi → "Add review"
  * 
  * @example
  * revBtnDisplay(reviewButton, "52772");
- * 
- * @todo Aggiungere preview rating nel button state
- * 
- * @since 1.0.0
  */
 export function revBtnDisplay(btn, recipeId) { 
    if(LoggedUser.isLogged() && Recipe.isReviewed(recipeId)){
@@ -466,7 +530,28 @@ export function revBtnDisplay(btn, recipeId) {
    }
 };
 
-
+/**
+ * Crea card overview ricetta con rating e pulsante recensione
+ * 
+ * @param {Object} recipeObj - Oggetto ricetta con id, image, name
+ * @returns {HTMLElement} Card completa con rating e pulsante
+ * 
+ * @see {@link CardDisplayStrategy.withGlobalRating} Per rating globale
+ * @see {@link CardDisplayStrategy.withUserRating} Per rating utente
+ * @see {@link revBtnDisplay} Per stato pulsante recensione
+ * @see {@link createPreviewCard} Per creazione base card
+ * @see {@link LoggedUser.isLogged} Per verifica login utente
+ * 
+ * @description
+ * Factory per card overview ricetta con contenuti dinamici.
+ * - Rating globale sempre visibile
+ * - Rating utente se loggato
+ * - Pulsante recensione con stato dinamico
+ * 
+ * @example
+ * const overview = createRecipeOverview(recipeData);
+ * recipeContainer.appendChild(overview);
+ */
 export function createRecipeOverview(recipeObj) {
    
    const bodyElement = document.createElement("div");
@@ -492,6 +577,24 @@ export function createRecipeOverview(recipeObj) {
    return overviewCard;
 };
 
+/**
+ * Inizializza navbar con logica dinamica per navigazione
+ * 
+ * @param {HTMLElement} bodyDOMObject - Elemento body della pagina
+ * @param {HTMLElement} navBarDOMObject - Elemento navbar
+ * 
+ * @see {@link LoggedUser.isLogged} Per verifica stato login
+ * @see {@link LoggedUser.endSession} Per logout
+ * 
+ * @description
+ * Configurazione dinamica navbar basata su stato utente e pagina corrente.
+ * - Gestione link homepage, personale, impostazioni, login/logout
+ * - Prefissi path dinamici per navigazione tra pagine
+ * - Event listeners per click e navigazione
+ * 
+ * @example
+ * initializeNavbar(document.body, document.querySelector("nav"));
+ */
 export function initializeNavbar(bodyDOMObject, navBarDOMObject){
    let linkPrefix = "./";
    const userLogged = LoggedUser.isLogged();
