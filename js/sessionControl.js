@@ -455,7 +455,6 @@ export const Recipe = {
             ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId, tasteRate, difficultyRate);
             return true;
         } catch (error) {
-            console.error(error);
             throw error;
         };
     },
@@ -471,7 +470,6 @@ export const Recipe = {
         try {
             ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId);
         } catch (error) {
-            console.error(error);
             throw error;
         }
     },

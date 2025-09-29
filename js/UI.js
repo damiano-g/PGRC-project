@@ -21,7 +21,6 @@ import { LoggedUser, Recipe } from "./sessionControl.js";
  * @returns {HTMLElement} Elemento card Bootstrap pronto per inserimento DOM
  * 
  * @see {@link favBtnDisplay} Per gestione stato icona preferiti
- * @see {@link CardDisplayStrategy} Per strategie contenuto body
  * 
  * @description
  * Factory per card preview con layout responsive e contenuto dinamico.
@@ -491,17 +490,23 @@ export function populateRecipeNotes(userNotesArray, container) {
  * - UserStatus.isLogged() && RecipeStatus.isFavourite(recipeId) → bi-heart-fill (pieno)
  * - Altri casi → bi-heart (vuoto)
  * - Gestione automatica aggiunta/rimozione classi CSS
+ * Intercetta e gestisce eventuali errori provenienti dai moduli downstream
+ * senza interrompere il flusso delle funzioni chiamanti.
  * 
  * @example
  * favBtnDisplay(iconElement, "52772");
  */
-export function favBtnDisplay(btn, recipeId) { 
-   if(LoggedUser.isLogged() && Recipe.isFavourite(recipeId)){
-      btn.classList.remove("bi-heart");
-      btn.classList.add("bi-heart-fill");
-   }else{
-      btn.classList.remove("bi-heart-fill");
-      btn.classList.add("bi-heart");
+export function favBtnDisplay(btn, recipeId) {
+   try {
+      if(LoggedUser.isLogged() && Recipe.isFavourite(recipeId)){
+         btn.classList.remove("bi-heart");
+         btn.classList.add("bi-heart-fill");
+      }else{
+         btn.classList.remove("bi-heart-fill");
+         btn.classList.add("bi-heart");
+      }
+   } catch (error) {
+      // NB -> log di eventuali errori gestito downstream
    }
 };
 
@@ -518,15 +523,21 @@ export function favBtnDisplay(btn, recipeId) {
  * State management per pulsante toggle recensione.
  * - UserStatus.isLogged() && RecipeStatus.isReviewed(recipeId) → "Delete review"
  * - Altri casi → "Add review"
+ * Intercetta e gestisce eventuali errori provenienti dai moduli downstream
+ * senza interrompere il flusso delle funzioni chiamanti.
  * 
  * @example
  * revBtnDisplay(reviewButton, "52772");
  */
-export function revBtnDisplay(btn, recipeId) { 
-   if(LoggedUser.isLogged() && Recipe.isReviewed(recipeId)){
-      btn.innerText = "Delete review";
-   }else{
-      btn.innerText = "Add review";
+export function revBtnDisplay(btn, recipeId) {
+   try {
+      if(LoggedUser.isLogged() && Recipe.isReviewed(recipeId)){
+         btn.innerText = "Delete review";
+      }else{
+         btn.innerText = "Add review";
+      }
+   } catch (error) {
+      // Gestione log errori downstream
    }
 };
 

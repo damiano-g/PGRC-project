@@ -2,9 +2,6 @@
  * @fileoverview Dashboard principale - gestione carousel, categorie e ricerca
  * @description Pagina home con carousel ricette casuali, griglia categorie
  * e barra di ricerca per navigazione verso pagine specializzate
- * @author damia
- * @version 1.0.0
- * @since 2025-08-28
  */
 
 // ===============================
@@ -24,10 +21,20 @@ const slideshow = document.querySelector(".carousel-inner");
 /** @type {HTMLElement} Container griglia categorie */
 const catContainer = document.getElementById("categories-container");
 
-document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
+let indexNavbarReady = true;
+
 // ===============================
 // INIZIALIZZAZIONE DASHBOARD
 // ===============================
+
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        initializeNavbar(document.querySelector("body"), document.querySelector("nav"));
+    } catch (error) {
+        indexNavbarReady = false;
+        alert("Something went wrong! Please reload the page");
+    }
+});
 
 /**
  * Event listener per caricamento iniziale della dashboard
@@ -35,24 +42,26 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  */
 window.addEventListener("load", async () => {
     
-    // ===============================
-    // POPOLAZIONE CAROUSEL RICETTE CASUALI
-    // ===============================
-
-    populateCarousel(await PreviewArray.mostPopular(5), slideshow);
-
-    // Attiva il primo slide del carousel (Bootstrap requirement)
-    requestAnimationFrame(() => {
-        const firstSlide = document.querySelector(".carousel-inner .carousel-item");
-        if (firstSlide) {
-            firstSlide.classList.add("active");
-        }
-    });
-
-    // ===============================
-    // POPOLAZIONE GRIGLIA CATEGORIE
-    // ===============================
-    populatePreviewContainer(await PreviewArray.categories(), catContainer);
+    if(indexNavbarReady){
+        // ===============================
+        // POPOLAZIONE CAROUSEL RICETTE CASUALI
+        // ===============================
+    
+        populateCarousel(await PreviewArray.mostPopular(5), slideshow);
+    
+        // Attiva il primo slide del carousel (Bootstrap requirement)
+        requestAnimationFrame(() => {
+            const firstSlide = document.querySelector(".carousel-inner .carousel-item");
+            if (firstSlide) {
+                firstSlide.classList.add("active");
+            }
+        });
+    
+        // ===============================
+        // POPOLAZIONE GRIGLIA CATEGORIE
+        // ===============================
+        populatePreviewContainer(await PreviewArray.categories(), catContainer);
+    }
 });
 
 

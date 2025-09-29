@@ -48,33 +48,41 @@ const recipeOverviewContainer = document.getElementById("recipe-overview");
 /** @type {string} ID ricetta corrente estratto da URL */
 const detailedRecipeId = window.location.search.substring(4);
 
+let detailsNavBarReady = true;
+
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        initializeNavbar(document.querySelector("body"), document.querySelector("nav"));
+    } catch (error) {
+        indexNavbarReady = false;
+        alert("Something went wrong! Please reload the page");
+    }
+});
 
 // ===============================
 // EVENT LISTENERS - GESTIONE PREFERITI E RECENSIONI
 // ===============================
 
-recipeOverviewContainer.addEventListener("click", async click => {
-   
-   const card = click.target.closest(".card");
-   
-   if(click.target.matches(".fav-icon")){
-      if(LoggedUser.isLogged()){
-         LoggedUser.updateFavourites(card.dataset.itemId);
-         favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
-      }else{
-         window.location.href = "./login.html";
+recipeOverviewContainer.addEventListener("click", async click => { 
+   try {
+      const card = click.target.closest(".card");
+      
+      if(click.target.matches(".fav-icon")){
+         if(LoggedUser.isLogged()){
+            LoggedUser.updateFavourites(card.dataset.itemId);
+            favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
+         }else{
+            window.location.href = "./login.html";
+         };
       };
-   };
-
-   if(click.target.matches("#revBtn")){
-      try {
+   
+      if(click.target.matches("#revBtn")){
          if(LoggedUser.isLogged()){
             if(Recipe.isReviewed(detailedRecipeId)){
                revConfirmBtn.onclick = async () => {
                   Recipe.deleteUserReview(detailedRecipeId);
                   alert("Recensione eliminata");
                   recipeOverviewContainer.replaceChild(createRecipeOverview(await Recipe.getFullData(detailedRecipeId)), card);
-                  // revBtnDisplay(card.querySelector("#revBtn"), detailedRecipeId);
                   revConfirmBtn.disabled = true;
                } 
                revForm.classList.add("d-none");
@@ -93,13 +101,11 @@ recipeOverviewContainer.addEventListener("click", async click => {
             }
          }else{
             window.location.href = "./login.html";
-         }
-      } catch (error) {
-         console.error(error);
-         alert("Recensioni non aggiornate");
-      };   
-   };
-
+         }  
+      };
+   } catch (error) {
+      alert("Something went wrong. Please retry later.");
+   }
 });
 
 revFormInputs.forEach(input => input.addEventListener("change", () => {
@@ -137,11 +143,10 @@ noteInsBtn.addEventListener("click", () => {
       LoggedUser.addNote(detailedRecipeId, noteTextInput.value); 
       noteTextInput.value = "";
       populateRecipeNotes(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
-      alert("Nota inserita");
+      alert("Note added");
    } catch (error) {
       noteInsBtn.disabled = false;
-      console.error(error);
-      alert("Errore nel salvataggio");
+      alert("Something went wrong. Please retry later.");
    }
 });
 
@@ -156,10 +161,9 @@ userNotesContainer.addEventListener("click", click => {
       try {
          LoggedUser.deleteNote(btn.dataset.noteId);
          populateRecipeNotes(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
-         alert("Nota rimossa");
+         alert("Note deleted");
       } catch (error) {
-         console.error(error)
-         alert("Errore, nota non rimossa");
+         alert("Something went wrong. Please retry later.");
       }
    }
 });
@@ -170,14 +174,12 @@ userNotesContainer.addEventListener("click", click => {
 
 window.addEventListener("load", async () => {
    try {
-
       // ===============================
       // FETCH E NORMALIZZAZIONE DATI
       // ===============================
 
       const fullRecipeObj = await Recipe.getFullData(detailedRecipeId);
-
-      
+ 
       // ===============================
       // POPOLAZIONE ELEMENTI UI
       // ===============================
@@ -200,14 +202,10 @@ window.addEventListener("load", async () => {
          populateRecipeNotes(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
       }
    } catch (error) {
-      console.error(error);
-      alert("Errore nel caricamento della pagina: si prega di riprovare");
-      window.history.back();
+      alert("Something went wrong. Please try reload the page.");
    }
-   
 });
 
-document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 
 // ===============================
 // FLUSSO DI ESECUZIONE DOCUMENTATO
