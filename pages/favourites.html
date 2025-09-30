@@ -69,27 +69,35 @@
             <nav id="page-title">
                 <div>
                     <h1 class="mx-auto text-center m-0">My cookbook</h1>
-                    <a class="active" href="#fav-section">Favourites</a>
-                    <a href="#rev-section">Reviewed</a>
-                    <a href="#noted-section">Notes</a>
+                    <ul class="nav nav-tabs" id="page-title" role="tablist">
+                        <li class="nav-item">
+                            <a class="tab-pane fade show active" href="#fav-section" role="tab">Favourites</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="tab-pane fade" href="#rev-section" role="tab">Reviewed</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="tab-pane fade" href="#noted-section" role="tab">Notes</a>
+                        </li>
+                    </ul>
                 </div>
             </nav>
             
             <!-- Container sezioni ricette: popolato dinamicamente con card per ogni sezione -->
-            <div id="recipes-container">
+            <div class="tab-content" id="recipes-container">
 
                 <!-- Sezione favourites: visibile di default -->
-                <section id="fav-section">
+                <section class="tab-pane fade show active" id="fav-section" role="tabpanel">
                     <h3 class="mx-auto text-center">My favourites recipes</h3>
                     <div id="fav-recipes"></div>
                 </section>
                 
-                <section class="d-none" id="rev-section">
+                <section class="tab-pane fade" id="rev-section" role="tabpanel">
                     <h3 class="mx-auto text-center">My reviews</h3>
                     <div id="rev-recipes"></div>
                 </section>
         
-                <section class="d-none" id="noted-section">
+                <section class="tab-pane fade" id="noted-section" role="tabpanel">
                     <h3 class="mx-auto text-center">My notes</h3>
                     <div id="noted-recipes"></div>
                 </section>
