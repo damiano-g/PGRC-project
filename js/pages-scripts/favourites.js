@@ -1,9 +1,7 @@
 /**
  * @fileoverview Pagina personale utente: gestione preferiti, recensioni e note
- * @description Script per la pagina protetta dell’utente loggato. Gestisce autenticazione, caricamento dati personali e rendering delle sezioni ricette preferite, recensite e annotate. Implementa event delegation per navigazione e toggle preferiti.
- * @author damia
- * @version 1.0.0
- * @since 2025-09-08
+ * @description Script per la pagina protetta dell’utente loggato. Gestisce autenticazione, caricamento dati personali e rendering delle sezioni ricette preferite, recensite e annotate.
+ *              Implementa event delegation per navigazione e toggle preferiti.
  * @requires sessionControl - Gestione autenticazione e dati utente
  * @requires UI - Componenti di visualizzazione card e funzioni display
  */
