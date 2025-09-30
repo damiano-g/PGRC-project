@@ -2,9 +2,6 @@
  * @fileoverview Pagina dettagli ricetta - visualizzazione completa ingredienti e istruzioni
  * @description Gestisce caricamento e rendering dei dettagli di una ricetta specifica
  * tramite ID passato come parametro URL
- * @author damia
- * @version 1.0.0
- * @since 2025-08-28
  */
 
 // ===============================
@@ -39,25 +36,17 @@ const noteInsBtn = document.querySelector("#notes form .btn");
 const revForm = document.querySelector(".modal .form");
 const revAlertText = document.querySelector(".modal .text");
 const revConfirmBtn = document.querySelector(".modal-footer .btn");
-const revFormInputs = document.querySelectorAll(".modal .form input");
-const tasteRateInput = document.getElementById("tasteRate");
-const difficultyRateInput = document.getElementById("difficultyRate");
+const ratingSelectors = document.querySelectorAll(".modal-body .form-select");
+const tasteRateInput = document.getElementById("tasteSelect");
+const difficultyRateInput = document.getElementById("difficultySelect");
 
 const recipeOverviewContainer = document.getElementById("recipe-overview");
 
 /** @type {string} ID ricetta corrente estratto da URL */
 const detailedRecipeId = window.location.search.substring(4);
 
-let detailsNavBarReady = true;
 
-document.addEventListener("DOMContentLoaded", () => {
-    try {
-        initializeNavbar(document.querySelector("body"), document.querySelector("nav"));
-    } catch (error) {
-        indexNavbarReady = false;
-        alert("Something went wrong! Please reload the page");
-    }
-});
+document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 
 // ===============================
 // EVENT LISTENERS - GESTIONE PREFERITI E RECENSIONI
@@ -93,7 +82,6 @@ recipeOverviewContainer.addEventListener("click", async click => {
                   Recipe.addUserReview(detailedRecipeId, tasteRateInput.value, difficultyRateInput.value);
                   alert("Recensione aggiunta");
                   recipeOverviewContainer.replaceChild(createRecipeOverview(await Recipe.getFullData(detailedRecipeId)), card);
-                  // revBtnDisplay(card.querySelector("#revBtn"), detailedRecipeId);
                   revConfirmBtn.disabled = true;
                }
                revForm.classList.remove("d-none");
@@ -104,11 +92,12 @@ recipeOverviewContainer.addEventListener("click", async click => {
          }  
       };
    } catch (error) {
-      alert("Something went wrong. Please retry later.");
+      alert("Ooops! Something went wrong. Try reload the page");
+      console.error(error);
    }
 });
 
-revFormInputs.forEach(input => input.addEventListener("change", () => {
+ratingSelectors.forEach(input => input.addEventListener("change", () => {
    if(Number(tasteRateInput.value) > 0 && Number(difficultyRateInput.value) > 0){
       revConfirmBtn.disabled = false;
    }else{

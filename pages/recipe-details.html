@@ -74,16 +74,31 @@
                     <div class="modal-content">
                         <!-- Modal Header -->
                         <div class="modal-header">
-                            <h4 class="modal-title">Recensici la ricetta</h4>
+                            <h4 class="modal-title">Give your ratings</h4>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <!-- Modal body -->
                         <div class="modal-body">
                             <div class="form d-none">
-                                <label for="tasteRate">Gusto</label>
-                                <input type="number" name="tasteRate" id="tasteRate" min="0" max="5" step="1">
-                                <label for="difficultyRate">Difficoltà</label>
-                                <input type="number" name="difficultyRate" id="difficultyRate" min="0" max="5" step="1">
+                                <label for="tasteSelect">Taste</label>
+                                <select id="tasteSelect" name="tasteRate" class="form-select mb-2">
+                                    <option value="" disabled selected>Select a value</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+
+                                <label for="difficultySelect">Difficulty</label>
+                                <select id="difficultySelect" name="difficultyRate" class="form-select mb-2">
+                                    <option value="" disabled selected>Select a value</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
                             </div>
                             <div class="text d-none">
                                 Sei sicuro di voler rimuovere la tua recensione?<br>

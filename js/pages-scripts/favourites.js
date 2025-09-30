@@ -59,7 +59,7 @@ personalPageBody.addEventListener("click", async (click) => {
             personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
             personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
         } catch (error) {
-            click.target.closest(".tab-pane").innerHTML = "Oooooops! Something went wrong. Try reload the page";
+            alert("Ooops! Something went wrong. Try reload the page");
             console.error(error);
         }
     };
