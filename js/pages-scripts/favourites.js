@@ -24,19 +24,24 @@ const personalNotesContainer = document.getElementById("noted-recipes");
 /** Body pagina personale (per gestione visibilità) */
 const personalPageBody = document.querySelector("body");
 
-function displaySection(sectionName){
+/**
+ * Mostra la sezione attiva e aggiorna lo stato dei link titolo pagina.
+ * @param {string} sectionName - ID della sezione da visualizzare
+ */
+function displaySectionInternal(sectionName){
     document.querySelectorAll("#recipes-container>section").forEach(section => section.classList.add("d-none"));
     const activeSection = document.getElementById(sectionName);
     activeSection.classList.remove("d-none");
-    document.querySelectorAll("#page-title a").forEach(link => {
-        if(activeSection.id === link.href.substring(link.href.indexOf("#")+1)){
-            link.classList.add("active");
+    // Evidenzia link pagina attualmente attiva
+    document.querySelectorAll("#page-title a").forEach(anchor => {
+        if(activeSection.id === anchor.href.substring(anchor.href.indexOf("#")+1)){
+            anchor.classList.add("active"); // Comportamento custom classe active definito in css
         }else{
-            link.classList.remove("active");
+            anchor.classList.remove("active");
         }
     }); 
     window.scroll({top: 0, behavior: "smooth"}); 
-}
+};
 
 // ================================================================================================
 // EVENT HANDLERS
@@ -105,9 +110,9 @@ window.addEventListener("load", async () => {
 
     const index = window.location.href.indexOf("#");
     if(index >= 0){
-        displaySection(window.location.href.substring(index+1));
+        displaySectionInternal(window.location.href.substring(index+1));
     }else{
-        displaySection("fav-section");
+        displaySectionInternal("fav-section");
     }
 });
 
@@ -115,7 +120,7 @@ document.getElementById("page-title").addEventListener("click", (click) => {
     click.preventDefault();
     const sectionLink = click.target.closest("a");
     if(sectionLink){
-        displaySection(sectionLink.href.substring(sectionLink.href.indexOf("#")+1));
+        displaySectionInternal(sectionLink.href.substring(sectionLink.href.indexOf("#")+1));
         history.pushState(null, "", `${sectionLink.href}`);
     }
 });
@@ -123,9 +128,9 @@ document.getElementById("page-title").addEventListener("click", (click) => {
 window.addEventListener("popstate", () => {
     const index = window.location.href.indexOf("#");
     if(index >= 0){
-        displaySection(window.location.href.substring(index+1));
+        displaySectionInternal(window.location.href.substring(index+1));
     }else{
-        displaySection("fav-section");
+        displaySectionInternal("fav-section");
     }
 });
 

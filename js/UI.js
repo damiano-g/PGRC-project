@@ -743,6 +743,45 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
    }
 };
 
+/**
+ * Mostra la sezione attiva e aggiorna lo stato dei link/tile di navigazione.
+ * 
+ * @param {HTMLElement} sectionContainer - Container che racchiude le sezioni da gestire
+ * @param {string} sectionName - ID della sezione da visualizzare
+ * @param {HTMLElement} tileContainer - Container dei link/tile di navigazione
+ * 
+ * @description
+ * Nasconde tutte le sezioni figlie di sectionContainer, mostra solo quella con id uguale a sectionName
+ * e aggiorna la classe "active" sui link/tile di tileContainer. Effettua anche uno scroll in alto della pagina.
+ * 
+ * Struttura HTML minima necessaria:
+ * - Un container con più <section id="..."> come figli diretti (es: <div id="recipes-container">)
+ * - Un container con link/tile di navigazione che puntano alle sezioni tramite href="#sectionId" (es: <nav id="page-title"><a href="#section1">...</a></nav>)
+ * 
+ * Esempio:
+ * <div id="recipes-container">
+ *   <section id="section1">...</section>
+ *   <section id="section2">...</section>
+ * </div>
+ * <nav id="page-title">
+ *   <a href="#section1">Sezione 1</a>
+ *   <a href="#section2">Sezione 2</a>
+ * </nav>
+ */
+export function displaySection(sectionContainer, sectionName, tileContainer){
+   sectionContainer.querySelectorAll("section").forEach(section => section.classList.add("d-none"));
+   const activeSection = document.getElementById(sectionName);
+   activeSection.classList.remove("d-none");
+   // Evidenzia link pagina attualmente attiva
+   tileContainer.querySelectorAll("a").forEach(anchor => {
+      if(activeSection.id === anchor.href.substring(anchor.href.indexOf("#")+1)){
+         anchor.classList.add("active"); // Comportamento custom classe active definito in css
+      }else{
+         anchor.classList.remove("active");
+      }
+   }); 
+   window.scroll({top: 0, behavior: "smooth"}); 
+}
 
 // ================================================================================================
 // ARCHITECTURE NOTES
