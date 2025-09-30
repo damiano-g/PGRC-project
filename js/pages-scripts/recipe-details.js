@@ -1,7 +1,9 @@
 /**
- * @fileoverview Pagina dettagli ricetta - visualizzazione completa ingredienti e istruzioni
- * @description Gestisce caricamento e rendering dei dettagli di una ricetta specifica
- * tramite ID passato come parametro URL
+ * @fileoverview Gestione della pagina dettagli ricetta
+ * @description Gestisce il caricamento, rendering e interazioni utente per la pagina dettagli di una ricetta specifica.
+ * Include gestione preferiti, recensioni, note personali e popolamento dinamico dei contenuti.
+ * @requires sessionControl.js Per moduli LoggedUser e Recipe
+ * @requires UI.js Per funzioni di rendering UI
  */
 
 // ===============================
@@ -33,13 +35,16 @@ const noteTextInput = document.getElementById("insert-note");
 /** @type {HTMLButtonElement} Pulsante inserimento nota */
 const noteInsBtn = document.querySelector("#notes form .btn");
 
-const revForm = document.querySelector(".modal .form");
-const revAlertText = document.querySelector(".modal .text");
+/** @type {HTMLButtonElement} Pulsante conferma review nella modale */
 const revConfirmBtn = document.querySelector(".modal-footer .btn");
-const ratingSelectors = document.querySelectorAll(".modal-body .form-select");
-const tasteRateInput = document.getElementById("tasteSelect");
-const difficultyRateInput = document.getElementById("difficultySelect");
 
+/** @type {HTMLSelectElement} Select per rating gusto nella modale review */
+const tasteRateSelector = document.getElementById("tasteSelect");
+
+/** @type {HTMLSelectElement} Select per rating difficoltà nella modale review */
+const difficultyRateSelector = document.getElementById("difficultySelect");
+
+/** @type {HTMLElement} Container per la card overview della ricetta */
 const recipeOverviewContainer = document.getElementById("recipe-overview");
 
 /** @type {string} ID ricetta corrente estratto da URL */
@@ -52,58 +57,88 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
 // EVENT LISTENERS - GESTIONE PREFERITI E RECENSIONI
 // ===============================
 
-recipeOverviewContainer.addEventListener("click", async click => { 
-   try {
-      const card = click.target.closest(".card");
-      
-      if(click.target.matches(".fav-icon")){
-         if(LoggedUser.isLogged()){
-            LoggedUser.updateFavourites(card.dataset.itemId);
-            favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
-         }else{
-            window.location.href = "./login.html";
-         };
-      };
+/**
+ * Event listener per gestione click su preferiti e recensioni
+ * 
+ * @param {Event} click - Evento click catturato dal container
+ * @returns {void}
+ * 
+ * @see {@link favBtnDisplay} Per gestione stato icona preferiti
+ * @see {@link revBtnDisplay} Per gestione stato pulsante recensioni
+ * @see {@link LoggedUser.updateFavourites} Per toggle preferiti
+ * @see {@link Recipe.addUserReview} Per aggiunta recensione
+ * @see {@link Recipe.deleteUserReview} Per eliminazione recensione
+ * @see {@link createRecipeOverview} Per aggiornamento card dopo modifiche
+ * 
+ * @description
+ * Gestisce interazioni utente su preferiti e recensioni tramite event delegation.
+ * - Click su .fav-icon: toggle preferiti se loggato, redirect login altrimenti
+ * - Click su #revBtn: gestione recensioni (aggiunta/eliminazione) con validazione
+ * - Aggiornamento UI dopo ogni azione per riflettere nuovo stato
+ * - Gestione errori robusta con graceful degradation: alert utente, log console, disabilitazione pulsante in caso di fallimenti
+ * - Event delegation per gestire elementi creati dinamicamente
+ * 
+ * Gestione errori dettagliata:
+ * - Try-catch interno: cattura errori specifici nelle operazioni (fav, review), mostra alert generico e log errore console
+ * - Try-catch esterno: cattura errori generali (es. problemi di autenticazione), disabilita pulsante review per prevenire ulteriori interazioni fallite
+ * - Graceful degradation: in caso di errore, UI rimane funzionale per altre azioni, ma pulsante problematico viene disabilitato
+ * - Nessun crash dell'applicazione: errori vengono contenuti e gestiti localmente senza interrompere il flusso utente
+ * 
+ * @example
+ * // Evento catturato automaticamente dal container
+ * recipeOverviewContainer.addEventListener("click", async click => {
+ *    if(click.target.matches(".fav-icon") || click.target.matches("#revBtn")){ ... }
+ * });
+ * 
+ * @todo Implementare retry automatico per operazioni fallite a causa di problemi temporanei
+ * @todo Aggiungere feedback visivo (spinner, messaggi di stato) durante operazioni asincrone
+ */
+recipeOverviewContainer.addEventListener("click", async click => { // Event delegation in container per aggirare tempi di caricamento card
    
-      if(click.target.matches("#revBtn")){
-         if(LoggedUser.isLogged()){
-            if(Recipe.isReviewed(detailedRecipeId)){
-               revConfirmBtn.onclick = async () => {
-                  Recipe.deleteUserReview(detailedRecipeId);
-                  alert("Recensione eliminata");
-                  recipeOverviewContainer.replaceChild(createRecipeOverview(await Recipe.getFullData(detailedRecipeId)), card);
-                  revConfirmBtn.disabled = true;
-               } 
-               revForm.classList.add("d-none");
-               revAlertText.classList.remove("d-none");
-               revConfirmBtn.disabled = false;
-            }else{
-               revConfirmBtn.onclick = async () => {
-                  Recipe.addUserReview(detailedRecipeId, tasteRateInput.value, difficultyRateInput.value);
-                  alert("Recensione aggiunta");
-                  recipeOverviewContainer.replaceChild(createRecipeOverview(await Recipe.getFullData(detailedRecipeId)), card);
-                  revConfirmBtn.disabled = true;
-               }
-               revForm.classList.remove("d-none");
-               revAlertText.classList.add("d-none");
-            }
-         }else{
-            window.location.href = "./login.html";
-         }  
-      };
-   } catch (error) {
-      alert("Ooops! Something went wrong. Try reload the page");
-      console.error(error);
-   }
+   if(click.target.matches(".fav-icon") || click.target.matches("#revBtn")){
+      try {
+         const isUserLogged = LoggedUser.isLogged();
+         try {      
+            if(click.target.matches(".fav-icon")){
+               if(isUserLogged){
+                  LoggedUser.updateFavourites(detailedRecipeId);
+                  favBtnDisplay(card.querySelector(".fav-icon"), detailedRecipeId);
+               }else{
+                  window.location.href = "./login.html";
+               };
+            };
+         
+            if(click.target.matches("#revBtn")){
+               if(isUserLogged){
+                  revConfirmBtn.onclick = async () =>{ // NB -> eventListener si accumulano - onCLick viene sostituito
+                     if(Recipe.isReviewed(detailedRecipeId)){
+                        Recipe.deleteUserReview(detailedRecipeId);
+                        alert("Review deleted");
+                     }else{
+                        if(tasteRateSelector.value > 0 && difficultyRateSelector.value > 0){
+                           Recipe.addUserReview(detailedRecipeId, tasteRateSelector.value, difficultyRateSelector.value);
+                           alert("Review added");
+                        }else{
+                           alert("Please fill both rating fields in order to submit your review");
+                        }
+                     }
+                     recipeOverviewContainer.replaceChild(createRecipeOverview(await Recipe.getFullData(detailedRecipeId)), recipeOverviewContainer.firstChild);
+                  };
+               }else{
+                  window.location.href = "./login.html";
+               }  
+            };
+         } catch (error) {
+            alert("Ooops! Something went wrong. Please try again or reload page");
+            console.error(error);
+         }
+      } catch (error) {
+         document.getElementById("revBtn").disabled = true;
+         console.error(error);
+      }
+   } 
 });
 
-ratingSelectors.forEach(input => input.addEventListener("change", () => {
-   if(Number(tasteRateInput.value) > 0 && Number(difficultyRateInput.value) > 0){
-      revConfirmBtn.disabled = false;
-   }else{
-      revConfirmBtn.disabled = true;
-   }
-}));
 
 // ===============================
 // EVENT LISTENERS - GESTIONE NOTE
@@ -161,18 +196,41 @@ userNotesContainer.addEventListener("click", click => {
 // CARICAMENTO E RENDERING RICETTA
 // ===============================
 
+/**
+ * Event listener per caricamento iniziale della pagina ricetta
+ * 
+ * @param {Event} load - Evento load della finestra (triggerato automaticamente al caricamento completo della pagina)
+ * @returns {void}
+ * 
+ * @see {@link Recipe.getFullData} Per recupero dati completi ricetta
+ * @see {@link createRecipeOverview} Per creazione card overview ricetta
+ * @see {@link populateRecipeNotes} Per popolamento note utente
+ * @see {@link LoggedUser.isLogged} Per verifica stato login utente
+ * @see {@link LoggedUser.getRecipeNotes} Per recupero note utente per ricetta
+ * 
+ * @description
+ * Gestisce il caricamento e rendering iniziale della pagina dettagli ricetta.
+ * - Recupera dati completi ricetta tramite ID URL
+ * - Popola card overview, lista ingredienti e istruzioni
+ * - Mostra sezione note se utente loggato e popola note esistenti
+ * - Gestione errori con alert e log console per graceful degradation
+ * 
+ * @example
+ * // Evento triggerato automaticamente al caricamento pagina
+ * window.addEventListener("load", async () => {
+ *    const fullRecipeObj = await Recipe.getFullData(detailedRecipeId);
+ *    recipeOverviewContainer.appendChild(createRecipeOverview(fullRecipeObj));
+ *    // ... popolamento ingredienti, istruzioni, note
+ * });
+ * 
+ * @todo Aggiungere loading spinner durante caricamento dati
+ * @todo Implementare fallback per ricette non trovate (es. redirect a pagina errore)
+ */
 window.addEventListener("load", async () => {
+   
    try {
-      // ===============================
-      // FETCH E NORMALIZZAZIONE DATI
-      // ===============================
-
       const fullRecipeObj = await Recipe.getFullData(detailedRecipeId);
  
-      // ===============================
-      // POPOLAZIONE ELEMENTI UI
-      // ===============================
-      
       recipeOverviewContainer.appendChild(createRecipeOverview(fullRecipeObj)); 
       
       // Popola la lista degli ingredienti
@@ -192,6 +250,7 @@ window.addEventListener("load", async () => {
       }
    } catch (error) {
       alert("Something went wrong. Please try reload the page.");
+      console.error(error);
    }
 });
 
@@ -200,30 +259,40 @@ window.addEventListener("load", async () => {
 // FLUSSO DI ESECUZIONE DOCUMENTATO
 // ===============================
 
-/*
-SCENARIO TIPICO - Navigazione da search o carousel:
-
-1. **URL Navigation**:
-   - Utente clicka card/slide da altra pagina
-   - Browser naviga a recipe-details.html?id=52772
-
-2. **Page Load Event**:
-   - window.load event triggera il processo di inizializzazione
-   - substring(4) estrae "52772" da "?id=52772"
-
-3. **API Call & Data Processing**:
-   - fetchById("52772") richiede dettagli a TheMealDB
-   - Riceve response: {meals: [{idMeal: "52772", strMeal: "...", ...}]}
-   - new FullRecipe(APIresponse.meals[0]) normalizza dati API
-
-4. **UI Population - Recipe Content**:
-   - Titolo → recipeTitle.innerText
-   - Immagine → imageBox.innerHTML con img responsive
-   - Ingredienti → forEach crea li elements con quantità
-   - Istruzioni → instructionsSteps.innerText
-
-5. **UI Population - User Features**:
-   - favBtnDisplay() configura pulsante preferiti basato su login state
-   - Se loggato: mostra sezione note + popola note esistenti per ricetta
-   - Event listeners attivi per interazioni preferiti e note
-*/
+/**
+ * @description Flusso di esecuzione del file recipe-details.js
+ * 
+ * 1. **Import moduli e dipendenze**:
+ *    - Importa LoggedUser, Recipe da sessionControl.js
+ *    - Importa funzioni UI da UI.js (createRecipeOverview, favBtnDisplay, initializeNavbar, populateRecipeNotes)
+ * 
+ * 2. **Selezione elementi DOM**:
+ *    - Recupera riferimenti a elementi HTML (liste, input, bottoni, container) necessari per rendering e interazioni
+ *    - Estrae ID ricetta dall'URL (detailedRecipeId)
+ * 
+ * 3. **Inizializzazione navbar (DOMContentLoaded)**:
+ *    - Al caricamento del DOM, chiama initializeNavbar per configurare menu navigazione basato su stato utente
+ * 
+ * 4. **Gestione interazioni preferiti e recensioni (event delegation su recipeOverviewContainer)**:
+ *    - Ascolta click su .fav-icon: se loggato, toggle preferiti e aggiorna UI; altrimenti redirect a login
+ *    - Ascolta click su #revBtn: se loggato, gestisce aggiunta/eliminazione review con validazione; altrimenti redirect a login
+ *    - Aggiorna UI dopo ogni azione (replaceChild per ricreare card overview)
+ *    - Gestione errori con try-catch per graceful degradation
+ * 
+ * 5. **Gestione note personali**:
+ *    - Abilita/disabilita pulsante inserimento nota in base a input testo (event listener su noteTextInput)
+ *    - Inserimento nota: valida, aggiunge via LoggedUser.addNote, aggiorna UI e reset input
+ *    - Eliminazione nota: event delegation su userNotesContainer, chiama LoggedUser.deleteNote e aggiorna UI
+ *    - Gestione errori per ogni operazione
+ * 
+ * 6. **Caricamento iniziale ricetta (window load)**:
+ *    - Recupera dati completi ricetta via Recipe.getFullData(detailedRecipeId)
+ *    - Crea e appende card overview
+ *    - Popola lista ingredienti e istruzioni
+ *    - Se utente loggato, mostra sezione note e popola note esistenti
+ *    - Gestione errori con alert e log console
+ * 
+ * @note Il flusso è asincrono: operazioni come recupero dati e aggiornamenti UI sono await/async
+ * @note Event delegation usato per gestire elementi dinamici (card, note)
+ * @note Graceful degradation: errori locali non crashano l'app, UI rimane funzionale
+ */

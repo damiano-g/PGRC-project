@@ -587,13 +587,23 @@ export function favBtnDisplay(btn, recipeId) {
  * 
  * @example
  * revBtnDisplay(reviewButton, "52772");
+ * 
+ * @todo Sistemare gestione errori
  */
 export function revBtnDisplay(btn, recipeId) {
    try {
-      if(LoggedUser.isLogged() && Recipe.isReviewed(recipeId)){
-         btn.innerText = "Delete review";
-      }else{
-         btn.innerText = "Add review";
+      const dialogBody = document.querySelector("#reviewDialog .modal-body");
+      btn.innerText = "Add review";
+
+      if(LoggedUser.isLogged()){
+         if(Recipe.isReviewed(recipeId)){
+            btn.innerText = "Delete review";
+            dialogBody.querySelector(".form").classList.add("d-none");
+            dialogBody.querySelector(".text").classList.remove("d-none");
+         }else{
+            dialogBody.querySelector(".form").classList.remove("d-none");
+            dialogBody.querySelector(".text").classList.add("d-none");
+         }
       }
    } catch (error) {
       console.error(error);
