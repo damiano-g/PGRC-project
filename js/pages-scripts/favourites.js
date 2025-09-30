@@ -24,24 +24,6 @@ const personalNotesContainer = document.getElementById("noted-recipes");
 /** Body pagina personale (per gestione visibilità) */
 const personalPageBody = document.querySelector("body");
 
-/**
- * Mostra la sezione attiva e aggiorna lo stato dei link titolo pagina.
- * @param {string} sectionName - ID della sezione da visualizzare
- */
-function displaySectionInternal(sectionName){
-    document.querySelectorAll("#recipes-container>section").forEach(section => section.classList.add("d-none"));
-    const activeSection = document.getElementById(sectionName);
-    activeSection.classList.remove("d-none");
-    // Evidenzia link pagina attualmente attiva
-    document.querySelectorAll("#page-title a").forEach(anchor => {
-        if(activeSection.id === anchor.href.substring(anchor.href.indexOf("#")+1)){
-            anchor.classList.add("active"); // Comportamento custom classe active definito in css
-        }else{
-            anchor.classList.remove("active");
-        }
-    }); 
-    window.scroll({top: 0, behavior: "smooth"}); 
-};
 
 // ================================================================================================
 // EVENT HANDLERS
@@ -108,29 +90,13 @@ window.addEventListener("load", async () => {
     personalNotesContainer.innerHTML = "Take notes to view relative recipes in this area";
     populatePreviewContainer(await PreviewArray.fromAllUserNotes(), personalNotesContainer);
 
-    const index = window.location.href.indexOf("#");
-    if(index >= 0){
-        displaySectionInternal(window.location.href.substring(index+1));
-    }else{
-        displaySectionInternal("fav-section");
-    }
 });
 
-document.getElementById("page-title").addEventListener("click", (click) => {
-    click.preventDefault();
-    const sectionLink = click.target.closest("a");
-    if(sectionLink){
-        displaySectionInternal(sectionLink.href.substring(sectionLink.href.indexOf("#")+1));
-        history.pushState(null, "", `${sectionLink.href}`);
-    }
-});
+document.getElementById("page-title").addEventListener("click", click => {
+    const link = click.target.closest(".nav-link");
 
-window.addEventListener("popstate", () => {
-    const index = window.location.href.indexOf("#");
-    if(index >= 0){
-        displaySectionInternal(window.location.href.substring(index+1));
-    }else{
-        displaySectionInternal("fav-section");
+    if(link){
+        window.scroll({top: 0, behavior: "smooth"});
     }
 });
 

@@ -1,4 +1,3 @@
-import { handleUserError, } from "../errorsManagement.js";
 import { LoggedUser, NewUser } from "../sessionControl.js";
 import { initializeNavbar } from "../UI.js";
 import { validateBtn, } from "../validate.js";
@@ -83,7 +82,7 @@ loginSubBtn.addEventListener("click", async () => {
             alert("Password errata");
         }
     }catch(error){
-        handleUserError(error);
+        console.error(error);
     }finally{
         loginRequiredInputs.forEach(item => item.DOMelement.disabled = false);
         loginPasswordInput.DOMelement.value = "";

@@ -338,7 +338,7 @@ PERSONAL PAGE SPECIFICS
 */
 
 #personal-page #recipes-container{
-    margin: 90px 0 0 0  ; 
+    margin: 130px 0 0 0  ; 
 }
 
 #personal-page #page-title{
@@ -347,10 +347,28 @@ PERSONAL PAGE SPECIFICS
     padding-top: 17px;
     width: 90%;
     top: 63px;
+    text-align: center;
+    border-width: 0;
+}
+
+#personal-page #page-title .nav-tabs{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+}
+
+#personal-page #page-title a{
+    display: inline-block;
 }
 
 #personal-page>.container-fluid nav>div{
     text-align: center;
+}
+
+/* NB -> display: grid non è compatibile con le tab di bootstrap -> tab occupano spazio nel DOM anche se non visibili*/
+.tab-pane:not(.active) {
+    display: none !important;
 }
 
 
@@ -361,7 +379,7 @@ PERSONAL PAGE SPECIFICS
     text-decoration: underline;
 }
 
-#personal-page #page-title .active{
+#personal-page #page-title a:is(.active){
     font-size: 110%;
     color: rgb(0, 0, 0);
     font-weight: 125%;
@@ -413,13 +431,6 @@ body>.container-fluid{
     margin-right: auto;
     justify-content: center;
     max-width: 95%;
-}
-
-#personal-page>.container-fluid section>div{
-    margin-bottom: 60px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    padding: 10px;
-    border-radius: 10px;
 }
 
 .centered-content {
