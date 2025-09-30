@@ -21,8 +21,6 @@ const loginCLearBtn = document.getElementById("clear");
 const loginSubBtn = document.getElementById("submit");
 const loginGotosignBtn = document.getElementById("gotoSign");
 
-let historyNavigation = false;
-
 document.addEventListener("DOMContentLoaded", initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 
 loginGotosignBtn.addEventListener("click", () => window.location.href = "./signin.html");
