@@ -34,24 +34,29 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  */
 window.addEventListener("load", async () => {
     
-    // ===============================
-    // POPOLAZIONE CAROUSEL RICETTE CASUALI
-    // ===============================
+    /** Popola il carousel con le cinque ricette più votate */
+    try {
+        populateCarousel(await PreviewArray.mostPopular(5), slideshow);
+    
+        // Attiva il primo slide del carousel (Bootstrap requirement)
+        requestAnimationFrame(() => {
+            const firstSlide = document.querySelector(".carousel-inner .carousel-item");
+            if (firstSlide) {
+                firstSlide.classList.add("active");
+            }
+        });
+    } catch (error) {
+        slideshow.innerHTML = "Oooops! Something went wrong. Try reload the page.";
+        console.error(error);
+    }
 
-    populateCarousel(await PreviewArray.mostPopular(5), slideshow);
-
-    // Attiva il primo slide del carousel (Bootstrap requirement)
-    requestAnimationFrame(() => {
-        const firstSlide = document.querySelector(".carousel-inner .carousel-item");
-        if (firstSlide) {
-            firstSlide.classList.add("active");
-        }
-    });
-
-    // ===============================
-    // POPOLAZIONE GRIGLIA CATEGORIE
-    // ===============================
-    populatePreviewContainer(await PreviewArray.categories(), catContainer);
+    /** Popola una griglia con card per ogni categoria di TMDB API */
+    try {
+        populatePreviewContainer(await PreviewArray.categories(), catContainer);
+    } catch (error) {
+        catContainer.innerHTML = "Oooops! Something went wrong. Try reload the page.";
+        console.error(error);
+    }
 });
 
 
