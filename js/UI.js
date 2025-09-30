@@ -203,7 +203,7 @@ export function addPreviewToContainer(itemsObj, displayContainer){
  * 
  * @see {@link populatePreviewContainer} 
  */
-export function removePreviewFromArray(itemsObj, displayContainer){
+export function removePreviewFromContainer(itemsObj, displayContainer){
    try {
       populatePreviewContainer(itemsObj, displayContainer, "remove");
    } catch (error) {

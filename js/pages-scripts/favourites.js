@@ -9,7 +9,7 @@
  */
 
 import { LoggedUser, PreviewArray, Recipe } from "../sessionControl.js";
-import { addPreviewToContainer, favBtnDisplay, initializeNavbar, populatePreviewContainer, removePreviewFromArray } from "../UI.js";
+import { addPreviewToContainer, favBtnDisplay, initializeNavbar, populatePreviewContainer, removePreviewFromContainer } from "../UI.js";
 
 // ================================================================================================
 // DOM ELEMENTS
@@ -44,22 +44,26 @@ personalPageBody.addEventListener("click", async (click) => {
     };
 
     if(isBtn){
-        LoggedUser.updateFavourites(card.dataset.itemId);
-        const favContainerCards = personalFavsContainer.querySelectorAll(".card");
-        const revContainerBtns = personalRevsContainer.querySelectorAll(".fav-icon");
-        const notesContainerBtns = personalNotesContainer.querySelectorAll(".fav-icon");
         
         const clickedCardRecipeId = [card.dataset.itemId];
         
-        if(Recipe.isFavourite(card.dataset.itemId)){
-            addPreviewToContainer(await PreviewArray.mealsById(clickedCardRecipeId), personalFavsContainer);
-        }else{
-            removePreviewFromArray(await PreviewArray.mealsById(clickedCardRecipeId), personalFavsContainer);
+        try {
+            LoggedUser.updateFavourites(clickedCardRecipeId);
+            
+            // Aggiunge o rimuove ricetta dal container dei preferiti
+            if(Recipe.isFavourite(card.dataset.itemId)){
+                addPreviewToContainer(await PreviewArray.mealsById(clickedCardRecipeId), personalFavsContainer);
+            }else{
+                removePreviewFromContainer(await PreviewArray.mealsById(clickedCardRecipeId), personalFavsContainer);
+            }
+    
+            // Aggiorna icone preferiti nei container reviews e notes
+            personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
+            personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
+        } catch (error) {
+            click.target.closest(".tab-pane").innerHTML = "Oooooops! Something went wrong. Try reload the page";
+            console.error(error);
         }
-        revContainerBtns.forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
-        notesContainerBtns.forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
-
-        // favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
     };
 });
 
@@ -72,7 +76,15 @@ personalPageBody.addEventListener("click", async (click) => {
  */
 window.addEventListener("load", async () => {
     // Check autenticazione utente
-    if(!LoggedUser.isLogged()){
+    let isUserLogged;
+    try {
+        isUserLogged = LoggedUser.isLogged();
+    } catch (error) {
+        isUserLogged = false;
+        console.error(error);
+    }
+
+    if(!isUserLogged){
         window.location.href = "./login.html"
     }else{
         personalPageBody.classList.remove("d-none");
@@ -80,16 +92,30 @@ window.addEventListener("load", async () => {
 
     // Rendering sezione preferiti
     personalFavsContainer.innerHTML = "Add recipes to favourites to view them in this area";
-    populatePreviewContainer(await PreviewArray.fromUserFavourites(), personalFavsContainer);
+    try {
+        populatePreviewContainer(await PreviewArray.fromUserFavourites(), personalFavsContainer);
+    } catch (error) {
+        personalFavsContainer.innerHTML = "Ooops. Something went wrong. Try reload the page";
+        console.error(error);
+    }
 
     // Rendering sezione recensioni
     personalRevsContainer.innerHTML = "Rate recipes taste and difficulty to view them in this area";
-    populatePreviewContainer(await PreviewArray.fromUserReviews(), personalRevsContainer);
+    try {
+        populatePreviewContainer(await PreviewArray.fromUserReviews(), personalRevsContainer);
+    } catch (error) {
+        personalFavsContainer.innerHTML = "Ooops. Something went wrong. Try reload the page";
+        console.error(error);
+    }
 
     // Rendering sezione note
     personalNotesContainer.innerHTML = "Take notes to view relative recipes in this area";
-    populatePreviewContainer(await PreviewArray.fromAllUserNotes(), personalNotesContainer);
-
+    try {
+        populatePreviewContainer(await PreviewArray.fromAllUserNotes(), personalNotesContainer);
+    } catch (error) {
+        personalFavsContainer.innerHTML = "Ooops. Something went wrong. Try reload the page";
+        console.error(error);
+    }
 });
 
 document.getElementById("page-title").addEventListener("click", click => {
