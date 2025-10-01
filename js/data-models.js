@@ -75,7 +75,7 @@ export class User {
         this.password = hashedPassword; // Password hashata
         this.favourites = [];
         this.notes = [];
-        this.creationDate = new Date().toISOString();
+        this.creationDate = new Date();
     }
 };
 
@@ -106,7 +106,7 @@ export class Note {
         this.id = generateItemId("note");
         this.recipeId = recipeId;
         this.text = text;
-        this.date = new Date().toDateString();
+        this.creationDate = new Date();
     }
 };
 
@@ -144,7 +144,7 @@ export class Review {
         this.userId = userId;
         this.tasteRate = tasteRate;
         this.difficultyRate = difficultyRate;
-        this.dateAdded = new Date().toDateString();
+        this.creationDate = new Date();
     }
 };
 
@@ -191,7 +191,7 @@ export class Category {
         this.id = rawCategoryObj.strCategory || "";
         this.name = rawCategoryObj.strCategory || "";
         this.image = rawCategoryObj.strCategoryThumb || "../assets/images/no_image.jpg";
-        this.dateAdded = new Date().toISOString();
+        this.creationDate = new Date();
     }
 };
 
@@ -257,7 +257,7 @@ export class FullRecipe {
         this.category = rawRecipeObj.strCategory || "";
         this.image = rawRecipeObj.strMealThumb || "";
         this.instructions = rawRecipeObj.strInstructions || "";
-        this.dateAdded = new Date().toISOString();
+        this.creationDate = new Date();
         this.ingredients = this.getIngredients(rawRecipeObj);
     };
 

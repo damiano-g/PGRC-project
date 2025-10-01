@@ -182,7 +182,7 @@ export async function getData(dataType) {
         let dataArray = StorageOperations.get(dataType, RECIPES_STORAGE_OPTS);
         
         // Se cache vuota, inizializza da API
-        if(dataArray.length < 1){
+        if(dataArray.length < 1 || (dataArray.length > 0 && dataArray[0].creationDate.toDateString() != new Date().toDateString())){
             switch(dataType){
                 case "recipes": 
                     dataArray = await createLocalRecipesDB();
