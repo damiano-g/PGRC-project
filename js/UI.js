@@ -119,14 +119,13 @@ function cardRatingContent(tasteRate, difficultyRate, title) {
  * @see {@link createPreviewCard} Per creazione singola card
  * @see {@link CardDisplayStrategy} Per strategie contenuto body
  * 
- * @throws {Error} Se tipo oggetto errato
- * 
  * @description
  * Popolazione sequenziale container con matching 1:1 tra preview e body elements.
  * - Reset completo container (innerHTML = "") se action non "add"
  * - Iterazione con indice per matching array paralleli
  * - Creazione card con body element corrispondente se fornito
  * - Supporto rimozione selettiva per action "remove"
+ * - Gestione errori locale: console.error per tipi non supportati, graceful degradation con relatedBodyElement = null
  * 
  * @example
  * const recipes = await PreviewArray.mealsByName("pasta");
@@ -155,9 +154,8 @@ export function populatePreviewContainer (itemsObj, displayContainer, action = n
                case "categories":
                   break;
                default:
-                  const dataError = new Error("Wrong data format");
-                  console.error(error); 
-                  throw dataError;
+                  console.error(`Unsupported item type ${itemsObj.type}`);
+                  relatedBodyElement = null; 
             }
             
             displayContainer.appendChild(createPreviewCard(itemsObj.items[i], relatedBodyElement));
