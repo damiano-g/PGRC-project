@@ -86,7 +86,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
  
         if(recipeId && userId && tasteRate && difficultyRate){
             // ADD MODE: Crea nuova recensione
-            if(recipeReviewsArray.some(review => review.userId === userId)){
+            if(recipeReviewsArray.some(review => review.userId === userId && review.recipeId === recipeId)){
                 const duplicated = new ErrorsManagment.Duplicated("Review");
                 console.error(duplicated);
                 throw duplicated;
