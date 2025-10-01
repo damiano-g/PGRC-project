@@ -66,7 +66,7 @@ export function getRegisteredUsers() {
  * @param {string} chosenEmail - Email desiderata
  * @param {string} chosenPassword - Password in chiaro
  * @returns {Promise<User>} Utente creato e salvato
- * @see {@link authField} - Per gestione valori duplicati
+ * @see {@link searchDuplicates} - Per gestione valori duplicati
  * @see {@link getRegisteredUsers} - Lettura database utenti (deep copy)
  * @see {@link StorageOperations.set} - Aggiornamento database utenti
  * @see {@link createUserObject} - Creazione nuovo oggetto utente
@@ -84,8 +84,9 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
 
     try {
         // Validation chain: username + email duplicati
-        authField("username", chosenUsername);
-        authField("email", chosenEmail);
+        authUsername(chosenUsername);
+        authEmail(chosenEmail);
+        authPassword(chosenPassword);
         
         // User creation con hashing automatico
         const newUser = await createUserObject(chosenUsername, chosenEmail, chosenPassword);
@@ -147,7 +148,7 @@ export function deleteUser(userId){
  * @async
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newUsername - Nuovo username desiderato
- * @see {@link authField} Per controllo valori duplicati
+ * @see {@link searchDuplicates} Per controllo valori duplicati
  * @see {@link updateUserData} Per aggiornamento dati utente
  * @throws {ErrorsManagement.Duplicated} Se username già in uso
  * @throws {ErrorsManagement.NotFound} Se utente non trovato
@@ -162,7 +163,7 @@ export function deleteUser(userId){
  */
 export async function updateUserUsername(userId, newUsername){
     try {
-        authField("username", newUsername); // Validation duplicati
+        authUsername(username); // Validation duplicati
         await updateUserData(userId, "username", newUsername);
     } catch (error) {
         throw error;
@@ -176,7 +177,7 @@ export async function updateUserUsername(userId, newUsername){
  * @async
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newEmail - Nuova email desiderata
- * @see {@link authField} Per controllo valori duplicati
+ * @see {@link searchDuplicates} Per controllo valori duplicati
  * @see {@link updateUserData} Per aggiornamento db utenti 
  * @throws {ErrorsManagement.Duplicated} Se email già in uso
  * @throws {Error} Se errori di storage, parametri errati 
@@ -191,7 +192,7 @@ export async function updateUserUsername(userId, newUsername){
  */
 export async function updateUserEmail(userId, newEmail){
     try {
-        authField("email", newEmail); // Validation duplicati
+        authEmail(newEmail); // Validation duplicati
         await updateUserData(userId, "email", newEmail);
     } catch (error) {
         throw error;
@@ -217,6 +218,7 @@ export async function updateUserEmail(userId, newEmail){
  */
 export async function updateUserPassword(userId, newPassword){
     try {
+        authPassword(password);
         await updateUserData(userId, "password", newPassword, true); // needsHashing = true
     } catch (error) {
         throw error;
@@ -395,7 +397,7 @@ export async function hashString(originalString) {
  * @throws {ErrorsManagement.Duplicated} Se valore già in uso per il campo selezionato
  * @throws {Error} Se errori di lettura storage
  */
-function authField(fieldType, fieldValue){
+function searchDuplicates(fieldType, fieldValue){
     try {
         const acceptedFields = ["username", "email"];
         if(!acceptedFields.includes(fieldType)){
@@ -407,12 +409,125 @@ function authField(fieldType, fieldValue){
         const registeredUsers = getRegisteredUsers();
 
         if(registeredUsers.some(user => user[fieldType] === fieldValue)){
-            throw new ErrorsManagement.Duplicated("User", fieldType, fieldValue);
+            const duplicated = new ErrorsManagement.Duplicated("User", fieldType, fieldValue);
+            console.error(duplicated); 
+            throw duplicated;
         }    
     } catch (error) {
         throw error;
     }
 }
+
+/**
+ * Valida formato password con regex complessa
+ * Controllo sicurezza password: maiuscola, minuscola, numero, lunghezza minima 8 caratteri
+ * 
+ * @private
+ * @param {string} password - Password in chiaro da validare
+ * @throws {ErrorsManagement.InvalidFormat} Se password non rispetta formato richiesto
+ * @see {@link ErrorsManagement.InvalidFormat} Per gestione errori formato
+ * 
+ * @description
+ * Valida password con regex che richiede:
+ * - Almeno una lettera maiuscola
+ * - Almeno una lettera minuscola
+ * - Almeno un numero
+ * - Lunghezza minima 8 caratteri
+ * - Solo caratteri alfanumerici, underscore, dash, dot
+ * 
+ * @example
+ * authPassword("Password123"); // OK
+ * authPassword("pass"); // Throws InvalidFormat
+ */
+function authPassword(password){
+    const regEx = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w.-]{8,}/;
+
+    if(!regEx.test(password)){
+        const invalidFormat = new ErrorsManagement.InvalidFormat("password", password);
+        console.error(invalidFormat);
+        throw invalidFormat
+    }
+};
+
+
+/**
+ * Valida formato email e unicità nel sistema
+ * Controllo formato email + verifica duplicati nel database utenti
+ * 
+ * @private
+ * @param {string} email - Email da validare
+ * @throws {ErrorsManagement.InvalidFormat} Se email non rispetta formato
+ * @throws {ErrorsManagement.Duplicated} Se email già registrata
+ * @see {@link ErrorsManagement.InvalidFormat} Per errori formato
+ * @see {@link ErrorsManagement.Duplicated} Per errori duplicati
+ * @see {@link searchDuplicates} Per controllo unicità
+ * 
+ * @description
+ * Valida email con regex che controlla:
+ * - Formato generale email
+ * - No doppi punti consecutivi
+ * - No punto prima di @
+ * - Dominio con almeno 2 lettere
+ * Poi verifica unicità chiamando searchDuplicates
+ * 
+ * @example
+ * authEmail("user@example.com"); // OK se unica
+ * authEmail("invalid-email"); // Throws InvalidFormat
+ * authEmail("existing@example.com"); // Throws Duplicated
+ */
+function authEmail(email){
+    const regEx = /^(?!.*\.\.)(?!.*\.\@)[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/;
+
+    if(!regEx.test(email)){
+        const invalidFormat = new ErrorsManagement.InvalidFormat("email", email);
+        console.error(invalidFormat);
+        throw invalidFormat
+    }
+
+    try {
+        searchDuplicates("email", email);
+    } catch (error) {
+        throw error;
+    }
+};
+
+
+/**
+ * Valida lunghezza username e unicità nel sistema
+ * Controllo lunghezza minima + verifica duplicati nel database utenti
+ * 
+ * @private
+ * @param {string} username - Username da validare
+ * @throws {ErrorsManagement.InvalidFormat} Se username troppo corto
+ * @throws {ErrorsManagement.Duplicated} Se username già registrato
+ * @see {@link ErrorsManagement.InvalidFormat} Per errori formato
+ * @see {@link ErrorsManagement.Duplicated} Per errori duplicati
+ * @see {@link searchDuplicates} Per controllo unicità
+ * 
+ * @description
+ * Valida username controllando:
+ * - Lunghezza minima 2 caratteri
+ * Poi verifica unicità chiamando searchDuplicates
+ * 
+ * @example
+ * authUsername("mario"); // OK se unico
+ * authUsername("a"); // Throws InvalidFormat
+ * authUsername("existingUser"); // Throws Duplicated
+ */
+function authUsername(username){
+    if(username.length < 2){
+        const invalidFormat = new ErrorsManagement.InvalidFormat("email", email);
+        console.error(invalidFormat);
+        throw invalidFormat
+    }
+
+    try {
+        searchDuplicates("username", username);
+    } catch (error) {
+        throw error;
+    }
+};
+
 
 // ============================================================================
 // FACTORY E COSTRUZIONE OGGETTI
@@ -507,7 +622,9 @@ async function updateUserData(userId, field, newValue, needsHashing = null) {
         const index = registeredUsers.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            throw new ErrorsManagement.NotFound("User", "id", userId);
+            const notFound = new ErrorsManagement.NotFound("User", "id", userId);
+            console.error(notFound);
+            throw notFound;
         }
 
         const processedValue = (needsHashing ? await hashString(newValue) : newValue);

@@ -59,3 +59,14 @@ export class Duplicated extends Error{
         this.code = 409;
     }
 };
+
+
+export class InvalidFormat extends Error{
+
+    constructor(dataType, dataValue){
+        super(`Invalid ${dataType} format`);
+        this.dataType = dataType;
+        this.dataValue = dataValue;
+        this.code = 422;
+    }
+};
