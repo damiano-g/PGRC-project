@@ -752,6 +752,80 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
 };
 
 
+
+// ================================
+// FORM VISUALIZATION
+// ================================
+
+/**
+ * Aggiorna le classi CSS di un campo input per fornire feedback visivo dello stato di validazione
+ * Applica le classi Bootstrap "is-valid" e "is-invalid" in base allo stato del campo
+ * 
+ * @param {Object} inputObject - Oggetto che rappresenta il campo di input da formattare
+ * @param {HTMLElement} inputObject.DOMelement - Elemento DOM del campo input
+ * @param {number} inputObject.inputStatus - Stato di validazione (0: neutro, >0: valido, <0: invalido)
+ * 
+ * @example
+ * // Aggiorna aspetto visivo del campo in base alla validazione
+ * const inputField = {
+ *   DOMelement: document.getElementById("username"),
+ *   inputStatus: 1  // Campo valido
+ * };
+ * 
+ * formatInputField(inputField);
+ * // Aggiunge classe "is-valid" e rimuove "is-invalid"
+ * 
+ * @example
+ * // Diversi stati di validazione
+ * inputField.inputStatus = 1;   // Aggiunge "is-valid"
+ * inputField.inputStatus = -1;  // Aggiunge "is-invalid" 
+ * inputField.inputStatus = 0;   // Rimuove entrambe le classi (stato neutro)
+ */
+export function formatInputField(inputObject) {
+
+        const validity = Number(inputObject.inputStatus);
+
+        if(Number.isNaN(validity) || validity === 0){
+                inputObject.DOMelement.classList.remove("is-valid");
+                inputObject.DOMelement.classList.remove("is-invalid");
+        }else{
+                if(validity > 0){
+                        inputObject.DOMelement.classList.add("is-valid");
+                        inputObject.DOMelement.classList.remove("is-invalid");
+                }else{
+                        inputObject.DOMelement.classList.remove("is-valid");
+                        inputObject.DOMelement.classList.add("is-invalid");
+                }
+        }
+};
+
+
+/**
+ * Controlla la validità di tutti i campi richiesti e abilita/disabilita il pulsante submit
+ * Implementa la logica di abilitazione condizionale basata sullo stato di tutti i campi
+ * 
+ * @param {Array<Object>} inputFieldsArray - Array di oggetti input da controllare
+ * @param {HTMLElement} button - Elemento DOM del pulsante submit da abilitare/disabilitare
+ * 
+ * @example
+ * // Controlla validità di tutti i campi e aggiorna pulsante submit
+ * const allFields = [usernameInput, emailInput, passwordInput, confirmInput];
+ * const submitButton = document.getElementById("submitBtn");
+ * 
+ * validateBtn(allFields, submitButton);
+ * // submitButton.disabled sarà false solo se tutti i campi richiesti hanno inputStatus = 1
+ */
+export function validateSubmitBtn(inputFieldsArray, button){
+
+    let ready = !inputFieldsArray.some(item => (item.inputStatus != 1 && item.DOMelement.required === true));
+
+    if(ready) {
+            button.disabled = false;
+    }else{
+            button.disabled = true;
+    }
+}
+
 // ================================================================================================
 // ARCHITECTURE NOTES
 // ================================================================================================
