@@ -60,8 +60,26 @@ export class Duplicated extends Error{
     }
 };
 
-
+/**
+ * Errore custom per formato dati invalido.
+ * Estende Error e aggiunge informazioni contestuali e codice HTTP standard.
+ *
+ * @class
+ * @extends Error
+ *
+ * @property {string} dataType - Tipo di dato con formato invalido
+ * @property {string} dataValue - Valore del dato invalido
+ * @property {number} code - Codice errore HTTP (422)
+ *
+ * @example
+ * throw new InvalidFormat("email", "invalid-email");
+ */
 export class InvalidFormat extends Error{
+
+    /**
+    * @param {string} dataType - Tipo di dato da validare
+    * @param {string} dataValue - Valore del dato invalido
+    */
 
     constructor(dataType, dataValue){
         super(`Invalid ${dataType} format`);
@@ -70,3 +88,24 @@ export class InvalidFormat extends Error{
         this.code = 422;
     }
 };
+
+
+/**
+ * Errore custom per richiesta non valida.
+ * Estende Error e aggiunge codice HTTP standard.
+ *
+ * @class
+ * @extends Error
+ *
+ * @property {number} code - Codice errore HTTP (400)
+ *
+ * @example
+ * throw new BadRequest();
+ */
+export class BadRequest extends Error{
+
+    constructor(){
+        super("Unsupported data format");
+        this.code = 400;
+    }
+}

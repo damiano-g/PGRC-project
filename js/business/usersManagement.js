@@ -439,7 +439,7 @@ function searchDuplicates(fieldType, fieldValue){
  * authPassword("Password123"); // OK
  * authPassword("pass"); // Throws InvalidFormat
  */
-function authPassword(password){
+export function authPassword(password){
     const regEx = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w.-]{8,}/;
 
     if(!regEx.test(password)){
@@ -475,7 +475,7 @@ function authPassword(password){
  * authEmail("invalid-email"); // Throws InvalidFormat
  * authEmail("existing@example.com"); // Throws Duplicated
  */
-function authEmail(email){
+export function authEmail(email){
     const regEx = /^(?!.*\.\.)(?!.*\.\@)[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/;
 
     if(!regEx.test(email)){
@@ -514,7 +514,7 @@ function authEmail(email){
  * authUsername("a"); // Throws InvalidFormat
  * authUsername("existingUser"); // Throws Duplicated
  */
-function authUsername(username){
+export function authUsername(username){
     if(username.length < 2){
         const invalidFormat = new ErrorsManagement.InvalidFormat("email", email);
         console.error(invalidFormat);

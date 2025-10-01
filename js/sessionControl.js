@@ -11,6 +11,7 @@
 import * as RecipesManagement from "./business/recipesManagement.js";
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
+import * as ErrorsManagement from "./errorsManagement.js"
 import { StorageOperations } from "./storageManagement.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
@@ -679,6 +680,49 @@ export const PreviewArray = {
         } catch (error) {
             throw error;
         }
+    }
+};
+
+/**
+ * Valida input utente per tipo specificato
+ * @param {"username"|"email"|"password"} inputType - Tipo di input da validare ("username", "email", "password")
+ * @param {string} inputValue - Valore dell'input da validare
+ * * @param {string} [reference=null] - Valore di riferimento per confronto (usato per "confirm-password")
+ * @throws {ErrorsManagement.InvalidFormat} Se formato input non valido o password non corrispondente
+ * @throws {ErrorsManagement.Duplicated} Se valore già in uso (username/email)
+ * @throws {ErrorsManagement.BadRequest} Se tipo input non supportato
+ * @see {@link UsersManagement.authUsername} Per validazione username
+ * @see {@link UsersManagement.authEmail} Per validazione email
+ * @see {@link UsersManagement.authPassword} Per validazione password
+ * @example
+ * inputValidation("username", "john_doe");
+ * inputValidation("email", "john@example.com");
+ * inputValidation("confirm-password", "password123", "password123");
+ */
+export function inputValidation(inputType, inputValue, reference = null){
+    try {
+        switch(inputType){
+            case "username":
+                UsersManagement.authUsername(inputValue);
+                break;
+            case "email":
+                UsersManagement.authEmail(inputValue);
+                break;
+            case "password":
+                UsersManagement.authPassword(inputValue);
+                break;
+            case "confirm-password":
+                UsersManagement.authPassword(inputValue);
+                if(inputValue != reference){
+                    throw new ErrorsManagement.InvalidFormat("password", inputValue);
+                }
+            default:
+                const badRequest = new ErrorsManagement.BadRequest();
+                console.error(badRequest);
+                throw badRequest;
+        }
+    } catch (error) {
+        throw error;
     }
 }
 

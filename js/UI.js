@@ -5,7 +5,7 @@
  * @requires sessionControl
  */
 
-import { LoggedUser, Recipe } from "./sessionControl.js";
+import { inputValidation, InputValidation, LoggedUser, Recipe } from "./sessionControl.js";
 
 // ================================================================================================
 // PRIVATE UTILITY FUNCTIONS
@@ -758,45 +758,59 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
 // ================================
 
 /**
- * Aggiorna le classi CSS di un campo input per fornire feedback visivo dello stato di validazione
- * Applica le classi Bootstrap "is-valid" e "is-invalid" in base allo stato del campo
+ * Formatta campo input con classi Bootstrap basate su validazione
  * 
- * @param {Object} inputObject - Oggetto che rappresenta il campo di input da formattare
- * @param {HTMLElement} inputObject.DOMelement - Elemento DOM del campo input
- * @param {number} inputObject.inputStatus - Stato di validazione (0: neutro, >0: valido, <0: invalido)
+ * @param {string} inputType - Tipo di input da validare ("username", "email", "password")
+ * @param {HTMLElement} inputElement - Elemento input DOM da formattare
  * 
- * @example
- * // Aggiorna aspetto visivo del campo in base alla validazione
- * const inputField = {
- *   DOMelement: document.getElementById("username"),
- *   inputStatus: 1  // Campo valido
- * };
+ * @see {@link inputValidation} Per logica validazione
  * 
- * formatInputField(inputField);
- * // Aggiunge classe "is-valid" e rimuove "is-invalid"
+ * @description
+ * Gestisce visualizzazione stato validazione per campi form.
+ * - Valore presente: chiama inputValidation e applica classi "is-valid"
+ * - Valore assente: rimuove classi validazione
+ * - Errore validazione: applica "is-invalid" e gestisce feedback specifico
+ * - Gestione errori con graceful degradation: alert per errori generici, console.error per debug
  * 
  * @example
- * // Diversi stati di validazione
- * inputField.inputStatus = 1;   // Aggiunge "is-valid"
- * inputField.inputStatus = -1;  // Aggiunge "is-invalid" 
- * inputField.inputStatus = 0;   // Rimuove entrambe le classi (stato neutro)
+ * formatInputField("username", document.getElementById("username"));
+ * // Aggiunge "is-valid" se valido, "is-invalid" se errore
+ * 
  */
-export function formatInputField(inputObject) {
+export function formatInputField(inputElement, reference = null) {
 
-        const validity = Number(inputObject.inputStatus);
+   try {
+      if(inputElement.value.length > 0){
+         inputValidation(inputElement.id, inputElement.value, reference);
+         inputElement.classList.add("is-valid");
+         inputElement.classList.remove("is-invalid");
+      }else{
+         inputElement.classList.remove("is-valid");
+         inputElement.classList.remove("is-invalid");
+      }
+   } catch (error) {
 
-        if(Number.isNaN(validity) || validity === 0){
-                inputObject.DOMelement.classList.remove("is-valid");
-                inputObject.DOMelement.classList.remove("is-invalid");
-        }else{
-                if(validity > 0){
-                        inputObject.DOMelement.classList.add("is-valid");
-                        inputObject.DOMelement.classList.remove("is-invalid");
-                }else{
-                        inputObject.DOMelement.classList.remove("is-valid");
-                        inputObject.DOMelement.classList.add("is-invalid");
-                }
-        }
+      const formatFeedback = inputElement.querySelector(".invalid-feedback .invalid-format"); 
+      const duplicatedFeedback = inputElement.querySelector(".invalid-feedback .duplicated");
+      
+      switch(error.code){
+         case 404:
+            if(formatFeedback) formatFeedback.disabled = true;
+            if(duplicatedFeedback) duplicatedFeedback.disabled = false;
+            break;
+         case 409:
+            if(formatFeedback) formatFeedback.disabled = false;
+            if(duplicatedFeedback) duplicatedFeedback.disabled = true;
+            break;
+         default:
+            alert("Ooops! Something went wrong. Please try again");
+            inputElement.value = "";
+            console.error(error);
+      }
+
+      inputElement.classList.remove("is-valid");
+      inputElement.classList.add("is-invalid");
+   }
 };
 
 

@@ -2,8 +2,7 @@
 
 import { handleUserError } from "../errorsManagement.js";
 import { NewUser } from "../sessionControl.js";
-import { initializeNavbar } from "../UI.js";
-import { formatInputField, validateBtn, validateEmail, validatePassConfirm, validatePassword, validateUsername } from "../validate.js";
+import { initializeNavbar, formatInputField } from "../UI.js";
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione
 const signinUsernameInput = {
@@ -24,7 +23,9 @@ const signinPasswordInput = {
 const signinConfPassInput = {
     DOMelement: document.getElementById("confirmPassword"),
     inputStatus: 0,
-} 
+}
+
+const signinInputFields = document.querySelectorAll("form input");
 
 // Riferimenti ai pulsanti del form di registrazione
 const signinClearBtn = document.getElementById("clear");
@@ -34,38 +35,47 @@ const signinGotoLogBtn = document.getElementById("gotoLog");
 // Array di tutti gli input richiesti per la validazione del form
 const requiredInputFields = [signinUsernameInput, signinEmailInput, signinPasswordInput, signinConfPassInput];
 
+
 // Gestione eventi di validazione per tutti gli input del form
 
-// Attiva la validazione del campo username ad ogni input
-signinUsernameInput.DOMelement.addEventListener("input", () => validateUsername(signinUsernameInput));
+signinInputFields.forEach(field => field.addEventListener("input", () => {
+    let reference = null;
+    
+    if(field.id === "confirm-password"){
+        reference = document.querySelector("#password");
+    }
+    
+    formatInputField(field, reference);
+    
+    if(field.id === "password"){
+        const passConfirm = document.querySelector("#confirm-password");
+        if(field.classList.contains("is-valid")){
+            passConfirm.disabled = false;
+            formatInputField(passConfirm, field.value);
+        }else{
+            passConfirm.value = "";
+            passConfirm.disabled = true;
+        }
+    }
 
-// Attiva la validazione del campo email ad ogni input
-signinEmailInput.DOMelement.addEventListener("input", () => validateEmail(signinEmailInput));
+    let allValid = true;
+    signinInputFields.forEach(element => {
+        if(!element.classList.contains("is-valid")){
+            allValid = false;
+        }
+    });
 
-// Attiva la validazione del campo password ad ogni input (agisce anche su classi visive di conferma password)
-signinPasswordInput.DOMelement.addEventListener("input", () => {
-    validatePassword(signinPasswordInput);
-    signinConfPassInput.DOMelement.dispatchEvent(new Event("input"));
-    formatInputField(signinConfPassInput);
-});
-
-// Attiva la validazione del campo conferma password ad ogni input
-signinConfPassInput.DOMelement.addEventListener("input", () => validatePassConfirm(signinConfPassInput, signinPasswordInput));
-
-// Controlla lo stato di tutti i campi ad ogni input per abilitare/disabilitare il submit
-requiredInputFields.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => {
-    validateBtn(requiredInputFields, signinSubBtn);
-    formatInputField(inputObject);       
+    allValid ? signinSubBtn.disabled = false : signinSubBtn.disabled = true;
 }));
+
 
 // Gestisce il reset completo del form alla condizione iniziale
 signinClearBtn.addEventListener("click", () => {
-    requiredInputFields.forEach(item => {
-        item.inputStatus = 0;
-        formatInputField(item);
+    requiredInputFields.forEach(field => {
+        field.value = "";
+        formatInputField(field, null);
     });
-    signinConfPassInput.DOMelement.disabled = true;
-    validateBtn(requiredInputFields, signinSubBtn);       
+    signinSubBtn.disabled = true;       
 });
 
 // ============================================================================
