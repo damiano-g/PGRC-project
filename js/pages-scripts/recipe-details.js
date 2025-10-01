@@ -129,7 +129,16 @@ recipeOverviewContainer.addEventListener("click", async click => { // Event dele
                }  
             };
          } catch (error) {
-            alert("Ooops! Something went wrong. Please try again or reload page");
+            switch(error.code){
+               case 404:
+                  alert("No review found for current user and recipe")
+                  break;
+               case 409:
+                  alert("Current user has already reviewed this recipe.");
+                  break;
+               default:
+                  alert("Ooops! Something went wrong. Please try again or reload page");
+            }
             console.error(error);
          }
       } catch (error) {

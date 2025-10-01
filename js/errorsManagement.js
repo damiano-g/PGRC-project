@@ -48,11 +48,11 @@ export class NotFound extends Error{
 export class Duplicated extends Error{
     /**
     * @param {"User"|"Review"|"Recipe"|"Note"|"Category"} itemType - Tipo di oggetto cercato (es. "User", "Recipe")
-    * @param {"id"|"name"|"username"|"email"} fieldType - Campo usato per la ricerca (es. "id", "username")
+    * @param {string} fieldType - Campo usato per la ricerca (es. "id", "username")
     * @param {string} fieldValue - Valore del campo cercato 
     */
-    constructor(itemType, fieldType, fieldValue){
-        super(`${itemType} ${fieldType}: ${fieldValue} is already in use`);
+    constructor(itemType, fieldType = null, fieldValue = null){
+        super(`${itemType} duplicated`);
         this.itemType = itemType;
         this.fieldType = fieldType;
         this.fieldValue = fieldValue;

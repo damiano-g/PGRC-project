@@ -69,7 +69,8 @@ export function getStoredReviews(){
  * @see {@link getStoredReviews} Per lettura database recensioni
  * @see {@link StorageOperations} Per aggionamento database recensioni
  * @throws {Error} Se parametri passati non corretti e rilancia errori di storage
- * @throws {ErrorsManagment.NotFound} se recensione non trovata 
+ * @throws {ErrorsManagment.Duplicated} Se l'utente ha già fornito una recensione per la ricetta - solo per add
+ * @throws {ErrorsManagment.NotFound} se recensione non trovata - solo per delete
  * 
  * @example
  * // ADD recensione
@@ -85,13 +86,21 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
  
         if(recipeId && userId && tasteRate && difficultyRate){
             // ADD MODE: Crea nuova recensione
-            recipeReviewsArray.push(new Review(recipeId, userId, Number(tasteRate), Number(difficultyRate)));
+            if(recipeReviewsArray.some(review => review.userId === userId)){
+                const duplicated = new ErrorsManagment.Duplicated("Review");
+                console.error(duplicated);
+                throw duplicated;
+            }else{
+                recipeReviewsArray.push(new Review(recipeId, userId, Number(tasteRate), Number(difficultyRate)));
+            }
         }else{
             if(recipeId && userId && !(tasteRate || difficultyRate)){
                 // DELETE MODE: Rimuovi recensione esistente
                 const index = recipeReviewsArray.findIndex(element => (element.recipeId === recipeId) && (element.userId === userId));
                 if(index < 0){
-                    throw new ErrorsManagment.NotFound("Review", "id", userId);
+                    const notFound = new ErrorsManagment.NotFound("Review", "id", userId);
+                    console.error(notFound);
+                    throw notFound;
                 }else{
                     recipeReviewsArray.splice(index, 1);
                 }
