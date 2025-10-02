@@ -104,6 +104,7 @@ export const NewUser = {
      * @param {string} username - Nome utente
      * @param {string} email - Email utente
      * @param {string} password - Password
+     * @param {string} passConfirm - Conferma password
      * @see {@link UsersManagement.addNewUser} Per aggiornamento database utenti
      * @returns {Promise<Object>} Dati utente creato
      * @throws {ErrorsManagement.Duplicated} Per parametri utente duplicati
@@ -688,7 +689,7 @@ export const PreviewArray = {
  * Valida input utente per tipo specificato
  * @param {"username"|"email"|"password"} inputType - Tipo di input da validare ("username", "email", "password")
  * @param {string} inputValue - Valore dell'input da validare
- * * @param {string} [reference=null] - Valore di riferimento per confronto (usato per "confirm-password")
+ * @param {string} [reference=null] - Valore di riferimento per confronto (usato per "confirm-password")
  * @throws {ErrorsManagement.InvalidFormat} Se formato input non valido o password non corrispondente
  * @throws {ErrorsManagement.Duplicated} Se valore già in uso (username/email)
  * @throws {ErrorsManagement.BadRequest} Se tipo input non supportato
