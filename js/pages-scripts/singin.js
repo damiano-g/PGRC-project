@@ -1,8 +1,7 @@
 //Gestione eventi per pagina di registrazione
 
-import { handleUserError } from "../errorsManagement.js";
 import { NewUser } from "../sessionControl.js";
-import { initializeNavbar, formatInputField } from "../UI.js";
+import { initializeNavbar, formatInputField, showOverlay, hideOverlay } from "../UI.js";
 
 // Oggetti DOM per gli input del form di registrazione con stato di validazione
 const signinUsernameInput = {
@@ -25,7 +24,7 @@ const signinConfPassInput = {
     inputStatus: 0,
 }
 
-const signinInputFields = document.querySelectorAll("form input");
+const signinInputFields = document.querySelectorAll("#signin-form input");
 
 // Riferimenti ai pulsanti del form di registrazione
 const signinClearBtn = document.getElementById("clear");
@@ -36,13 +35,37 @@ const signinGotoLogBtn = document.getElementById("gotoLog");
 const requiredInputFields = [signinUsernameInput, signinEmailInput, signinPasswordInput, signinConfPassInput];
 
 
-// Gestione eventi di validazione per tutti gli input del form
-
+/**
+ * Event listener per validazione dinamica degli input del form di registrazione
+ * 
+ * @param {Event} input - Evento input catturato automaticamente dal campo
+ * @returns {void}
+ * 
+ * @see {@link formatInputField} Per gestione formattazione visiva campi
+ * @see {@link inputValidation} Per logica validazione business
+ * 
+ * @description
+ * Gestisce la validazione in tempo reale degli input del form di registrazione.
+ * - Per il campo conferma password, passa il riferimento al campo password originale.
+ * - Per il campo password, abilita/disabilita e valida il campo conferma password.
+ * - Verifica se tutti i campi sono validi per abilitare il pulsante submit.
+ * - Aggiorna lo stato del pulsante submit in base alla validità complessiva del form.
+ * - Flusso: input → formatInputField (UI.js) → inputValidation (sessionControl.js) → auth* (usersManagement.js)
+ * - Gestione errori: propagazione da business → UI → graceful degradation con feedback visivo
+ * 
+ * @example
+ * // Evento catturato automaticamente per ogni input del form
+ * signinInputFields.forEach(field => field.addEventListener("input", () => {
+ *    formatInputField(field, reference);
+ *    // Gestione logica specifica per password e conferma
+ *    // Verifica validità complessiva e aggiorna submit
+ * }));
+ */
 signinInputFields.forEach(field => field.addEventListener("input", () => {
     let reference = null;
     
     if(field.id === "confirm-password"){
-        reference = document.querySelector("#password");
+        reference = document.querySelector("#password").value;
     }
     
     formatInputField(field, reference);
@@ -55,21 +78,47 @@ signinInputFields.forEach(field => field.addEventListener("input", () => {
         }else{
             passConfirm.value = "";
             passConfirm.disabled = true;
+            formatInputField(passConfirm);
         }
     }
 
     let allValid = true;
+    console.log(signinInputFields);
     signinInputFields.forEach(element => {
         if(!element.classList.contains("is-valid")){
             allValid = false;
         }
     });
 
+    console.log(allValid);
     allValid ? signinSubBtn.disabled = false : signinSubBtn.disabled = true;
 }));
 
 
-// Gestisce il reset completo del form alla condizione iniziale
+/**
+ * Event listener per reset del form di registrazione
+ * 
+ * @param {Event} click - Evento click catturato automaticamente dal pulsante clear
+ * @returns {void}
+ * 
+ * @see {@link formatInputField} Per reset formattazione visiva campi
+ * 
+ * @description
+ * Gestisce il reset completo del form di registrazione alla condizione iniziale.
+ * - Svuota tutti i campi di input richiesti.
+ * - Resetta la formattazione visiva di ogni campo chiamando formatInputField.
+ * - Disabilita il pulsante submit per forzare nuova validazione.
+ * 
+ * @example
+ * // Evento catturato automaticamente dal pulsante clear
+ * signinClearBtn.addEventListener("click", () => {
+ *    requiredInputFields.forEach(field => {
+ *        field.value = "";
+ *        formatInputField(field, null);
+ *    });
+ *    signinSubBtn.disabled = true;
+ * });
+ */
 signinClearBtn.addEventListener("click", () => {
     requiredInputFields.forEach(field => {
         field.value = "";
@@ -86,56 +135,30 @@ signinClearBtn.addEventListener("click", () => {
 // Implementa il pattern di disabilitazione temporanea degli input durante l'elaborazione
 // per prevenire doppi submit e garantire l'integrità dei dati
 signinSubBtn.addEventListener("click", async () => {
+    // Disabilita tutti i controlli del form durante l'elaborazione per prevenire doppi input
     
-    // ========================================
-    // FASE 1: DISABILITAZIONE INTERFACCIA
-    // ========================================
-    // Disabilita tutti i controlli del form durante l'elaborazione
-    // Questo previene modifiche accidentali ai dati e doppi submit
-    signinSubBtn.disabled = true;
-    signinClearBtn.disabled = true;
-    requiredInputFields.forEach(item => item.DOMelement.disabled = true);
-
     try{
-
-        // ========================================
-        // RACCOLTA DATI DAL FORM
-        // ========================================
-        // Estrae i valori correnti dai campi di input validati
-        const currentUsername = signinUsernameInput.DOMelement.value;
-        const currentEmail = signinEmailInput.DOMelement.value;
-        const currentPassword = signinPasswordInput.DOMelement.value;
-    
-        // ========================================
-        // CREAZIONE E SALVATAGGIO UTENTE
-        // ========================================        
-        // Aggiunge il nuovo utente al database (localStorage)
-        // Può lanciare UserManagementError in caso di errori di storage, validazione username e email, passwordhashing
-        await NewUser.addToDB(currentUsername, currentEmail, currentPassword);
+        showOverlay();
+        const chosenUsername = document.getElementById("username").value;
+        const chosenEmail = document.getElementById("email").value;
+        const chosenPassword = document.getElementById("password").value;
+        const passwordConfirm = document.getElementById("confirm-password").value;
         
-        alert("Utente registrato con successo");
+        await NewUser.addToDB(chosenUsername, chosenEmail, chosenPassword, passwordConfirm);
+        
+        alert("User registered");
         window.location.href = "../../index.html";
 
     }catch(error){
-        // ========================================
-        // GESTIONE ERRORI CENTRALIZZATA
-        // ========================================
-        // Gestisce tutti i tipi di errore in modo uniforme:
-        // - VALIDATION: Username o email già in uso
-        // - STORAGE: Problemi di accesso a localStorage
-        // - CRYPTO: Errori durante l'hashing della password
-        handleUserError(error);
-    }finally{
-        // ========================================
-        // FASE 6: RIPRISTINO INTERFACCIA
-        // ========================================
-        // Garantisce sempre il ripristino dello stato dell'interfaccia
-        // indipendentemente dal successo o fallimento dell'operazione
-        signinClearBtn.disabled = false;
-        requiredInputFields.forEach(item => item.DOMelement.disabled = false);
-        
-        // Reset automatico del form per preparare una nuova registrazione
+        // console.error(error);
+        if(error.code === 409 || error.code === 422){
+            alert(`${error.message}\nPlease try again`);
+        }else{
+            console.error(error);
+            alert("Ooops! Something went wrong. Please try again");
+        }
         signinClearBtn.click();
+        hideOverlay();
     }
 });
 

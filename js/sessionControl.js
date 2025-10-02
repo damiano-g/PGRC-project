@@ -106,12 +106,13 @@ export const NewUser = {
      * @param {string} password - Password
      * @see {@link UsersManagement.addNewUser} Per aggiornamento database utenti
      * @returns {Promise<Object>} Dati utente creato
-     * @throws {ErrorsManagement.Duplicated} Per parametri utente duplicati 
+     * @throws {ErrorsManagement.Duplicated} Per parametri utente duplicati
+     * @throws {ErrorsManagement.InvalidFormat} Per formato valori dei parametri non conformi 
      * @throws {Error} Rilancia errori di storage ed errori critici
      */
-    addToDB: async (username, email, password) => { // Solo wrapper
+    addToDB: async (username, email, password, passConfirm) => { // Solo wrapper
         try {
-            return await UsersManagement.addNewUser(username, email, password);
+            return await UsersManagement.addNewUser(username, email, password, passConfirm);
         } catch (error) {
             throw error;
         };
@@ -239,9 +240,9 @@ export const LoggedUser = {
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
-    changePassword: async (newPassword) => {
+    changePassword: async (newPassword, passConfirm) => {
         try {
-            await UsersManagement.updateUserPassword(LoggedUser.getId(), newPassword);
+            await UsersManagement.updateUserPassword(LoggedUser.getId(), newPassword, passConfirm);
         } catch (error) {
             throw error;
         };
@@ -709,13 +710,11 @@ export function inputValidation(inputType, inputValue, reference = null){
                 UsersManagement.authEmail(inputValue);
                 break;
             case "password":
-                UsersManagement.authPassword(inputValue);
+                UsersManagement.authPassword(inputValue, inputValue);
                 break;
             case "confirm-password":
-                UsersManagement.authPassword(inputValue);
-                if(inputValue != reference){
-                    throw new ErrorsManagement.InvalidFormat("password", inputValue);
-                }
+                UsersManagement.authPassword(inputValue, reference);
+                break;
             default:
                 const badRequest = new ErrorsManagement.BadRequest();
                 console.error(badRequest);

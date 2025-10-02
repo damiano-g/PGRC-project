@@ -5,7 +5,7 @@
  * @requires sessionControl
  */
 
-import { inputValidation, InputValidation, LoggedUser, Recipe } from "./sessionControl.js";
+import { inputValidation, LoggedUser, Recipe } from "./sessionControl.js";
 
 // ================================================================================================
 // PRIVATE UTILITY FUNCTIONS
@@ -790,22 +790,24 @@ export function formatInputField(inputElement, reference = null) {
       }
    } catch (error) {
 
-      const formatFeedback = inputElement.querySelector(".invalid-feedback .invalid-format"); 
-      const duplicatedFeedback = inputElement.querySelector(".invalid-feedback .duplicated");
+      const formatFeedback = inputElement.parentElement.querySelector(".invalid-feedback .invalid-format");
+      const duplicatedFeedback = inputElement.parentElement.querySelector(".invalid-feedback .duplicated");
       
       switch(error.code){
-         case 404:
-            if(formatFeedback) formatFeedback.disabled = true;
-            if(duplicatedFeedback) duplicatedFeedback.disabled = false;
+         case 422:
+            // Invalid format
+            if(formatFeedback) formatFeedback.classList.remove("d-none");
+            if(duplicatedFeedback) duplicatedFeedback.classList.add("d-none");
             break;
          case 409:
-            if(formatFeedback) formatFeedback.disabled = false;
-            if(duplicatedFeedback) duplicatedFeedback.disabled = true;
+            // Duplicated value
+            if(formatFeedback) formatFeedback.classList.add("d-none");
+            if(duplicatedFeedback) duplicatedFeedback.classList.remove("d-none");
             break;
          default:
             alert("Ooops! Something went wrong. Please try again");
             inputElement.value = "";
-            console.error(error);
+            console.error(error, error.code);
       }
 
       inputElement.classList.remove("is-valid");
@@ -814,30 +816,13 @@ export function formatInputField(inputElement, reference = null) {
 };
 
 
-/**
- * Controlla la validità di tutti i campi richiesti e abilita/disabilita il pulsante submit
- * Implementa la logica di abilitazione condizionale basata sullo stato di tutti i campi
- * 
- * @param {Array<Object>} inputFieldsArray - Array di oggetti input da controllare
- * @param {HTMLElement} button - Elemento DOM del pulsante submit da abilitare/disabilitare
- * 
- * @example
- * // Controlla validità di tutti i campi e aggiorna pulsante submit
- * const allFields = [usernameInput, emailInput, passwordInput, confirmInput];
- * const submitButton = document.getElementById("submitBtn");
- * 
- * validateBtn(allFields, submitButton);
- * // submitButton.disabled sarà false solo se tutti i campi richiesti hanno inputStatus = 1
- */
-export function validateSubmitBtn(inputFieldsArray, button){
+export function showOverlay(){
+   console.log(document.querySelector("#spinner-overlay"));
+   document.querySelector("#spinner-overlay").classList.remove("d-none");
+}
 
-    let ready = !inputFieldsArray.some(item => (item.inputStatus != 1 && item.DOMelement.required === true));
-
-    if(ready) {
-            button.disabled = false;
-    }else{
-            button.disabled = true;
-    }
+export function hideOverlay(){
+   document.querySelector("#spinner-overlay").classList.add("d-none")
 }
 
 // ================================================================================================

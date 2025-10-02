@@ -71,6 +71,7 @@ export function getRegisteredUsers() {
  * @see {@link StorageOperations.set} - Aggiornamento database utenti
  * @see {@link createUserObject} - Creazione nuovo oggetto utente
  * @throws {ErrorsManagement.Duplicated} Se username/email già in uso
+ * @throws {ErrorsManagement.InvalidFormat} Per formato valori dei parametri non conformi 
  * @throws {Error} Se errori di storage o hashing
  * 
  * @example
@@ -80,13 +81,13 @@ export function getRegisteredUsers() {
  *   console.log("Errore registrazione");
  * }
  */
-export async function addNewUser(chosenUsername, chosenEmail, chosenPassword){
+export async function addNewUser(chosenUsername, chosenEmail, chosenPassword, passConfirm){
 
     try {
         // Validation chain: username + email duplicati
         authUsername(chosenUsername);
         authEmail(chosenEmail);
-        authPassword(chosenPassword);
+        authPassword(chosenPassword, passConfirm);
         
         // User creation con hashing automatico
         const newUser = await createUserObject(chosenUsername, chosenEmail, chosenPassword);
@@ -216,9 +217,9 @@ export async function updateUserEmail(userId, newEmail){
  *   console.log("Errore aggiornamento password");
  * }
  */
-export async function updateUserPassword(userId, newPassword){
+export async function updateUserPassword(userId, newPassword, passConfirm){
     try {
-        authPassword(password);
+        authPassword(password, passConfirm);
         await updateUserData(userId, "password", newPassword, true); // needsHashing = true
     } catch (error) {
         throw error;
@@ -408,10 +409,8 @@ function searchDuplicates(fieldType, fieldValue){
 
         const registeredUsers = getRegisteredUsers();
 
-        if(registeredUsers.some(user => user[fieldType] === fieldValue)){
-            const duplicated = new ErrorsManagement.Duplicated("User", fieldType, fieldValue);
-            console.error(duplicated); 
-            throw duplicated;
+        if(registeredUsers.some(user => user[fieldType] === fieldValue)){ 
+            throw new ErrorsManagement.Duplicated("User", fieldType, fieldValue);
         }    
     } catch (error) {
         throw error;
@@ -439,13 +438,11 @@ function searchDuplicates(fieldType, fieldValue){
  * authPassword("Password123"); // OK
  * authPassword("pass"); // Throws InvalidFormat
  */
-export function authPassword(password){
+export function authPassword(password, passConfirm){
     const regEx = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[\w.-]{8,}/;
 
-    if(!regEx.test(password)){
-        const invalidFormat = new ErrorsManagement.InvalidFormat("password", password);
-        console.error(invalidFormat);
-        throw invalidFormat
+    if(!regEx.test(password) || password != passConfirm){
+        throw new ErrorsManagement.InvalidFormat("password", password);
     }
 };
 
@@ -479,9 +476,7 @@ export function authEmail(email){
     const regEx = /^(?!.*\.\.)(?!.*\.\@)[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/;
 
     if(!regEx.test(email)){
-        const invalidFormat = new ErrorsManagement.InvalidFormat("email", email);
-        console.error(invalidFormat);
-        throw invalidFormat
+        throw new ErrorsManagement.InvalidFormat("email", email);
     }
 
     try {
@@ -516,9 +511,7 @@ export function authEmail(email){
  */
 export function authUsername(username){
     if(username.length < 2){
-        const invalidFormat = new ErrorsManagement.InvalidFormat("email", email);
-        console.error(invalidFormat);
-        throw invalidFormat
+        throw new ErrorsManagement.InvalidFormat("username", username);
     }
 
     try {
