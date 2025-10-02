@@ -322,7 +322,7 @@ export const LoggedUser = {
      */
     authOperations: async (password) => {
         try {
-            return await UsersManagement.admitUser(LoggedUser.getData().id, password);
+            return await UsersManagement.admitUser("id" ,LoggedUser.getData().id, password);
         } catch (error) {
             throw error;
         }
@@ -687,7 +687,7 @@ export const PreviewArray = {
 
 /**
  * Valida input utente per tipo specificato
- * @param {"username"|"email"|"password"} inputType - Tipo di input da validare ("username", "email", "password")
+ * @param {"username"|"email"|"password"|"confirm-password"} inputType - Tipo di input da validare ("username", "email", "password")
  * @param {string} inputValue - Valore dell'input da validare
  * @param {string} [reference=null] - Valore di riferimento per confronto (usato per "confirm-password")
  * @throws {ErrorsManagement.InvalidFormat} Se formato input non valido o password non corrispondente

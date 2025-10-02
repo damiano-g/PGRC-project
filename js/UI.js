@@ -798,7 +798,7 @@ export function formatInputField(inputElement, reference = null) {
 
    try {
       if(inputElement.value.length > 0 && inputElement.required){
-         inputValidation(inputElement.id, inputElement.value, reference);
+         inputValidation(inputElement.dataset.field, inputElement.value, reference);
          inputElement.classList.add("is-valid");
          inputElement.classList.remove("is-invalid");
       }else{

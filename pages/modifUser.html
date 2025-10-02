@@ -74,7 +74,7 @@
                             <label class="form-label" for="username">Username</label>
                             <button type="button" class="btn btn-light allow-modif">Enable</button>
                         </span>
-                        <input class="form-control" type="text" id="username" disabled>
+                        <input class="form-control" type="text" id="username" data-field="username" disabled>
                         <div class="invalid-feedback">Username must contain at least two characters</div>
                     </div>
 
@@ -84,14 +84,14 @@
                             <label class="form-label" for="email">Email</label>
                             <button type="button" class="btn btn-light allow-modif">Enable</button>
                         </span>
-                        <input class="form-control" type="email" id="email" disabled>
+                        <input class="form-control" type="email" id="email" data-field="email" disabled>
                         <div class="invalid-feedback">Invalid format</div>
                     </div>
 
                     <!-- Sezione autorizzazione e modifica password: pulsante "Enable" per
                     abilitare sezione, campo password corrente con pulsante "Authorize"
                     per validare accesso modifiche -->
-                    <div class="form-section mb-3 mt-3">
+                    <!-- <div class="form-section mb-3 mt-3">
                         <span>
                             Password
                             <button type="button" class="btn btn-light allow-modif">Enable</button><br>
@@ -100,27 +100,51 @@
                             <label class="form-label" for="current-password">Current password</label>
                             <button type="button" class="btn btn-light" id="auth-modif" disabled>Authorize</button>
                         </span>
-                        <input class="form-control" type="password" id="current-password" placeholder="Insert your password" disabled>
+                        <input class="form-control" type="password" id="current-password" data-field="password" placeholder="Insert your password" disabled>
                         <div class="invalid-feedback">Passwords don't match</div>
-                    </div>
+                    </div> -->
                     <div class="form-section mb-3 mt-3">
-                        <label class="form-label" for="new-password">New password</label>
-                        <input class="form-control" type="password" id="new-password" placeholder="Choose new password" disabled>
+                        <span>
+                            <label class="form-label" for="password">New password</label>
+                            <button type="button" class="btn btn-light allow-modif">Enable</button>
+                        </span>
+                        <input class="form-control" type="password" id="password" data-field="password" placeholder="Choose new password" disabled>
                         <div class="invalid-feedback">Passwords must contain at least <span id="passLen">8 characters</span>, <span id="upCase">one capital letter,</span>,
                             <span id="lowCase">one small letter</span> and <span id="num">a number</span>.
                         </div>
                     </div>
                     <div class="form-section mb-3 mt-3">
                         <label class="form-label" for="confirm-password">Confirm new password</label>
-                        <input class="form-control" type="password" id="confirm-password" placeholder="Confirm new password" disabled>
+                        <input class="form-control" type="password" id="confirm-password" data-field="confirm-password" placeholder="Confirm new password" disabled>
                         <div class="invalid-feedback">Passwords don't match</div>
                     </div>
 
                     <!-- Pulsanti azione form: Reset per cancellare modifiche, Save per
                     salvare dati solo con validazione completa -->
                     <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Reset</button>
-                    <button class="btn btn-primary mb-3 mt-3" type="submit" id="submit" disabled>Save</button>
+                    <button class="btn btn-primary mb-3 mt-3" type="button" id="save-btn" data-bs-toggle="modal" data-bs-target="#auth-dialog" disabled>Save</button>
                 </form>
+            </div>
+        </div>  
+
+       
+        <div class="modal" id="auth-dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Insert current password to confirm</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <input class="form-control" type="password" id="current-password" data-field="password" placeholder="Insert your password">
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="confirm-btn" disabled>Confirm</button>
+                    </div>
+                </div>
             </div>
         </div>
 

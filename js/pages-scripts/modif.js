@@ -12,86 +12,36 @@
 
 import { LoggedUser } from "../sessionControl.js";
 import { formatInputField, initializeNavbar } from "../UI.js";
-import * as validate from "../validate.js";
 
 // ================================================================================================
 // FORM INPUT OBJECTS - STRUTTURE DATI PER GESTIONE STATO
 // ================================================================================================
 
 /**
- * @typedef {Object} FormInputObject
- * @property {HTMLInputElement} DOMelement - Riferimento elemento DOM input
- * @property {string} defaultValue - Valore di default per reset field
- * @property {number} inputStatus - Stato validazione (0=neutro, 1=valido, -1=invalido)
- */
-
-/**
- * Oggetto gestione input username con stato di validazione
- * @type {FormInputObject}
- * @description Wrapper per campo username con tracking stato e valore default
- */
-const settingsUsernameInput = {
-    DOMelement: document.getElementById("username"),
-    defaultValue: "",
-    inputStatus: 0,
-}
-
-/**
- * Oggetto gestione input email con stato di validazione
- * @type {FormInputObject}
- * @description Wrapper per campo email con tracking stato e valore default
- */
-const settingsEmailInput = {
-    DOMelement: document.getElementById("email"),
-    defaultValue: "",
-    inputStatus: 0,
-}
-
-/**
  * Oggetto gestione input password corrente con stato di validazione
  * @type {FormInputObject}
  * @description Wrapper per campo password corrente per autorizzazione modifiche
  */
-const settingsCurrentPassInput = {
-    DOMelement: document.getElementById("current-password"),
-    defaultValue: "",
-    inputStatus: 0,
-}
+const settingsCurrentPassInput = document.getElementById("current-password");
 
 /**
  * Oggetto gestione input nuova password con stato di validazione
  * @type {FormInputObject}
  * @description Wrapper per campo nuova password con validazione policy
  */
-const settingsNewPassInput = {
-    DOMelement: document.getElementById("new-password"),
-    defaultValue: "",
-    inputStatus: 0,
-}
+const settingsNewPassInput = document.getElementById("password");
+
 
 /**
  * Oggetto gestione input conferma password con stato di validazione
  * @type {FormInputObject}
  * @description Wrapper per campo conferma password con matching validation
  */
-const settingsConfPassInput = {
-    DOMelement: document.getElementById("confirm-password"),
-    defaultValue: "",
-    inputStatus: 0,
-}
+// const settingsConfPassInput = document.getElementById("confirm-password");
 
 const settingsInputFields = document.querySelectorAll("#user-data-form input");
 
-/**
- * Array di tutti gli input del form per operazioni batch
- * @type {Array<FormInputObject>}
- * @description Collezione per iterazione validazione e formatting globale
- */
-const allSettingsFormInputs = [settingsUsernameInput, settingsEmailInput, settingsCurrentPassInput, settingsNewPassInput, settingsConfPassInput];
 
-// ================================================================================================
-// DOM REFERENCES - ELEMENTI UI PRINCIPALI
-// ================================================================================================
 
 /**
  * Pulsante autorizzazione per sbloccare modifica password
@@ -112,7 +62,7 @@ const allowModifBtns = document.querySelectorAll(".form-section .allow-modif");
  * @type {HTMLButtonElement}
  * @description Esegue aggiornamenti selettivi in base a sezioni abilitate
  */
-const settingsSubBtn = document.getElementById("submit");
+const settingsConfirmBtn = document.getElementById("confirm-btn"); 
 
 /**
  * Pulsante reset per ripristino stato iniziale pagina
@@ -120,6 +70,10 @@ const settingsSubBtn = document.getElementById("submit");
  * @description Trigger reload completo per reset form e stato UI
  */
 const settingsClearBtn = document.getElementById("clear");
+
+const settingsSaveBtn = document.getElementById("save-btn");
+
+
 
 // ================================================================================================
 // EVENT HANDLERS - GESTIONE ABILITAZIONE SEZIONI
@@ -199,86 +153,74 @@ allowModifBtns.forEach(btn => btn.addEventListener("click", (event) => {
  * // → Se corretta: abilita newPassword + confirmPassword
  * // → Se sbagliata: campo vuoto + alert "Password errata"
  */
-authPasswordModifBtn.addEventListener("click", async () => {
-    const providedPassword = settingsCurrentPassInput.DOMelement.value;
-    settingsCurrentPassInput.DOMelement.value = "*********";
+// authPasswordModifBtn.addEventListener("click", async () => {
+//     const providedPassword = settingsCurrentPassInput.value;
+//     settingsCurrentPassInput.value = "*********";
 
-    // Verifica la password tramite autenticazione
-    try {
-        if(await LoggedUser.authOperations(providedPassword)){
-            settingsCurrentPassInput.inputStatus = 1;
-            settingsNewPassInput.DOMelement.disabled = false;
-            settingsNewPassInput.DOMelement.required = true;
-            settingsConfPassInput.DOMelement.required = true;
-        }else{
-            settingsCurrentPassInput.DOMelement.value = ""
-            alert("Password errata");
-        }
-    } catch (error) {
-        console.error(error);
-        handleUserError(error);
-    }
-});
+//     // Verifica la password tramite autenticazione
+//     try {
+//         if(await LoggedUser.authOperations(providedPassword)){
+//             settingsCurrentPassInput.inputStatus = 1;
+//             settingsNewPassInput.disabled = false;
+//             settingsNewPassInput.required = true;
+//             settingsConfPassInput.required = true;
+//         }else{
+//             settingsCurrentPassInput.value = ""
+//             alert("Password errata");
+//         }
+//     } catch (error) {
+//         alert("Oooops. Something went wrong. Please try again.");
+//     }
+// });
 
 // ================================================================================================
 // EVENT HANDLERS - VALIDAZIONE REAL-TIME
 // ================================================================================================
 
-/**
- * Event handler per validazione real-time username
- * @listens input
- * @description Attiva validazione formato e disponibilità username ad ogni keystroke
- * @since 1.0.0
- */
-settingsUsernameInput.DOMelement.addEventListener("input", () => validate.validateUsername(settingsUsernameInput));
 
-/**
- * Event handler per validazione real-time email  
- * @listens input
- * @description Attiva validazione formato e disponibilità email ad ogni keystroke
- * @since 1.0.0
- */
-settingsEmailInput.DOMelement.addEventListener("input", () => validate.validateEmail(settingsEmailInput));
+settingsInputFields.forEach(field => field.addEventListener("input", () => {
+    let reference = null;
+    
+    if(field.id === "confirm-password"){
+        reference = document.querySelector("#password").value;
+    }
+    
+    if(field.id === "username" || field.id === "email"){ // Esclude username/email non modificati dalla formattazione e invio dati
+        if(field.value === LoggedUser.getData()[field.id]){
+            field.required = false;
+        }else{
+            field.required = true;
+        }
+    }
+    
+    formatInputField(field, reference);
+    
+    if(field.id === "password"){
+        const passConfirm = document.getElementById("confirm-password");
+        passConfirm.value = "";
+        if(field.classList.contains("is-valid")){
+            passConfirm.disabled = false;
+            passConfirm.required = true;
+            // formatInputField(passConfirm, field.value);
+        }else{
+            passConfirm.disabled = true;
+            passConfirm.required = false;
+            formatInputField(passConfirm);
+        }
+    }
+    
+    
+    let allValid = true;
 
-/**
- * Event handler per validazione password con cascade su conferma
- * 
- * @listens input
- * @description 
- * Valida nuova password e triggera re-validazione conferma password.
- * Gestisce interdipendenza tra campi password per matching real-time.
- * 
- * @since 1.0.0
- */
-settingsNewPassInput.DOMelement.addEventListener("input", () => {
-    validate.validatePassword(settingsNewPassInput);
-    settingsConfPassInput.DOMelement.dispatchEvent(new Event("input"));
-    validate.formatInputField(settingsNewPassInput);
-});
-
-/**
- * Event handler per validazione conferma password con matching
- * @listens input  
- * @description Verifica matching tra nuova password e conferma password
- * @since 1.0.0
- */
-settingsConfPassInput.DOMelement.addEventListener("input", () => validate.validatePassConfirm(settingsConfPassInput, settingsNewPassInput));
-
-/**
- * Event handlers per controllo stato submit button
- * 
- * @listens input
- * @description
- * Monitora stato validazione di tutti i campi per abilitare/disabilitare submit.
- * Aggiorna formattazione visuale campi (colori, icone, messaggi).
- * 
- * @since 1.0.0
- */
-allSettingsFormInputs.forEach(inputObject => inputObject.DOMelement.addEventListener("input", () => {
-    validate.validateBtn(allSettingsFormInputs, settingsSubBtn);
-    validate.formatInputField(inputObject);       
+    settingsInputFields.forEach(element => {
+        if(element.required && !element.classList.contains("is-valid")){ // Esclude dal controllo elementi non richiesti (es:email non modificata)
+            allValid = false;
+        }
+    });
+    
+    console.log(allValid);
+    allValid ? settingsSaveBtn.disabled = false : settingsSaveBtn.disabled = true;
 }));
-
 
 
 /**
@@ -291,13 +233,11 @@ allSettingsFormInputs.forEach(inputObject => inputObject.DOMelement.addEventList
  * 
  * @since 1.0.0
  */
-settingsCurrentPassInput.DOMelement.addEventListener("input", () => {
-    if(authPasswordModifBtn.disabled && settingsCurrentPassInput.DOMelement.value.length > 0){
-        authPasswordModifBtn.disabled = false;
+settingsCurrentPassInput.addEventListener("input", () => {
+    if(settingsCurrentPassInput.value.length < 1){
+        settingsConfirmBtn.disabled = true;
     }else{
-        if(settingsCurrentPassInput.DOMelement.value.length < 1){
-            authPasswordModifBtn.disabled = true;
-        }
+        settingsConfirmBtn.disabled = false;
     }
 });
 
@@ -357,60 +297,47 @@ settingsClearBtn.addEventListener("click", () => location.reload());
  * 
  * @since 1.0.0
  */
-settingsSubBtn.addEventListener("click", async () => {
-
-    // ========================================
-    // AGGIORNAMENTO PASSWORD
-    // ========================================
-    // Aggiorna la password se la sezione password è stata abilitata
-    // Prerequisito: l'utente deve aver superato l'autenticazione con password corrente
-    if(settingsNewPassInput.DOMelement.required){
-        try {
-            await LoggedUser.changePassword(settingsNewPassInput.DOMelement.value);
-            alert("Password aggiornata");
-        } catch (error) {
-            handleUserError(error);
+settingsConfirmBtn.addEventListener("click", async () => {
+    
+    try {
+        if(await LoggedUser.authOperations(document.getElementById("current-password").value)){
+            
+            for(const input of settingsInputFields){ // NB -> forech non adatto per async op
+                if(input.required){      
+                    switch(input.dataset.field){
+                        case "password":
+                            if(input.id != "confirm-password"){
+                                await LoggedUser.changePassword(input.value, document.getElementById("confirm-password").value);
+                            }
+                            break;
+                        case "username":
+                            LoggedUser.changeUsername(input.value);
+                            break;
+                        case "email":
+                            LoggedUser.changeEmail(input.value);
+                            break;
+                        default:
+                            const badRequest = new Error(`${input.id} is not a supported field type`);
+                            console.error(badRequest.message);
+                            throw badRequest;   
+                    }
+                    alert(`${input.dataset.field} successfully updated`);
+                }
+            };
+            
+            location.reload();
+        }else{
+            alert("Wrong password");
         }
-    }
-
-    // ========================================
-    // AGGIORNAMENTO USERNAME
-    // ========================================
-    // Aggiorna l'username se la sezione username è stata abilitata
-    // Sequenza: 1) Verifica disponibilità username, 2) Applica modifica al database
-    if(settingsUsernameInput.DOMelement.required){
-        try {
-            LoggedUser.changeUsername(settingsUsernameInput.DOMelement.value);
-            alert("Nome utente aggiornato");
-        } catch (error) {
-            // Gestisce errori di validazione (username già in uso) o storage
-            handleUserError(error);
+    } catch (error) {
+        if(error.code === 409 || error.code === 422){
+            console.error(error);
+            alert(error.message);
+        }else{
+            alert(`Ooops! Something went wrong.\nUnable to modify ${input.dataset.field}. Please try again.`);
         }
+        location.reload();
     }
-
-    // ========================================
-    // AGGIORNAMENTO EMAIL
-    // ========================================
-    // Aggiorna l'email se la sezione email è stata abilitata
-    // Sequenza: 1) Verifica disponibilità email, 2) Applica modifica al database
-    if(settingsEmailInput.DOMelement.required){
-        try {
-            // Se la validazione passa, procede con l'aggiornamento
-            LoggedUser.changeEmail(settingsEmailInput.DOMelement.value);
-            alert("Email aggiornata");
-        } catch (error) {
-            // Gestisce errori di validazione (email già in uso) o storage
-            handleUserError(error);
-        }
-    }
-
-    // ========================================
-    // RICARICA PAGINA
-    // ========================================
-    // Ricarica la pagina per resettare lo stato del form e mostrare i dati aggiornati
-    // Questo garantisce che tutti i campi tornino ai valori di default (ora aggiornati)
-    // e che tutte le sezioni vengano disabilitate per sicurezza
-    location.reload();
 });
 
 // ================================================================================================
@@ -458,20 +385,22 @@ window.addEventListener("load", () => {
             window.location.href = "./login.html"
         }else{
             const currentUser = LoggedUser.getData();
-            settingsUsernameInput.defaultValue = currentUser.username;
-            settingsUsernameInput.DOMelement.value = settingsUsernameInput.defaultValue
-            settingsEmailInput.defaultValue = currentUser.email;
-            settingsEmailInput.DOMelement.value = settingsEmailInput.defaultValue;
+            settingsInputFields.forEach(input =>{
+                if(input.dataset.field != "password"){
+                    input.value = currentUser[input.dataset.field];
+                }
+            });
         
             document.querySelector("body").classList.remove("d-none");
         }
     } catch (error) {
-        console.error(error);
         alert("Ooops! Something went wrong. Please try again");
     }
 });
 
 document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
+
+
 // ================================================================================================
 // ARCHITECTURE NOTES
 // ================================================================================================

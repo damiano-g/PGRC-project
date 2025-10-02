@@ -571,7 +571,7 @@ export function searchUser(searchField, searchValue){
         const acceptedFields = ["username", "id", "email"];
         if(!acceptedFields.includes(searchField)){
             const fieldError = new Error(`${searchField} is not an accepted field`);
-            console.error(fieldError);
+            console.error(fieldError, fieldError.message, `Error code: ${fieldError.code}`);
             throw fieldError;
         }
         const actualRegUsersArray = getRegisteredUsers();

@@ -18,13 +18,13 @@ import { initializeNavbar, formatInputField, showOverlay, hideOverlay } from "..
 // ============================================================================
 
 /** @type {NodeListOf<HTMLInputElement>} Campi input del form di registrazione */
-const signinInputFields = document.querySelectorAll("#signin-form input");
+export const signinInputFields = document.querySelectorAll("#signin-form input");
 
 /** @type {HTMLButtonElement} Pulsante per reset del form */
 const signinClearBtn = document.getElementById("clear");
 
 /** @type {HTMLButtonElement} Pulsante per submit del form */
-const signinSubBtn = document.getElementById("submit");
+export const signinSubBtn = document.getElementById("submit");
 
 /** @type {HTMLButtonElement} Pulsante per navigazione alla pagina login */
 const signinGotoLogBtn = document.getElementById("gotoLog");
@@ -102,7 +102,6 @@ signinInputFields.forEach(field => field.addEventListener("input", () => {
     }
 
     let allValid = true;
-    console.log(signinInputFields);
     signinInputFields.forEach(element => {
         if(!element.classList.contains("is-valid")){
             allValid = false;
