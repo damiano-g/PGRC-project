@@ -10,9 +10,8 @@
  * @requires errorsManagement - Gestione errori tipizzati
  */
 
-import { handleUserError } from "../errorsManagement.js";
 import { LoggedUser } from "../sessionControl.js";
-import { initializeNavbar } from "../UI.js";
+import { formatInputField, initializeNavbar } from "../UI.js";
 import * as validate from "../validate.js";
 
 // ================================================================================================
@@ -54,7 +53,7 @@ const settingsEmailInput = {
  * @description Wrapper per campo password corrente per autorizzazione modifiche
  */
 const settingsCurrentPassInput = {
-    DOMelement: document.getElementById("currentPassword"),
+    DOMelement: document.getElementById("current-password"),
     defaultValue: "",
     inputStatus: 0,
 }
@@ -65,7 +64,7 @@ const settingsCurrentPassInput = {
  * @description Wrapper per campo nuova password con validazione policy
  */
 const settingsNewPassInput = {
-    DOMelement: document.getElementById("newPassword"),
+    DOMelement: document.getElementById("new-password"),
     defaultValue: "",
     inputStatus: 0,
 }
@@ -76,10 +75,12 @@ const settingsNewPassInput = {
  * @description Wrapper per campo conferma password con matching validation
  */
 const settingsConfPassInput = {
-    DOMelement: document.getElementById("confirmPassword"),
+    DOMelement: document.getElementById("confirm-password"),
     defaultValue: "",
     inputStatus: 0,
 }
+
+const settingsInputFields = document.querySelectorAll("#user-data-form input");
 
 /**
  * Array di tutti gli input del form per operazioni batch
@@ -152,33 +153,22 @@ const settingsClearBtn = document.getElementById("clear");
  * 
  * @since 1.0.0
  */
-allowModifBtns.forEach(item => item.addEventListener("click", function (event) {
-    const parentDiv = event.target.parentElement;
-    const textInputs = parentDiv.querySelectorAll(".form-control");
-
-    // Disabilita sempre i campi password quando si abilita un'altra sezione
-    settingsNewPassInput.DOMelement.disabled = true;
-    settingsNewPassInput.DOMelement.required = false;
-    settingsConfPassInput.DOMelement.disabled = true;
-    settingsConfPassInput.DOMelement.required = false;
-    authPasswordModifBtn.disabled = true;
+allowModifBtns.forEach(btn => btn.addEventListener("click", (event) => {
+    const sectionInputFields = event.target.closest(".form-section").querySelectorAll(".form-control");
 
     // Toggle dello stato disabled/required per gli input della sezione corrente
-    textInputs.forEach(item => {
-        item.toggleAttribute("disabled");
-        item.toggleAttribute("required");
-    });
-
-    // Aggiorna lo stato di validazione e UI per tutti i campi
-    allSettingsFormInputs.forEach(item => {
-        if(item.DOMelement.required === true){
-            item.DOMelement.dispatchEvent(new Event("input"));
-        }else{
-            item.DOMelement.value = item.defaultValue;
-            item.inputStatus = 0;
-            validate.formatInputField(item);
-        }
-    });
+    try {
+        sectionInputFields.forEach(input => {
+            input.toggleAttribute("required");
+            if(!input.required && (input.id === "username" || input.id === "email")){
+                input.value = LoggedUser.getData()[input.id];
+                formatInputField(input);
+            }
+            input.toggleAttribute("disabled");
+        });
+    } catch (error) {
+        alert("Oooops. Something went wrong. Please try again.");
+    }
 }));
 
 /**
@@ -208,11 +198,6 @@ allowModifBtns.forEach(item => item.addEventListener("click", function (event) {
  * // → Campo mostra "*********" 
  * // → Se corretta: abilita newPassword + confirmPassword
  * // → Se sbagliata: campo vuoto + alert "Password errata"
- * 
- * @todo Aggiungere rate limiting per tentativi falliti
- * @todo Implementare timeout sessione per autorizzazione
- * 
- * @since 1.0.0
  */
 authPasswordModifBtn.addEventListener("click", async () => {
     const providedPassword = settingsCurrentPassInput.DOMelement.value;
@@ -293,6 +278,8 @@ allSettingsFormInputs.forEach(inputObject => inputObject.DOMelement.addEventList
     validate.validateBtn(allSettingsFormInputs, settingsSubBtn);
     validate.formatInputField(inputObject);       
 }));
+
+
 
 /**
  * Event handler per abilitazione dinamica pulsante autorizzazione
@@ -465,19 +452,22 @@ settingsSubBtn.addEventListener("click", async () => {
  * @since 1.0.0
  */
 window.addEventListener("load", () => {
-    if(!LoggedUser.isLogged()){
-        window.location.href = "./login.html"
-    }else{
-        try {
+
+    try {
+        if(!LoggedUser.isLogged()){
+            window.location.href = "./login.html"
+        }else{
             const currentUser = LoggedUser.getData();
             settingsUsernameInput.defaultValue = currentUser.username;
             settingsUsernameInput.DOMelement.value = settingsUsernameInput.defaultValue
             settingsEmailInput.defaultValue = currentUser.email;
             settingsEmailInput.DOMelement.value = settingsEmailInput.defaultValue;
-        } catch (error) {
-            handleUserError(error)
+        
+            document.querySelector("body").classList.remove("d-none");
         }
-        document.querySelector("body").classList.remove("d-none");
+    } catch (error) {
+        console.error(error);
+        alert("Ooops! Something went wrong. Please try again");
     }
 });
 

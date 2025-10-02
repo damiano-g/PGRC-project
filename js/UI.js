@@ -797,7 +797,7 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
 export function formatInputField(inputElement, reference = null) {
 
    try {
-      if(inputElement.value.length > 0){
+      if(inputElement.value.length > 0 && inputElement.required){
          inputValidation(inputElement.id, inputElement.value, reference);
          inputElement.classList.add("is-valid");
          inputElement.classList.remove("is-invalid");
@@ -832,7 +832,7 @@ export function formatInputField(inputElement, reference = null) {
    }
 };
 
-// ...existing code...
+
 
 /**
  * Mostra lo spinner overlay rimuovendo la classe Bootstrap d-none
