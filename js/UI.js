@@ -760,22 +760,39 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
 /**
  * Formatta campo input con classi Bootstrap basate su validazione
  * 
- * @param {string} inputType - Tipo di input da validare ("username", "email", "password")
  * @param {HTMLElement} inputElement - Elemento input DOM da formattare
+ * @param {string|null} [reference=null] - Valore riferimento per validazione (es. password per conferma)
  * 
- * @see {@link inputValidation} Per logica validazione
+ * @see {@link inputValidation} Per logica validazione business
  * 
  * @description
- * Gestisce visualizzazione stato validazione per campi form.
+ * Gestisce visualizzazione stato validazione per campi form con feedback specifico.
  * - Valore presente: chiama inputValidation e applica classi "is-valid"
  * - Valore assente: rimuove classi validazione
- * - Errore validazione: applica "is-invalid" e gestisce feedback specifico
- * - Gestione errori con graceful degradation: alert per errori generici, console.error per debug
+ * - Errore validazione: applica "is-invalid" e mostra feedback specifico per tipo errore
+ * - Gestione errori generici con graceful degradation: alert + console.error per debug
+ * 
+ * **Struttura HTML necessaria per feedback specifico:**
+ * ```html
+ * <div class="form-group">
+ *    <input id="email" type="email" class="form-control">
+ *    <div class="invalid-feedback">
+ *       <div class="invalid-format d-none">Formato email non valido</div>
+ *       <div class="duplicated d-none">Email già registrata</div>
+ *    </div>
+ * </div>
+ * ```
+ * - `.invalid-feedback`: Contenitore messaggi errore
+ * - `.invalid-format`: Messaggio per errori formato (codice 422)
+ * - `.duplicated`: Messaggio per errori duplicazione (codice 409)
+ * - Classi `d-none` per nascondere/mostrare messaggi
  * 
  * @example
- * formatInputField("username", document.getElementById("username"));
+ * formatInputField(document.getElementById("username"));
  * // Aggiunge "is-valid" se valido, "is-invalid" se errore
  * 
+ * formatInputField(document.getElementById("confirm-password"), "password123");
+ * // Valida conferma password con riferimento alla password originale
  */
 export function formatInputField(inputElement, reference = null) {
 
@@ -815,12 +832,42 @@ export function formatInputField(inputElement, reference = null) {
    }
 };
 
+// ...existing code...
 
+/**
+ * Mostra lo spinner overlay rimuovendo la classe Bootstrap d-none
+ * 
+ * @function showOverlay
+ * 
+ * @see {@link hideOverlay} Per nascondere lo spinner
+ * 
+ * @description
+ * Rende visibile l'overlay spinner rimuovendo la classe "d-none" da #spinner-overlay.
+ * Utilizzato per bloccare l'interfaccia utente durante operazioni asincrone.
+ * Include console.log per debug durante lo sviluppo.
+ * 
+ * @example
+ * showOverlay(); // Mostra spinner durante caricamento
+ */
 export function showOverlay(){
    console.log(document.querySelector("#spinner-overlay"));
    document.querySelector("#spinner-overlay").classList.remove("d-none");
 }
 
+/**
+ * Nasconde lo spinner overlay aggiungendo la classe Bootstrap d-none
+ * 
+ * @function hideOverlay
+ * 
+ * @see {@link showOverlay} Per mostrare lo spinner
+ * 
+ * @description
+ * Rende invisibile l'overlay spinner aggiungendo la classe "d-none" a #spinner-overlay.
+ * Utilizzato per ripristinare l'interfaccia utente dopo operazioni asincrone.
+ * 
+ * @example
+ * hideOverlay(); // Nasconde spinner dopo caricamento
+ */
 export function hideOverlay(){
    document.querySelector("#spinner-overlay").classList.add("d-none")
 }
