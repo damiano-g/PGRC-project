@@ -207,6 +207,7 @@ export async function updateUserEmail(userId, newEmail){
  * @async
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newPassword - Nuova password in chiaro
+ * @param {string} passConfirm - Valore di conferma della password
  * @throws {Error} Se errori durante hashing, errori di storage, parametri errati
  * @throws {ErrorsManagement.NotFound} se utente non trovato
  * 
@@ -423,6 +424,7 @@ function searchDuplicates(fieldType, fieldValue){
  * 
  * @private
  * @param {string} password - Password in chiaro da validare
+ * @param {string} passConfirm - Valore di conferma della password
  * @throws {ErrorsManagement.InvalidFormat} Se password non rispetta formato richiesto
  * @see {@link ErrorsManagement.InvalidFormat} Per gestione errori formato
  * 
