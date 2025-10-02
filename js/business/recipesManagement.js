@@ -145,7 +145,6 @@ async function createLocalRecipesDB() {
 async function createLocalCategoriesDB() {
     try {
         const fetchedOBJ = await fetchRecipes(fetchAllCategoriesURL, fetchOptions);
-        console.log(fetchedOBJ);
         const catArray = [];
         fetchedOBJ.categories.forEach(item => catArray.push(new Category(item)));
         StorageOperations.set(CATEGORIES_DB_KEY, catArray, RECIPES_STORAGE_OPTS);
@@ -182,7 +181,8 @@ export async function getData(dataType) {
         let dataArray = StorageOperations.get(dataType, RECIPES_STORAGE_OPTS);
         
         // Se cache vuota, inizializza da API
-        if(dataArray.length < 1 || (dataArray.length > 0 && dataArray[0].creationDate.toDateString() != new Date().toDateString())){
+        if(dataArray.length < 1 || (dataArray.length > 0 && new Date(dataArray[0].creationDate).toDateString() != new Date().toDateString())){
+            // NB -> la serializzazione json converte l'eggetto Date in stringa -> quindi crea nuovo oggetto Date da stringa
             switch(dataType){
                 case "recipes": 
                     dataArray = await createLocalRecipesDB();

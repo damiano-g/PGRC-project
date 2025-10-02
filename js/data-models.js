@@ -218,7 +218,7 @@ export class Category {
  * @property {string} name - Nome display ricetta  
  * @property {string} image - URL immagine ricetta
  * @property {string} instructions - Istruzioni preparazione complete
- * @property {string} dateAdded - ISO timestamp di quando l'oggetto è stato creato localmente
+ * @property {string} creationDate - ISO timestamp di quando l'oggetto è stato creato localmente
  * @property {Array<{name: string, measure: string}>} ingredients - Array ingredienti processati
  * 
  * @description
