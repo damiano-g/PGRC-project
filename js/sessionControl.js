@@ -12,6 +12,7 @@ import { createUsers } from "../create-user-db.js";
 import * as RecipesManagement from "./business/recipesManagement.js";
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
+import { generateItemId, Response } from "./data-models.js";
 import * as ErrorsManagement from "./errorsManagement.js"
 import { StorageOperations } from "./storageManagement.js";
 
@@ -297,16 +298,52 @@ export const LoggedUser = {
     },
 
     /**
-     * Elimina account utente
-     * @see {@link UsersManagement.deleteUser} Elimina account utente
-     * @see {@link LoggedUser.endSession} Termina sessione per utente loggato
-     * @throws {ErrorsManagement.NotFound} Se utente non trovato
-     * @throws {Error} Rilancia errori di storage o parametri errati
+     * Elimina account utente trasferendo recensioni a utente "deleted-user"
+     * 
+     * @description
+     * Elimina completamente l'account utente dal sistema. Prima dell'eliminazione,
+     * trasferisce tutte le recensioni dell'utente a un utente speciale identificato
+     * da un ID generato dinamicamente ("deleted-user" + timestamp). Questo permette
+     * di preservare la storia delle valutazioni mantenendo l'integrità dei dati,
+     * mentre l'ID con timestamp facilita eventuali pulizie periodiche del database.
+     * 
+     * Processo di eliminazione:
+     * 1. Recupera ID dell'utente corrente
+     * 2. Genera ID univoco per utente "deleted-user" (con timestamp per pulizia futura)
+     * 3. Filtra tutte le recensioni appartenenti all'utente da eliminare
+     * 4. Per ogni recensione: elimina quella originale e ricreala con utente "deleted-user"
+     * 5. Elimina definitivamente l'utente dal database utenti
+     * 6. Termina la sessione corrente
+     * 
+     * @returns {{resourceType: "user-id", resourceObj: string, statusCode: "delete"}} Response object con conferma eliminazione account
+     * 
+     * @see {@link UsersManagement.deleteUser} Per eliminazione utente dal database
+     * @see {@link LoggedUser.endSession} Per terminazione sessione corrente
+     * @see {@link ReviewsManagement.updateRecipeReviews} Per operazioni CRUD su recensioni
+     * @see {@link generateItemId} Per generazione ID utente "deleted-user" con timestamp
+     * 
+     * @throws {ErrorsManagement.NotFound} Se utente corrente non trovato nel database
+     * @throws {Error} Rilancia errori di storage, operazioni su recensioni fallite o parametri errati
+     * 
+     * @example
+     * // Elimina account dell'utente attualmente loggato
+     * LoggedUser.deleteAccount();
+     * // Risultato: utente eliminato, recensioni trasferite a "deleted-user", sessione terminata
      */
     deleteAccount: () => {
         try {
-            UsersManagement.deleteUser(LoggedUser.getId());
+            const currentUserId = LoggedUser.getId();
+            const deletedUserId = generateItemId("deleted-user");
+
+            const currentUserReviews = ReviewsManagement.getStoredReviews().filter(review => review.userId === currentUserId);
+
+            currentUserReviews.forEach(review => {
+                const deletedReview = ReviewsManagement.updateRecipeReviews(currentUserId, review.recipeId).resourceObj;
+                ReviewsManagement.updateRecipeReviews(deletedUserId, deletedReview.recipeId, deletedReview.tasteRate, deletedReview.difficultyRate);
+            });
+            UsersManagement.deleteUser(currentUserId);
             LoggedUser.endSession();
+            return Response("user-id", currentUserId, "delete");
         } catch (error) {
             throw error;
         }

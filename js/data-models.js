@@ -29,7 +29,7 @@
  * generateItemId("note") → "note_1693747201500_5678"
  * 
  */
-function generateItemId(itemType) {
+export function generateItemId(itemType) {
     const timestamp = Date.now(); // Timestamp Unix in millisecondi
     const rnd = String(Math.floor(Math.random()*10000)).padStart(4, "0"); // Numero casuale 0000-9999
     return `${itemType}_${timestamp}_${rnd}`;
@@ -308,6 +308,55 @@ export class FullRecipe {
         return array;
     }
 };
+
+/**
+ * Classe wrapper per risposte operazioni business con metadata strutturata
+ * 
+ * @class
+ * @param {string} resourceType - Tipo di risorsa restituita ("user", "recipe", "review", etc.)
+ * @param {Object|Array} resourceObj - Oggetto o array di dati della risorsa
+ * @param {number} [statusCode=200] - Codice stato HTTP-like per risultato operazione
+ * 
+ * @description
+ * Factory per risposte standardizzate dalle operazioni business layer.
+ * Fornisce struttura consistente per comunicazione tra layers con metadata.
+ * - Status code HTTP-like per categorizzazione risultati
+ * - Type annotation per processing downstream
+ * - Flexible resourceObj per dati eterogenei
+ * 
+ * @property {string} resourceType - Identificatore tipo risorsa per routing
+ * @property {Object|Array} resourceObj - Payload dati effettivi dell'operazione
+ * @property {number} statusCode - Codice stato operazione (200=success, 404=not found, etc.)
+ * 
+ * @example
+ * // Risposta operazione utente
+ * const userResponse = new Response("user", {
+ *   id: "user_123",
+ *   username: "john_doe",
+ *   email: "john@example.com"
+ * });
+ * 
+ * @example
+ * // Risposta operazione ricerca ricette
+ * const recipesResponse = new Response("recipes", [
+ *   {id: "52772", name: "Teriyaki Chicken"},
+ *   {id: "52773", name: "Pizza Margherita"}
+ * ], 200);
+ * 
+ * @example
+ * // Risposta errore
+ * const errorResponse = new Response("error", {
+ *   message: "User not found"
+ * }, 404);
+ */
+export class Response{
+    constructor(resourceType, resourceObj, operation){
+        this.resourceType = resourceType;
+        this.resourceObj = resourceObj;
+        this.operation = operation;
+        this.statusCode = 200;
+    }
+}
 
 // ================================================================================================
 // ARCHITECTURE NOTES
