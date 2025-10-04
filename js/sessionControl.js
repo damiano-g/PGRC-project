@@ -209,9 +209,9 @@ export const LoggedUser = {
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
-    changeUsername: (newUsername) => {
+    changeUsername: async (newUsername) => {
         try {
-            UsersManagement.updateUserUsername(LoggedUser.getId(), newUsername);
+            await UsersManagement.updateUserUsername(LoggedUser.getId(), newUsername);
         } catch (error) {
             throw error;
         };
@@ -225,9 +225,9 @@ export const LoggedUser = {
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
-    changeEmail: (newEmail) => {
+    changeEmail: async (newEmail) => {
         try {
-            UsersManagement.updateUserEmail(LoggedUser.getId(), newEmail);
+            await UsersManagement.updateUserEmail(LoggedUser.getId(), newEmail);
         } catch (error) {
             throw error;
         };

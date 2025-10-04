@@ -164,7 +164,7 @@ export function deleteUser(userId){
  */
 export async function updateUserUsername(userId, newUsername){
     try {
-        authUsername(username); // Validation duplicati
+        authUsername(newUsername); // Validation duplicati
         await updateUserData(userId, "username", newUsername);
     } catch (error) {
         throw error;
@@ -220,7 +220,7 @@ export async function updateUserEmail(userId, newEmail){
  */
 export async function updateUserPassword(userId, newPassword, passConfirm){
     try {
-        authPassword(password, passConfirm);
+        authPassword(newPassword, passConfirm);
         await updateUserData(userId, "password", newPassword, true); // needsHashing = true
     } catch (error) {
         throw error;

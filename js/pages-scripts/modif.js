@@ -1,111 +1,160 @@
 /**
- * @fileoverview Gestione pagina di modifica profilo utente con sezioni selettive
- * @description Fornisce interfaccia per modifica username, email e password con validazione
- * real-time e autorizzazione richiesta per operazioni sensibili
- * @author damia
- * @version 1.0.0
- * @since 2025-09-03
- * @requires usersManagement - Funzioni CRUD utente e autenticazione
- * @requires validate - Validazione form e formatting UI
- * @requires errorsManagement - Gestione errori tipizzati
+ * @fileoverview Gestione pagina modifica profilo utente - validazione form e submit autorizzato
+ * @description Implementa validazione in tempo reale, gestione submit sicuro con autenticazione,
+ * toggle sezioni form, reset stato e protezione accesso autenticato
+ * @requires sessionControl.js Per modulo LoggedUser
+ * @requires UI.js Per funzioni di rendering UI (initializeNavbar, formatInputField)
  */
 
-import { LoggedUser } from "../sessionControl.js";
-import { formatInputField, initializeNavbar } from "../UI.js";
+// ============================================================================
+// IMPORT MODULI E DIPENDENZE
+// ============================================================================
 
-// ================================================================================================
-// FORM INPUT OBJECTS - STRUTTURE DATI PER GESTIONE STATO
-// ================================================================================================
+import { LoggedUser } from "../sessionControl.js";
+import { formatInputField, hideOverlay, initializeNavbar, showOverlay } from "../UI.js";
+
+
+
+// ============================================================================
+// SELEZIONE ELEMENTI DOM
+// ============================================================================
 
 /**
- * Oggetto gestione input password corrente con stato di validazione
- * @type {FormInputObject}
- * @description Wrapper per campo password corrente per autorizzazione modifiche
+ * Campo input password corrente per autorizzazione modifiche
+ * @type {HTMLInputElement}
+ * @description Input richiesto per autorizzare qualsiasi modifica ai dati utente
  */
 const settingsCurrentPassInput = document.getElementById("current-password");
 
 /**
- * Oggetto gestione input nuova password con stato di validazione
- * @type {FormInputObject}
- * @description Wrapper per campo nuova password con validazione policy
+ * Tutti i campi input del form di modifica utente
+ * @type {NodeListOf<HTMLInputElement>}
+ * @description Include username, email, password, confirm-password per gestione dinamica
  */
-const settingsNewPassInput = document.getElementById("password");
-
-
-/**
- * Oggetto gestione input conferma password con stato di validazione
- * @type {FormInputObject}
- * @description Wrapper per campo conferma password con matching validation
- */
-// const settingsConfPassInput = document.getElementById("confirm-password");
-
 const settingsInputFields = document.querySelectorAll("#user-data-form input");
 
-
-
 /**
- * Pulsante autorizzazione per sbloccare modifica password
- * @type {HTMLButtonElement}
- * @description Richiede verifica password corrente prima di abilitare nuova password
- */
-const authPasswordModifBtn = document.getElementById("auth-modif");
-
-/**
- * Pulsanti "Abilita modifica" per ogni sezione del form
+ * Pulsanti per abilitare modifica delle singole sezioni form
  * @type {NodeListOf<HTMLButtonElement>}
- * @description Toggle per abilitare/disabilitare editing su sezioni specifiche
+ * @description Toggle per attivare/disattivare editing su sezioni specifiche (username, email, password)
  */
 const allowModifBtns = document.querySelectorAll(".form-section .allow-modif");
 
 /**
- * Pulsante submit principale per applicare modifiche
+ * Pulsante conferma nella modal di autorizzazione
  * @type {HTMLButtonElement}
- * @description Esegue aggiornamenti selettivi in base a sezioni abilitate
+ * @description Esegue gli aggiornamenti dopo verifica password corrente
  */
 const settingsConfirmBtn = document.getElementById("confirm-btn"); 
 
 /**
- * Pulsante reset per ripristino stato iniziale pagina
+ * Pulsante reset per ripristino stato iniziale
  * @type {HTMLButtonElement}
- * @description Trigger reload completo per reset form e stato UI
+ * @description Trigger per reload completo della pagina
  */
 const settingsClearBtn = document.getElementById("clear");
 
+/**
+ * Pulsante save per aprire modal di conferma
+ * @type {HTMLButtonElement}
+ * @description Apre modal di autenticazione quando modifiche sono pronte per il submit
+ */
 const settingsSaveBtn = document.getElementById("save-btn");
 
 
-
-// ================================================================================================
-// EVENT HANDLERS - GESTIONE ABILITAZIONE SEZIONI
-// ================================================================================================
+// ============================================================================
+// INIZIALIZZAZIONE PAGINA
+// ============================================================================
 
 /**
- * Event handler per pulsanti "Abilita modifica" sezioni form
+ * Event listener per inizializzazione navbar
+ * 
+ * @param {Event} DOMContentLoaded - Evento triggerato quando il DOM è completamente caricato
+ * 
+ * @see {@link initializeNavbar} Per configurazione menu navigazione
  * 
  * @description
- * Gestisce l'abilitazione selettiva delle sezioni modificabili del form.
- * Implementa logica mutually exclusive per sezioni password vs altre.
- * 
- * **Workflow:**
- * 1. Disabilita sempre sezione password quando si abilita altro
- * 2. Toggle stato disabled/required per input della sezione target
- * 3. Reset validazione per tutti i campi e aggiornamento UI
- * 
- * **Business Logic:**
- * - Una sola sezione abilitabile per volta (sicurezza)
- * - Password richiede autorizzazione separata
- * - Reset automatico campi non coinvolti
- * 
- * @listens click
- * @param {MouseEvent} event - Evento click su pulsante sezione
+ * Inizializza la navbar quando il DOM è pronto, passando body e nav come argomenti.
  * 
  * @example
- * // Click su "Abilita modifica" sezione username
- * // → Disabilita password section
- * // → Abilita username input (disabled=false, required=true)
- * // → Reset email input a valore default
+ * document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
+ */
+document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
+
+
+/**
+ * Event listener per protezione accesso e popolamento form
  * 
- * @since 1.0.0
+ * @param {Event} load - Evento triggerato quando la pagina è completamente caricata
+ * 
+ * @see {@link LoggedUser.isLogged} Per verifica stato autenticazione
+ * @see {@link LoggedUser.getData} Per recupero dati utente corrente
+ * 
+ * @description
+ * Gestisce la protezione dell'accesso alla pagina e il popolamento iniziale del form.
+ * - Verifica se l'utente è autenticato, altrimenti redirect a login.
+ * - Popola i campi username ed email con i dati attuali dell'utente.
+ * - Mostra la pagina rimuovendo la classe d-none dal body.
+ * - Gestione errori con try-catch per graceful degradation.
+ * 
+ * @example
+ * window.addEventListener("load", () => {
+ *    if(!LoggedUser.isLogged()){
+ *        window.location.href = "./login.html"
+ *    } else {
+ *        // Popola form con dati attuali
+ *        // Mostra pagina
+ *    }
+ * });
+ */
+window.addEventListener("load", () => {
+
+    try {
+        if(!LoggedUser.isLogged()){
+            window.location.href = "./login.html"
+        }else{
+            const currentUser = LoggedUser.getData();
+            settingsInputFields.forEach(input =>{
+                if(input.dataset.field != "password"){
+                    input.value = currentUser[input.dataset.field];
+                }
+            });
+        
+            document.querySelector("body").classList.remove("d-none");
+        }
+    } catch (error) {
+        alert("Ooops! Something went wrong. Please try again");
+    }
+});
+
+
+// ============================================================================
+// GESTIONE TOGGLE SEZIONI FORM
+// ============================================================================
+
+/**
+ * Event listener per abilitazione/disabilitazione sezioni form
+ * 
+ * @param {Event} click - Evento click sui pulsanti "Allow Modification"
+ * 
+ * @see {@link formatInputField} Per reset formattazione visiva
+ * @see {@link LoggedUser.getData} Per ripristino valori originali
+ * 
+ * @description
+ * Gestisce il toggle dello stato di modifica per le singole sezioni del form.
+ * - Toggle degli attributi required e disabled per gli input della sezione.
+ * - Ripristino valori originali per username/email quando si disabilita la modifica.
+ * - Aggiornamento formattazione visiva dei campi interessati.
+ * - Gestione errori con try-catch per graceful degradation.
+ * 
+ * @example
+ * allowModifBtns.forEach(btn => btn.addEventListener("click", (event) => {
+ *    const sectionInputFields = event.target.closest(".form-section").querySelectorAll(".form-control");
+ *    sectionInputFields.forEach(input => {
+ *        input.toggleAttribute("required");
+ *        input.toggleAttribute("disabled");
+ *    });
+ * }));
  */
 allowModifBtns.forEach(btn => btn.addEventListener("click", (event) => {
     const sectionInputFields = event.target.closest(".form-section").querySelectorAll(".form-control");
@@ -125,59 +174,35 @@ allowModifBtns.forEach(btn => btn.addEventListener("click", (event) => {
     }
 }));
 
+
+// ============================================================================
+// GESTIONE VALIDAZIONE INPUT
+// ============================================================================
+
 /**
- * Event handler per autorizzazione modifica password
+ * Event listener per validazione dinamica input form modifica
+ * 
+ * @param {Event} input - Evento input catturato automaticamente dai campi
+ * 
+ * @see {@link formatInputField} Per gestione formattazione visiva
+ * @see {@link LoggedUser.getData} Per confronto con valori originali
  * 
  * @description
- * Verifica password corrente utente prima di abilitare modifica password.
- * Implementa security gate per operazioni sensibili con feedback immediato.
- * 
- * **Security Workflow:**
- * 1. Cattura password inserita e maschera campo
- * 2. Verifica autenticazione tramite admitUser()
- * 3. Se valida: abilita campi nuova password
- * 4. Se invalida: reset campo e notifica errore
- * 
- * **UX Features:**
- * - Password masking immediato per sicurezza
- * - Alert feedback per risultato autenticazione
- * - Campo reset automatico su fallimento
- * 
- * @listens click
- * @async
- * @throws {Error} Se autenticazione fallisce per errori sistema
+ * Gestisce la validazione in tempo reale degli input del form di modifica.
+ * - Per conferma password, passa riferimento al campo password originale.
+ * - Per username/email, gestisce required dinamico basato su modifiche effettive.
+ * - Per password, gestisce abilitazione/disabilitazione campo conferma.
+ * - Verifica validità complessiva per abilitare pulsante save.
+ * - Flusso: input → formatInputField (UI.js) → inputValidation (sessionControl.js) → auth* (usersManagement.js)
  * 
  * @example
- * // User inserisce password corrente → click "Autorizza"
- * // → Campo mostra "*********" 
- * // → Se corretta: abilita newPassword + confirmPassword
- * // → Se sbagliata: campo vuoto + alert "Password errata"
+ * settingsInputFields.forEach(field => field.addEventListener("input", () => {
+ *    let reference = field.id === "confirm-password" ? document.querySelector("#password").value : null;
+ *    formatInputField(field, reference);
+ *    // Logica specifica per username/email/password
+ *    // Verifica validità complessiva
+ * }));
  */
-// authPasswordModifBtn.addEventListener("click", async () => {
-//     const providedPassword = settingsCurrentPassInput.value;
-//     settingsCurrentPassInput.value = "*********";
-
-//     // Verifica la password tramite autenticazione
-//     try {
-//         if(await LoggedUser.authOperations(providedPassword)){
-//             settingsCurrentPassInput.inputStatus = 1;
-//             settingsNewPassInput.disabled = false;
-//             settingsNewPassInput.required = true;
-//             settingsConfPassInput.required = true;
-//         }else{
-//             settingsCurrentPassInput.value = ""
-//             alert("Password errata");
-//         }
-//     } catch (error) {
-//         alert("Oooops. Something went wrong. Please try again.");
-//     }
-// });
-
-// ================================================================================================
-// EVENT HANDLERS - VALIDAZIONE REAL-TIME
-// ================================================================================================
-
-
 settingsInputFields.forEach(field => field.addEventListener("input", () => {
     let reference = null;
     
@@ -201,7 +226,6 @@ settingsInputFields.forEach(field => field.addEventListener("input", () => {
         if(field.classList.contains("is-valid")){
             passConfirm.disabled = false;
             passConfirm.required = true;
-            // formatInputField(passConfirm, field.value);
         }else{
             passConfirm.disabled = true;
             passConfirm.required = false;
@@ -218,20 +242,32 @@ settingsInputFields.forEach(field => field.addEventListener("input", () => {
         }
     });
     
-    console.log(allValid);
     allValid ? settingsSaveBtn.disabled = false : settingsSaveBtn.disabled = true;
 }));
 
 
+// ============================================================================
+// GESTIONE ABILITAZIONE CONFERMA MODIFICHE
+// ============================================================================
+
 /**
- * Event handler per abilitazione dinamica pulsante autorizzazione
+ * Event listener per abilitazione pulsante conferma in modal
  * 
- * @listens input
+ * @param {Event} input - Evento input dal campo password corrente
+ * 
  * @description
- * Abilita pulsante "Autorizza" solo quando password corrente contiene caratteri.
- * Previene click accidentali su campo vuoto.
+ * Gestisce l'abilitazione del pulsante conferma nella modal di autorizzazione.
+ * - Abilita pulsante conferma solo se password corrente è inserita.
+ * - Previene submit accidentali con modal vuota.
  * 
- * @since 1.0.0
+ * @example
+ * settingsCurrentPassInput.addEventListener("input", () => {
+ *    if(settingsCurrentPassInput.value.length > 0){
+ *        settingsConfirmBtn.disabled = false;
+ *    } else {
+ *        settingsConfirmBtn.disabled = true;
+ *    }
+ * });
  */
 settingsCurrentPassInput.addEventListener("input", () => {
     if(settingsCurrentPassInput.value.length < 1){
@@ -241,205 +277,185 @@ settingsCurrentPassInput.addEventListener("input", () => {
     }
 });
 
-// ================================================================================================
-// UTILITY EVENT HANDLERS
-// ================================================================================================
+
+// ============================================================================
+// GESTIONE SUBMIT
+// ============================================================================
 
 /**
- * Event handler per reset completo pagina
- * @listens click
- * @description Ricarica pagina per ripristino stato iniziale completo
- * @since 1.0.0
- */
-settingsClearBtn.addEventListener("click", () => location.reload());
-
-// ================================================================================================
-// FORM SUBMISSION - AGGIORNAMENTI SELETTIVI
-// ================================================================================================
-
-/**
- * Event handler per submit form di modifica profilo utente
+ * Event listener per submit delle modifiche
+ * 
+ * @param {Event} click - Evento click sul pulsante conferma modal
+ * 
+ * @see {@link LoggedUser.authOperations} Per verifica password corrente
+ * @see {@link LoggedUser.changePassword} Per aggiornamento password
+ * @see {@link LoggedUser.changeUsername} Per aggiornamento username
+ * @see {@link LoggedUser.changeEmail} Per aggiornamento email
+ * @see {@link showOverlay} Per mostrare indicatore caricamento
+ * @see {@link hideOverlay} Per nascondere indicatore caricamento
  * 
  * @description
- * Gestisce aggiornamenti selettivi in base alle sezioni abilitate dall'utente.
- * Ogni operazione è indipendente con error handling isolato per garantire
- * che un errore su un campo non impedisca l'aggiornamento degli altri.
- * 
- * **Workflow Aggiornamenti:**
- * 1. **Password**: Se sezione password abilitata → updateUserPassword()
- * 2. **Username**: Se sezione username abilitata → updateUserUsername()  
- * 3. **Email**: Se sezione email abilitata → updateUserEmail()
- * 4. **Page Reload**: Reset completo stato per mostrare dati aggiornati
- * 
- * **Error Handling Strategy:**
- * - Try/catch individuali per ogni aggiornamento
- * - Errori non bloccano operazioni successive
- * - Alert feedback per ogni operazione completata
- * - handleUserError() per gestione errori tipizzati
- * 
- * **Security Features:**
- * - Password richiede autorizzazione preliminare
- * - Validazione availability per username/email
- * - Operazioni atomic per consistency
- * 
- * @listens click
- * @async
- * @throws {Error} Gestiti individualmente per ogni sezione
+ * Gestisce il processo completo di aggiornamento dati utente con autorizzazione.
+ * - Verifica password corrente prima di procedere con modifiche.
+ * - Mostra overlay di caricamento durante processing.
+ * - Itera sui campi required e aggiorna in base al tipo (password/username/email).
+ * - Per password, esclude campo confirm-password dal processing.
+ * - Mostra alert di successo per ogni campo aggiornato singolarmente.
+ * - In caso di password errata: pulisce campo e nasconde overlay.
+ * - In caso di errore validazione: gestione specifica per 409/422, altrimenti errore generico con field context.
+ * - Reload pagina per reset stato dopo operazioni (successo o errore).
+ * - Usa for...of per gestire correttamente async operations.
+ * - Tracking campo corrente per debug e error reporting specifico.
  * 
  * @example
- * // User abilita username + email, disabilita password
- * // → updateUserUsername() + updateUserEmail() 
- * // → Password non toccata
- * // → location.reload() per refresh stato
- * 
- * @todo Aggiungere progress indicator per operazioni multiple
- * @todo Implementare rollback su errori critici
- * 
- * @since 1.0.0
+ * settingsConfirmBtn.addEventListener("click", async () => {
+ *    let currentInputField;
+ *    try {
+ *        if(await LoggedUser.authOperations(currentPassword)){
+ *            showOverlay();
+ *            for(const input of settingsInputFields){
+ *                if(input.required){
+ *                    currentInputField = input.dataset.field;
+ *                    switch(currentInputField){
+ *                        case "password":
+ *                            await LoggedUser.changePassword(input.value, confirmPassword);
+ *                            alert(`${input.dataset.field} successfully updated`);
+ *                            break;
+ *                        // altri cases
+ *                    }
+ *                }
+ *            }
+ *            location.reload();
+ *        } else {
+ *            currentPasswordInput.value = "";
+ *            alert("Wrong password");
+ *            hideOverlay();
+ *        }
+ *    } catch (error) {
+ *        // Gestione errori con context specifico del campo
+ *        alert(`Unable to modify ${currentInputField}`);
+ *        location.reload();
+ *    }
+ * });
  */
 settingsConfirmBtn.addEventListener("click", async () => {
     
+    let currentInputField;
+
     try {
-        if(await LoggedUser.authOperations(document.getElementById("current-password").value)){
+        const currentPasswordInput = document.getElementById("current-password");
+
+        if(await LoggedUser.authOperations(currentPasswordInput.value)){
             
+            showOverlay();
+
             for(const input of settingsInputFields){ // NB -> forech non adatto per async op
-                if(input.required){      
-                    switch(input.dataset.field){
+                if(input.required){
+                    currentInputField = input.dataset.field;       
+                    switch(currentInputField){
                         case "password":
                             if(input.id != "confirm-password"){
                                 await LoggedUser.changePassword(input.value, document.getElementById("confirm-password").value);
+                                alert(`${input.dataset.field} successfully updated`);
                             }
                             break;
                         case "username":
-                            LoggedUser.changeUsername(input.value);
+                            await LoggedUser.changeUsername(input.value);
+                            alert(`${input.dataset.field} successfully updated`);
                             break;
                         case "email":
-                            LoggedUser.changeEmail(input.value);
+                            await LoggedUser.changeEmail(input.value);
+                            alert(`${input.dataset.field} successfully updated`);
                             break;
                         default:
-                            const badRequest = new Error(`${input.id} is not a supported field type`);
-                            console.error(badRequest.message);
-                            throw badRequest;   
+                            if(input.dataset.field != "confirm-password"){
+                                const badRequest = new Error(`${input.id} is not a supported field type`);
+                                console.error(badRequest.message);
+                                throw badRequest;   
+                            }
                     }
-                    alert(`${input.dataset.field} successfully updated`);
                 }
             };
             
             location.reload();
         }else{
+            currentPasswordInput.value = "";
             alert("Wrong password");
+            hideOverlay();
         }
     } catch (error) {
         if(error.code === 409 || error.code === 422){
-            console.error(error);
             alert(error.message);
         }else{
-            alert(`Ooops! Something went wrong.\nUnable to modify ${input.dataset.field}. Please try again.`);
+            alert(`Ooops! Something went wrong.\nUnable to modify ${currentInputField}. Please try again.`);
         }
         location.reload();
     }
 });
 
-// ================================================================================================
-// PAGE INITIALIZATION
-// ================================================================================================
+// ============================================================================
+// GESTIONE RESET FORM
+// ============================================================================
 
 /**
- * Event handler per inizializzazione pagina con caricamento dati utente
+ * Event listener per reset completo della pagina
+ * 
+ * @param {Event} click - Evento click sul pulsante clear
  * 
  * @description
- * Carica dati utente corrente nei campi form e gestisce autenticazione.
- * Implementa protection redirect per utenti non autenticati.
- * 
- * **Initialization Workflow:**
- * 1. **Authentication Check**: Verifica utente loggato esiste nel sistema
- * 2. **Redirect Unauthenticated**: Redirect a login se non autenticato
- * 3. **Load User Data**: Popola campi con dati correnti utente
- * 4. **Show Page**: Rimuove classe d-none per mostrare contenuto
- * 
- * **Data Population:**
- * - Username e email caricati nei campi default
- * - Campi password rimangono vuoti per sicurezza
- * - Default values aggiornati per reset functionality
- * 
- * @listens load
- * @throws {Error} Gestiti da handleUserError per errori caricamento dati
+ * Gestisce il reset completo della pagina ricaricandola.
+ * - Ripristina tutti i campi ai valori originali.
+ * - Reset dello stato di validazione e abilitazione sezioni.
  * 
  * @example
- * // User autenticato con id "user123"
- * // → Carica username "johndoe" e email "john@example.com"
- * // → Mostra pagina con dati popolati
- * 
- * // User non autenticato  
- * // → Redirect immediato a "./login.html"
- * 
- * @todo Aggiungere loading indicator durante fetch dati
- * @todo Implementare cache dati utente per performance
- * 
- * @since 1.0.0
+ * settingsClearBtn.addEventListener("click", () => location.reload());
  */
-window.addEventListener("load", () => {
-
-    try {
-        if(!LoggedUser.isLogged()){
-            window.location.href = "./login.html"
-        }else{
-            const currentUser = LoggedUser.getData();
-            settingsInputFields.forEach(input =>{
-                if(input.dataset.field != "password"){
-                    input.value = currentUser[input.dataset.field];
-                }
-            });
-        
-            document.querySelector("body").classList.remove("d-none");
-        }
-    } catch (error) {
-        alert("Ooops! Something went wrong. Please try again");
-    }
-});
-
-document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
+settingsClearBtn.addEventListener("click", () => location.reload());
 
 
-// ================================================================================================
-// ARCHITECTURE NOTES
-// ================================================================================================
 
-/*
-DESIGN PATTERNS IMPLEMENTATI:
 
-1. **State Management Pattern**:
-   - FormInputObject per tracking stato validazione
-   - Centralized state con inputStatus per ogni campo
-   - Default values per reset functionality
+/**
+ * @description Flusso di esecuzione del file modif.js
+ * 
+ * 1. **Import moduli e dipendenze**:
+ *    - Importa LoggedUser da sessionControl.js per gestione utente autenticato
+ *    - Importa funzioni UI da UI.js (initializeNavbar, formatInputField)
+ * 
+ * 2. **Selezione elementi DOM**:
+ *    - Recupera riferimenti a input form, pulsanti toggle sezioni, submit e navigazione
+ * 
+ * 3. **Inizializzazione pagina**:
+ *    - DOMContentLoaded: configura navbar
+ *    - load: verifica autenticazione, popola form con dati utente, mostra pagina
+ * 
+ * 4. **Gestione toggle sezioni (event listener su allowModifBtns)**:
+ *    - Toggle required/disabled per campi delle sezioni specifiche
+ *    - Ripristino valori originali quando si disabilita modifica
+ * 
+ * 5. **Gestione validazione input (event listener su settingsInputFields)**:
+ *    - Validazione dinamica: formato + required intelligente per username/email
+ *    - Gestione password e confirm-password con dipendenze
+ *    - Verifica validità complessiva per abilitare save button
+ * 
+ * 6. **Gestione abilitazione modal (event listener su settingsCurrentPassInput)**:
+ *    - Abilita pulsante conferma modal solo se password corrente inserita
+ * 
+ * 7. **Gestione submit autorizzato (event listener su settingsConfirmBtn)**:
+ *    - Verifica password corrente con LoggedUser.authOperations
+ *    - Processing selettivo campi required: password/username/email updates
+ *    - Alert di successo per ogni campo + reload finale
+ *    - Gestione errori con try-catch e reload in caso di failure
+ * 
+ * 8. **Gestione reset (event listener su settingsClearBtn)**:
+ *    - Reset completo via location.reload()
+ * 
+ * @note Il flusso è completamente asincrono per submit, sincrono per validazione
+ * @note Protezione accesso: redirect automatico se non autenticato
+ * @note Sicurezza: doppia autenticazione (login + password corrente per modifiche)
+ * @note Graceful degradation: errori locali non crashano l'app, reload ripristina stato pulito
+ * @note UX intelligente: required dinamico, toggle sezioni, validazione granulare
+ */
 
-2. **Event Delegation Pattern**:
-   - forEach su allowModifBtns per gestione uniforme
-   - Consistent handler signature per tutti gli input
-   - Event bubbling per parent section detection
 
-3. **Security Gate Pattern**:
-   - Two-step authorization per password changes
-   - Separate authentication gate prima di field unlock
-   - Immediate field masking per security
 
-4. **Selective Update Pattern**:
-   - Independent try/catch per ogni update operation
-   - Required field detection per conditional updates
-   - Atomic operations con individual error handling
-
-BUSINESS RULES IMPLEMENTATE:
-
-- **One Section Active**: Solo una sezione modificabile per volta
-- **Password Authorization**: Richiede verifica password corrente
-- **Real-time Validation**: Feedback immediato durante typing
-- **Graceful Error Handling**: Errori non bloccano altre operazioni
-- **State Reset**: Page reload per consistency dopo updates
-
-UX PATTERNS:
-
-- **Progressive Disclosure**: Sezioni abilitate on-demand
-- **Immediate Feedback**: Visual validation real-time
-- **Security Transparency**: Password masking e authorization flow
-- **Atomic Operations**: Clear separation tra diverse modifiche
-*/
