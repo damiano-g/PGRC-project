@@ -85,7 +85,7 @@ CARDS MANAGEMENT
 
 #search-page .card-body,
 #personal-page .card-body{
-    height: 30%;
+    /* height: 30%; */
     width: 100%;
 }
 /*******************************/
