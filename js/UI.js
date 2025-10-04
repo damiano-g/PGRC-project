@@ -835,41 +835,56 @@ export function formatInputField(inputElement, reference = null) {
 
 
 /**
- * Mostra lo spinner overlay rimuovendo la classe Bootstrap d-none
+ * Mostra lo spinner overlay creando e aggiungendo un elemento al DOM
  * 
  * @function showOverlay
  * 
  * @see {@link hideOverlay} Per nascondere lo spinner
  * 
  * @description
- * Rende visibile l'overlay spinner rimuovendo la classe "d-none" da #spinner-overlay.
- * Utilizzato per bloccare l'interfaccia utente durante operazioni asincrone.
- * Include console.log per debug durante lo sviluppo.
+ * Crea dinamicamente un overlay spinner Bootstrap e lo aggiunge al body della pagina.
+ * L'overlay include uno spinner animato e testo accessibile per screen reader.
+ * Utilizzato per bloccare l'interfaccia utente durante operazioni critiche e/o asincrone lunghe.
+ * L'overlay ha ID "spinner-overlay" per identificazione univoca.
  * 
  * @example
- * showOverlay(); // Mostra spinner durante caricamento
+ * showOverlay(); // Mostra spinner durante caricamento dati
+ * // Esegue operazioni async...
+ * hideOverlay(); // Nasconde spinner al completamento
  */
 export function showOverlay(){
-   console.log(document.querySelector("#spinner-overlay"));
-   document.querySelector("#spinner-overlay").classList.remove("d-none");
-}
+   const spinnerOverlay = document.createElement("div");
+   spinnerOverlay.id = "spinner-overlay";
+   spinnerOverlay.innerHTML = `
+      <div class="spinner-border text-light">
+         <span class="visually-hidden">Loading</span> <!-- Per screen reader -->
+      </div>
+   `;
+   document.querySelector("body").appendChild(spinnerOverlay);
+};
 
 /**
- * Nasconde lo spinner overlay aggiungendo la classe Bootstrap d-none
+ * Nasconde lo spinner overlay rimuovendo l'elemento dal DOM
  * 
  * @function hideOverlay
  * 
  * @see {@link showOverlay} Per mostrare lo spinner
  * 
  * @description
- * Rende invisibile l'overlay spinner aggiungendo la classe "d-none" a #spinner-overlay.
- * Utilizzato per ripristinare l'interfaccia utente dopo operazioni asincrone.
+ * Rimuove completamente l'overlay spinner dal DOM selezionandolo per ID e rimuovendolo dal body.
+ * Utilizzato per ripristinare l'interfaccia utente dopo il completamento di operazioni asincrone.
+ * Include controllo di esistenza per evitare errori se l'overlay non è presente.
  * 
  * @example
- * hideOverlay(); // Nasconde spinner dopo caricamento
+ * showOverlay(); // Mostra spinner
+ * // ...operazioni async completate
+ * hideOverlay(); // Rimuove completamente l'overlay dal DOM
  */
 export function hideOverlay(){
-   document.querySelector("#spinner-overlay").classList.add("d-none")
+   const spinnerOverlay = document.querySelector("#spinner-overlay");
+   if(spinnerOverlay){
+      document.querySelector("body").removeChild(spinnerOverlay);
+   }
 }
 
 // ================================================================================================
