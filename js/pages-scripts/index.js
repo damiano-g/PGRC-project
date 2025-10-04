@@ -10,7 +10,7 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { LoggedUser, PreviewArray } from "../sessionControl.js";
+import { initUsersDB, LoggedUser, PreviewArray } from "../sessionControl.js";
 import { favBtnDisplay, initializeNavbar, populateCarousel, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
 
 // ===============================
@@ -72,6 +72,9 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  */
 window.addEventListener("load", async () => {
     
+    // Solo per testing: popola users database
+    initUsersDB();
+
     /** Popola il carousel con le cinque ricette più votate */
     try {
         populateCarousel(await PreviewArray.mostPopular(5), slideshow);

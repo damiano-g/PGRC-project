@@ -8,6 +8,7 @@
  * @requires ./storageManagement.js - Gestione storage
  */
 
+import { createUsers } from "../create-user-db.js";
 import * as RecipesManagement from "./business/recipesManagement.js";
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
@@ -726,3 +727,10 @@ export function inputValidation(inputType, inputValue, reference = null){
     }
 }
 
+
+// NB -> solo per testing!!!
+export async function initUsersDB(){
+    if(UsersManagement.getRegisteredUsers().length === 0 && ReviewsManagement.getStoredReviews().length === 0){
+        await createUsers();
+    }
+}
