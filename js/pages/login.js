@@ -38,7 +38,7 @@ const loginSubBtn = document.getElementById("submit");
  * @type {HTMLButtonElement}
  * @description Redirect a signin.html per registrazione nuovo utente
  */
-const loginGotosignBtn = document.getElementById("gotoSign");
+const logingoto-signinBtn = document.getElementById("goto-signin");
 
 
 // ============================================================================
@@ -229,15 +229,15 @@ loginSubBtn.addEventListener("click", async () => {
 /**
  * Event listener per navigazione a pagina registrazione
  * 
- * @param {Event} click - Evento click sul pulsante "gotoSign"
+ * @param {Event} click - Evento click sul pulsante "goto-signin"
  * 
  * @description
  * Gestisce la navigazione alla pagina di registrazione quando l'utente sceglie di creare un nuovo account.
  * 
  * @example
- * loginGotosignBtn.addEventListener("click", () => window.location.href = "./signin.html");
+ * logingoto-signinBtn.addEventListener("click", () => window.location.href = "./signin.html");
  */
-loginGotosignBtn.addEventListener("click", () => window.location.href = "./signin.html");
+logingoto-signinBtn.addEventListener("click", () => window.location.href = "./signin.html");
 
 
 
@@ -254,7 +254,7 @@ loginGotosignBtn.addEventListener("click", () => window.location.href = "./signi
  * 3. **Inizializzazione pagina**:
  *    - DOMContentLoaded: configura navbar
  * 
- * 4. **Gestione navigazione (event listener su loginGotosignBtn)**:
+ * 4. **Gestione navigazione (event listener su logingoto-signinBtn)**:
  *    - Redirect a signin.html per registrazione
  * 
  * 5. **Gestione validazione input (event listener su loginRequiredInputs)**:

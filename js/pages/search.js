@@ -18,10 +18,10 @@ import { favBtnDisplay, initializeNavbar, populatePreviewContainer } from "../co
 // ===============================
 
 /** @type {HTMLButtonElement} Pulsante per avviare la ricerca */
-const searchBtn = document.getElementById("searchBtn");
+const search-btn = document.getElementById("search-btn");
 
 /** @type {HTMLInputElement} Campo di input per il termine di ricerca */
-const searchBar = document.getElementById("searchBar");
+const search-bar = document.getElementById("search-bar");
 
 /** @type {HTMLElement} Container di visualizzazione dei risultati di ricerca */
 const resultsContainer = document.getElementById("results-container");
@@ -35,7 +35,7 @@ const resultsContainer = document.getElementById("results-container");
  * 
  * @description
  * Gestisce caricamento pagina con parametri URL per ricerca automatica.
- * - Se parametro "q": imposta valore searchBar e simula click su searchBtn.
+ * - Se parametro "q": imposta valore search-bar e simula click su search-btn.
  * - Se parametro "cat": popola container con ricette della categoria.
  * - Gestione errori con messaggi di fallback per graceful degradation.
  * 
@@ -49,8 +49,8 @@ async function navigationSearch(){
     const query = window.location.search.substring(1).split("=");
     
     if(query[0] === "q"){
-        searchBar.value = query[1];
-        searchBtn.click();
+        search-bar.value = query[1];
+        search-btn.click();
     }
     
     if(query[0] === "cat"){
@@ -163,18 +163,18 @@ window.addEventListener("popstate", navigationSearch);
  * 
  * @example
  * // Evento catturato automaticamente dal pulsante
- * searchBtn.addEventListener("click", async () => {
- *    const recipesPreviewArray = await PreviewArray.mealsByName(String(searchBar.value));
+ * search-btn.addEventListener("click", async () => {
+ *    const recipesPreviewArray = await PreviewArray.mealsByName(String(search-bar.value));
  *    if(recipesPreviewArray){ ... } else { ... }
  * });
  * 
  * @todo Aggiungere feedback visivo (spinner, messaggi di stato) durante operazioni asincrone
  */
-searchBtn.addEventListener("click", async () => {
+search-btn.addEventListener("click", async () => {
     try {
-        const recipesPreviewArray = await PreviewArray.mealsByName(String(searchBar.value));
+        const recipesPreviewArray = await PreviewArray.mealsByName(String(search-bar.value));
         if(recipesPreviewArray){
-            history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
+            history.pushState(null, "", `../../pages/search.html?q=${String(search-bar.value)}`);
             populatePreviewContainer(recipesPreviewArray, resultsContainer);
         }else{
             const paragraph = document.createElement("div");
@@ -267,19 +267,19 @@ resultsContainer.addEventListener("click", (click) => {
  *    - Importa funzioni UI da UI.js (favBtnDisplay, initializeNavbar, populatePreviewContainer)
  * 
  * 2. **Selezione elementi DOM**:
- *    - Recupera riferimenti a searchBtn, searchBar, resultsContainer
+ *    - Recupera riferimenti a search-btn, search-bar, resultsContainer
  * 
  * 3. **Inizializzazione navbar (DOMContentLoaded)**:
  *    - Al caricamento del DOM, chiama initializeNavbar per configurare menu navigazione basato su stato utente
  * 
  * 4. **Gestione ricerca da URL (navigationSearch)**:
  *    - Al load della pagina, parsing query parameters
- *    - Se "q": imposta searchBar e simula click su searchBtn
+ *    - Se "q": imposta search-bar e simula click su search-btn
  *    - Se "cat": popola container con ricette della categoria
  *    - Gestione errori per graceful degradation
  * 
- * 5. **Gestione ricerca manuale (event listener su searchBtn)**:
- *    - Ascolta click su searchBtn: recupera ricette per nome, aggiorna URL, popola container
+ * 5. **Gestione ricerca manuale (event listener su search-btn)**:
+ *    - Ascolta click su search-btn: recupera ricette per nome, aggiorna URL, popola container
  *    - Gestione errori con try-catch per graceful degradation
  * 
  * 6. **Navigazione da risultati (event listener su resultsContainer)**:

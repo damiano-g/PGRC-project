@@ -726,9 +726,9 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
    }
 
    if(bodyDOMObject.id != "search-page"){
-      navBarDOMObject.querySelector("#searchBtn").addEventListener("click", () => {
+      navBarDOMObject.querySelector("#search-btn").addEventListener("click", () => {
          // Naviga a search.html con parametro query per ricerca automatica
-         window.location.href = `${linkPrefix}search.html?q=${String(navBarDOMObject.querySelector("#searchBar").value)}`;
+         window.location.href = `${linkPrefix}search.html?q=${String(navBarDOMObject.querySelector("#search-bar").value)}`;
       });
    }
 
