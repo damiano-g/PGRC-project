@@ -99,7 +99,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
             }else{
                 updatedReview = new Review(recipeId, userId, Number(tasteRate), Number(difficultyRate));
                 operationType = "add";
-                recipeReviewsArray.push(updatedReview);
+                recipeReviewsArray.unshift(updatedReview);
             }
         }else{
             if(recipeId && userId && !(tasteRate || difficultyRate)){

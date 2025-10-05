@@ -93,7 +93,7 @@ personalPageBody.addEventListener("click", async (click) => {
             
             // Aggiunge o rimuove ricetta dal container dei preferiti
             if(Recipe.isFavourite(card.dataset.itemId)){
-                addPreviewToContainer(await PreviewArray.mealsById([clickedCardRecipeId]), personalFavsContainer);
+                populatePreviewContainer(await PreviewArray.fromUserFavourites(), personalFavsContainer);
             }else{
                 removePreviewFromContainer(await PreviewArray.mealsById([clickedCardRecipeId]), personalFavsContainer);
             }

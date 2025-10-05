@@ -252,7 +252,7 @@ export async function updateUserFavourites(userId, recipeId){
         const index = userFavourites.findIndex(element => element === recipeId);
 
         if(index < 0){
-            userFavourites.push(recipeId);
+            userFavourites.unshift(recipeId);
         }else{
             userFavourites.splice(index, 1);
         }
@@ -290,7 +290,7 @@ export async function updateUserNotes(userId, recipeId = null, text = null, note
         const userNotes = searchUser("id", userId).notes;
  
         if((text && recipeId) && !noteId){
-            userNotes.push(new Note(recipeId, text));
+            userNotes.unshift(new Note(recipeId, text));
         }else{
             if(!(text && recipeId) && noteId){
                 const index = userNotes.findIndex(element => element.id === noteId);
