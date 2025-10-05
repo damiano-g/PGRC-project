@@ -61,7 +61,17 @@ const settingsClearBtn = document.getElementById("clear");
  */
 const settingsSaveBtn = document.getElementById("save-btn");
 
-
+/**
+ * Flag per gestione richiesta eliminazione account
+ * 
+ * @type {boolean}
+ * @description
+ * Flag globale che indica se l'utente ha richiesto l'eliminazione dell'account.
+ * - Impostato a true quando si clicca sul pulsante "Delete account"
+ * - Resettato a false quando si chiude la modal di conferma delete
+ * - Utilizzato dal submit handler per distinguere tra modifica dati ed eliminazione account
+ * - Previene esecuzione accidentale di delete in sessioni successive
+ */
 let deleteRequest = false;
 
 // ============================================================================
@@ -280,15 +290,49 @@ settingsCurrentPassInput.addEventListener("input", () => {
     }
 });
 
+// ============================================================================
+// GESTIONE DELETE ACCOUNT
+// ============================================================================
+
+/**
+ * Event listener per richiesta eliminazione account
+ * 
+ * @param {Event} click - Evento click sul pulsante "Delete account"
+ * 
+ * @description
+ * Imposta il flag deleteRequest a true quando l'utente clicca sul pulsante delete account.
+ * Questo flag viene utilizzato dal submit handler per distinguere tra modifica dati ed eliminazione account.
+ * Il flag rimane true fino a quando non viene resettato dal dismiss button o dal completamento dell'operazione.
+ * 
+ * @example
+ * document.getElementById("delete-btn").addEventListener("click", () => deleteRequest = true);
+ */
 document.getElementById("delete-btn").addEventListener("click", () => deleteRequest = true);
 
+
+/**
+ * Event listener per cancellazione richiesta eliminazione account
+ * 
+ * @param {Event} click - Evento click sul pulsante dismiss della modal di conferma delete
+ * 
+ * @description
+ * Reset del flag deleteRequest a false quando l'utente chiude la modal di conferma delete.
+ * Questo previene che una richiesta di delete precedente venga eseguita accidentalmente
+ * in sessioni successive o dopo chiusura della modal senza conferma.
+ * 
+ * @example
+ * document.getElementById("delete-dismiss-btn").addEventListener("click", () => deleteRequest = false);
+ */
 document.getElementById("delete-dismiss-btn").addEventListener("click", () => deleteRequest = false);
+
+
+
 // ============================================================================
 // GESTIONE SUBMIT
 // ============================================================================
 
 /**
- * Event listener per submit delle modifiche
+ * Event listener per submit delle modifiche o eliminazione account
  * 
  * @param {Event} click - Evento click sul pulsante conferma modal
  * 
@@ -296,16 +340,18 @@ document.getElementById("delete-dismiss-btn").addEventListener("click", () => de
  * @see {@link LoggedUser.changePassword} Per aggiornamento password
  * @see {@link LoggedUser.changeUsername} Per aggiornamento username
  * @see {@link LoggedUser.changeEmail} Per aggiornamento email
+ * @see {@link LoggedUser.deleteAccount} Per eliminazione account utente
  * @see {@link showOverlay} Per mostrare indicatore caricamento
  * @see {@link hideOverlay} Per nascondere indicatore caricamento
  * 
  * @description
- * Gestisce il processo completo di aggiornamento dati utente con autorizzazione.
- * - Verifica password corrente prima di procedere con modifiche.
+ * Gestisce il processo completo di aggiornamento dati utente o eliminazione account con autorizzazione.
+ * - Verifica password corrente prima di procedere con qualsiasi operazione.
  * - Mostra overlay di caricamento durante processing.
- * - Itera sui campi required e aggiorna in base al tipo (password/username/email).
+ * - Se deleteRequest è false: itera sui campi required e aggiorna in base al tipo (password/username/email).
+ * - Se deleteRequest è true: mostra dialog di conferma finale e procede con eliminazione account.
  * - Per password, esclude campo confirm-password dal processing.
- * - Mostra alert di successo per ogni campo aggiornato singolarmente.
+ * - Mostra alert di successo per ogni campo aggiornato singolarmente o per eliminazione completata.
  * - In caso di password errata: pulisce campo e nasconde overlay.
  * - In caso di errore validazione: gestione specifica per 409/422, altrimenti errore generico con field context.
  * - Reload pagina per reset stato dopo operazioni (successo o errore).
@@ -317,17 +363,24 @@ document.getElementById("delete-dismiss-btn").addEventListener("click", () => de
  *    let currentInputField;
  *    try {
  *        if(await LoggedUser.authOperations(currentPassword)){
- *            showOverlay();
- *            for(const input of settingsInputFields){
- *                if(input.required){
- *                    currentInputField = input.dataset.field;
- *                    switch(currentInputField){
- *                        case "password":
- *                            await LoggedUser.changePassword(input.value, confirmPassword);
- *                            alert(`${input.dataset.field} successfully updated`);
- *                            break;
- *                        // altri cases
+ *            if(!deleteRequest){ // Modifica dati
+ *                for(const input of settingsInputFields){
+ *                    if(input.required){
+ *                        currentInputField = input.dataset.field;
+ *                        switch(currentInputField){
+ *                            case "password":
+ *                                await LoggedUser.changePassword(input.value, confirmPassword);
+ *                                alert(`${input.dataset.field} successfully updated`);
+ *                                break;
+ *                            // altri cases
+ *                        }
  *                    }
+ *                }
+ *            } else { // Eliminazione account
+ *                const lastConfirm = confirm("...");
+ *                if(lastConfirm){
+ *                    LoggedUser.deleteAccount();
+ *                    alert("Account deleted successfully");
  *                }
  *            }
  *            location.reload();
