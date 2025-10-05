@@ -253,14 +253,15 @@ export const LoggedUser = {
 
     /**
      * Aggiorna lista preferiti utente - funzione wrapper
+     * @async
      * @param {string} recipeId - ID ricetta da aggiungere/rimuovere
      * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
-    updateFavourites: (recipeId) => {
+    updateFavourites: async (recipeId) => {
         try {
-            UsersManagement.updateUserFavourites(LoggedUser.getId(), recipeId);
+            await UsersManagement.updateUserFavourites(LoggedUser.getId(), recipeId);
         } catch (error) {
             throw error;
         };
@@ -268,15 +269,16 @@ export const LoggedUser = {
 
     /**
      * Aggiunge nota per ricetta - funzione wrapper
+     * @async
      * @param {string} recipeId - ID ricetta
      * @param {string} text - Testo nota
      * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
-    addNote: (recipeId, text) => {
+    addNote: async (recipeId, text) => {
         try {
-            UsersManagement.updateUserNotes(LoggedUser.getId(), recipeId, text);
+            await UsersManagement.updateUserNotes(LoggedUser.getId(), recipeId, text);
         } catch (error) {
             throw error;
         };
@@ -284,14 +286,15 @@ export const LoggedUser = {
 
     /**
      * Elimina nota specifica - funzione wrapper
+     * @async
      * @param {string} recipeId - ID ricetta
      * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
-    deleteNote: (noteId) => {
+    deleteNote: async (noteId) => {
         try {
-            UsersManagement.updateUserNotes(LoggedUser.getId(), null, null, noteId);
+            await UsersManagement.updateUserNotes(LoggedUser.getId(), null, null, noteId);
         } catch (error) {
             throw error;
         };

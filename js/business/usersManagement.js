@@ -260,8 +260,7 @@ export async function updateUserFavourites(userId, recipeId){
         await updateUserData(userId, "favourites", userFavourites); 
     } catch (error) {
         throw error;
-    }
-    
+    }    
 }
 
 /**

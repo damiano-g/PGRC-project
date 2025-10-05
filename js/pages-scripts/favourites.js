@@ -86,24 +86,24 @@ personalPageBody.addEventListener("click", async (click) => {
 
     if(isBtn){
         
-        const clickedCardRecipeId = [card.dataset.itemId];
+        const clickedCardRecipeId = card.dataset.itemId;
         
         try {
-            LoggedUser.updateFavourites(clickedCardRecipeId);
+            await LoggedUser.updateFavourites(clickedCardRecipeId);
             
             // Aggiunge o rimuove ricetta dal container dei preferiti
             if(Recipe.isFavourite(card.dataset.itemId)){
-                addPreviewToContainer(await PreviewArray.mealsById(clickedCardRecipeId), personalFavsContainer);
+                addPreviewToContainer(await PreviewArray.mealsById([clickedCardRecipeId]), personalFavsContainer);
             }else{
-                removePreviewFromContainer(await PreviewArray.mealsById(clickedCardRecipeId), personalFavsContainer);
+                removePreviewFromContainer(await PreviewArray.mealsById([clickedCardRecipeId]), personalFavsContainer);
             }
     
             // Aggiorna icone preferiti nei container reviews e notes
             personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
             personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
         } catch (error) {
-            alert("Ooops! Something went wrong. Try reload the page");
             console.error(error);
+            alert("Ooops! Something went wrong. Try reload the page");
         }
     };
 });
