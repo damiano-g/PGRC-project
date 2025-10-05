@@ -5,9 +5,9 @@
  * @requires storageManagement.js - Modulo gestione webstorage
  */
 
-import { Category, FullRecipe } from "../data-models.js";
-import { StorageOperations } from "../storageManagement.js";
-import * as ErrorsManagement from "../errorsManagement.js"
+import { Category, FullRecipe } from "../core/data-models.js";
+import { StorageOperations } from "../core/storage.js";
+import * as ErrorsManagement from "../core/errors.js"
 
 // ===============================
 // CONFIGURAZIONE ENDPOINT API

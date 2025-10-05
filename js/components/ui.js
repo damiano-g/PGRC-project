@@ -5,7 +5,7 @@
  * @requires sessionControl
  */
 
-import { inputValidation, LoggedUser, Recipe } from "./sessionControl.js";
+import { inputValidation, LoggedUser, Recipe } from "../services/session-service.js";
 
 // ================================================================================================
 // PRIVATE UTILITY FUNCTIONS

@@ -10,8 +10,8 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { LoggedUser, PreviewArray } from "../sessionControl.js";
-import { favBtnDisplay, initializeNavbar, populatePreviewContainer } from "../UI.js"; // Componenti UI per rendering
+import { LoggedUser, PreviewArray } from "../services/session-service.js";
+import { favBtnDisplay, initializeNavbar, populatePreviewContainer } from "../components/ui.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM

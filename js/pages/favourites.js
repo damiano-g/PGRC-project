@@ -7,8 +7,8 @@
  * @requires UI.js Per funzioni di rendering UI (addPreviewToContainer, favBtnDisplay, initializeNavbar, populatePreviewContainer, removePreviewFromContainer)
  */
 
-import { LoggedUser, PreviewArray, Recipe } from "../sessionControl.js";
-import { addPreviewToContainer, favBtnDisplay, initializeNavbar, populatePreviewContainer, removePreviewFromContainer } from "../UI.js";
+import { LoggedUser, PreviewArray, Recipe } from "../services/session-service.js";
+import { addPreviewToContainer, favBtnDisplay, initializeNavbar, populatePreviewContainer, removePreviewFromContainer } from "../components/ui.js";
 
 // ================================================================================================
 // DOM ELEMENTS

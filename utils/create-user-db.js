@@ -1,7 +1,7 @@
 
-import * as UsersManagement from "./js/business/usersManagement.js"
-import * as ReviewsManagement from "./js/business/reviewsManagement.js"
-import * as RecipesManagement from "./js/business/recipesManagement.js"
+import * as UsersManagement from "../js/services/users-service.js"
+import * as ReviewsManagement from "../js/services/reviews-service.js"
+import * as RecipesManagement from "../js/services/recipes-service.js"
 
 export async function createUsers(){
 

@@ -10,8 +10,8 @@
 // IMPORT MODULI E DIPENDENZE
 // ===============================
 
-import { LoggedUser, Recipe } from "../sessionControl.js";
-import { createRecipeOverview, favBtnDisplay, initializeNavbar, populateRecipeNotes } from "../UI.js";
+import { LoggedUser, Recipe } from "../services/session-service.js";
+import { createRecipeOverview, favBtnDisplay, initializeNavbar, populateRecipeNotes } from "../components/ui.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM

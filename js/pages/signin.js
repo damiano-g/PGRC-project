@@ -10,8 +10,8 @@
 // IMPORT MODULI E DIPENDENZE
 // ============================================================================
 
-import { NewUser } from "../sessionControl.js";
-import { initializeNavbar, formatInputField, showOverlay, hideOverlay } from "../UI.js";
+import { NewUser } from "../services/session-service.js";
+import { initializeNavbar, formatInputField, showOverlay, hideOverlay } from "../components/ui.js";
 
 // ============================================================================
 // SELEZIONE ELEMENTI DOM

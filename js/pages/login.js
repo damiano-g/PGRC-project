@@ -10,8 +10,8 @@
 // IMPORT MODULI E DIPENDENZE
 // ============================================================================
 
-import { LoggedUser, NewUser } from "../sessionControl.js";
-import { hideOverlay, initializeNavbar, showOverlay } from "../UI.js";
+import { LoggedUser, NewUser } from "../services/session-service.js";
+import { hideOverlay, initializeNavbar, showOverlay } from "../components/ui.js";
 
 
 

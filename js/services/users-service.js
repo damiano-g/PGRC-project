@@ -6,9 +6,9 @@
  * @requires storageManagement.js - Modulo StorageManagement per persistenza dati
  */
 
-import { Note, User } from "../data-models.js";
-import { StorageOperations } from "../storageManagement.js";
-import * as ErrorsManagement from "../errorsManagement.js";
+import { Note, User } from "../core/data-models.js";
+import { StorageOperations } from "../core/storage.js";
+import * as ErrorsManagement from "../core/errors.js";
 
 // ============================================================================
 // CONFIGURAZIONE E COSTANTI

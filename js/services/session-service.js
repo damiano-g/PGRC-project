@@ -3,18 +3,18 @@
  * @description Modulo per controllo autenticazione, gestione sessione e query stato ricette.
  * Fornisce interfacce per login/logout, operazioni utente e verifica stato ricette.
  * @requires ./business/reviewsManagement.js - Gestione recensioni
- * @requires ./business/usersManagement.js - Gestione utenti
+ * @requires ../core/users-service.js - Gestione utenti
  * @requires ./business/recipesManagement.js - Gestione utenti
- * @requires ./storageManagement.js - Gestione storage
+ * @requires ../core/storage.js - Gestione storage
  */
 
-import { createUsers } from "../create-user-db.js";
-import * as RecipesManagement from "./business/recipesManagement.js";
-import * as ReviewsManagement from "./business/reviewsManagement.js";
-import * as UsersManagement from "./business/usersManagement.js";
-import { generateItemId } from "./data-models.js";
-import * as ErrorsManagement from "./errorsManagement.js";
-import { StorageOperations } from "./storageManagement.js";
+import { createUsers } from "../../utils/create-user-db.js";
+import * as RecipesManagement from "./recipes-service.js";
+import * as ReviewsManagement from "./reviews-service.js";
+import * as UsersManagement from "./users-service.js";
+import { generateItemId } from "../core/data-models.js";
+import * as ErrorsManagement from "../core/errors.js";
+import { StorageOperations } from "../core/storage.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
 const LOGGED_USER_KEY = "loggedUser";
