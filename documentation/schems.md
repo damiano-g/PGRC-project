@@ -28,7 +28,7 @@
    |         |--[Visualizza Recensioni]          |
    |         |--[Visualizza Note]                |
    |                                             v
-   |--[Modifica Profilo]<-------------------[ModifUser]
+   |--[Modifica Profilo]<-------------------[settings]
 ```
 
 ---

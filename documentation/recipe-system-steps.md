@@ -31,7 +31,7 @@ project-tests/user-database/
 ├── pages/
 │   ├── signIn.html                     # Registrazione (esistente)
 │   ├── landing.html                    # Dashboard utente (esistente)
-│   ├── modifUser.html                  # Profilo utente (esistente)
+│   ├── settings.html                  # Profilo utente (esistente)
 │   ├── dashboard.html                  # 🆕 Dashboard ricette
 │   ├── search-results.html             # 🆕 Risultati ricerca
 │   ├── recipe-detail.html              # 🆕 Dettaglio ricetta singola

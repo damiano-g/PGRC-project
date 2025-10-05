@@ -290,7 +290,7 @@ Registro (iniziale):
 - File/Artifacts prodotti (path nel repo):
     - `project-tests/user-database/usersManagement.js` (modulo consolidato)
     - `project-tests/user-database/modif.js` (gestione completa modifica profilo)
-    - `project-tests/user-database/pages/modifUser.html` (interfaccia modifica dati utente)
+    - `project-tests/user-database/pages/settings.html` (interfaccia modifica dati utente)
     - Aggiornamenti: `login.js`, `singin.js`, `landing.js` (adattamento nuove API)
 - Impatto sulla progettazione generale (note):
     - **Architettura più matura** con responsabilità ben definite e API coerente

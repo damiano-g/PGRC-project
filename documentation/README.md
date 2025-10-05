@@ -42,7 +42,7 @@ user-database/
 └── pages/                       # 🌐 Pagine dell'applicazione
     ├── signIn.html              # 📝 Interfaccia registrazione
     ├── landing.html             # 🏠 Dashboard utente
-    └── modifUser.html           # ⚙️ Modifica profilo
+    └── settings.html           # ⚙️ Modifica profilo
 ```
 
 ### **Flusso dell'Applicazione**
@@ -56,7 +56,7 @@ graph TD
     E --> F{Dati validi?}
     F -->|Sì| G[Utente creato] --> A
     F -->|No| H[Errore validazione]
-    C --> I[modifUser.html - Profilo]
+    C --> I[settings.html - Profilo]
     I --> J{Modifiche salvate?}
     J -->|Sì| C
     J -->|No| K[Errore salvataggio]

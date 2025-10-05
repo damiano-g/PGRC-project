@@ -709,7 +709,7 @@ export function initializeNavbar(bodyDOMObject, navBarDOMObject){
 
    if(bodyDOMObject.id != "settings-page" && userLogged){
       const settingPageLink = navBarDOMObject.querySelector("#account-settings-link");
-      settingPageLink.addEventListener("click", () => window.location.href = linkPrefix + "modifUser.html");
+      settingPageLink.addEventListener("click", () => window.location.href = linkPrefix + "settings.html");
       settingPageLink.classList.remove("d-none");
    }
 

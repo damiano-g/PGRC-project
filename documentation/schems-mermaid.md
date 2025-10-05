@@ -14,7 +14,7 @@ flowchart TD
     SignIn[SignIn]
     Favourites[Favourites: Area Personale]
     RecipeDetails[Recipe-Details: Dettaglio Ricetta]
-    ModifUser[Modifica Profilo]
+    settings[Modifica Profilo]
     End((End))
 
     Start --> Home
@@ -27,10 +27,10 @@ flowchart TD
     Login --> Favourites
     SignIn --> Favourites
     Favourites --> RecipeDetails
-    Favourites --> ModifUser
+    Favourites --> settings
     RecipeDetails --> Favourites
-    RecipeDetails --> ModifUser
-    ModifUser --> End
+    RecipeDetails --> settings
+    settings --> End
 ```
 
 ---
@@ -164,7 +164,7 @@ flowchart TD
     AddRev[Aggiungi/Rimuovi Recensione]
     AddNote[Aggiungi/Rimuovi Nota]
     Favourites[Area Personale]
-    ModifUser[Modifica Profilo]
+    settings[Modifica Profilo]
     Confirm[Conferma Modifica]
     Logout[Logout]
     End((End))
@@ -183,8 +183,8 @@ flowchart TD
     AddFav --> Favourites
     AddRev --> Favourites
     AddNote --> Favourites
-    Favourites --> ModifUser
-    ModifUser --> Confirm
+    Favourites --> settings
+    settings --> Confirm
     Confirm --> Logout
     Logout --> End
 ```

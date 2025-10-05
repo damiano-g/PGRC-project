@@ -8,14 +8,14 @@
 ssri-pwm/
 │
 ├── index.html                  # Homepage con carousel ricette random e categorie
-├── recipeStyle.css             # Stili per card, carousel, griglie ricette
+├── style.css             # Stili per card, carousel, griglie ricette
 ├── usersStyle.css              # Stili per feedback validazione utente
 │
 ├── pages/                      # Pagine principali del sito
 │   ├── favourites.html         # Pagina personale utente (preferiti, recensioni, note)
 │   ├── landing.html            # Pagina categorie ricette
 │   ├── login.html              # Login utente
-│   ├── modifUser.html          # Modifica profilo utente
+│   ├── settings.html          # Modifica profilo utente
 │   ├── recipe-details.html     # Dettagli ricetta, recensioni, note
 │   ├── search.html             # Ricerca ricette per nome
 │   └── signIn.html             # Registrazione nuovo utente
@@ -82,7 +82,7 @@ ssri-pwm/
 - Visualizzazione card con rating globale/utente e note.
 - Event delegation per navigazione verso dettagli ricetta.
 
-### 6. **Modifica Profilo (`modifUser.html`)**
+### 6. **Modifica Profilo (`settings.html`)**
 - Modifica username, email, password.
 - Validazione real-time su tutti i campi.
 - Password modificabile solo previa autorizzazione (verifica password corrente).
