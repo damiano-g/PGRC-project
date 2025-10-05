@@ -102,7 +102,7 @@ recipeOverviewContainer.addEventListener("click", async click => { // Event dele
             if(click.target.matches(".fav-icon")){
                if(isUserLogged){
                   LoggedUser.updateFavourites(detailedRecipeId);
-                  favBtnDisplay(card.querySelector(".fav-icon"), detailedRecipeId);
+                  favBtnDisplay(document.querySelector(".card .fav-icon"), detailedRecipeId);
                }else{
                   window.location.href = "./login.html";
                };

@@ -100,7 +100,7 @@ personalPageBody.addEventListener("click", async (click) => {
     
             // Aggiorna icone preferiti nei container reviews e notes
             personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
-            personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
+            personalNotesContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
         } catch (error) {
             console.error(error);
             alert("Ooops! Something went wrong. Try reload the page");
