@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
 window.addEventListener("load", async () => {
     
     // Solo per testing: popola users database
-    initUsersDB();
+    await initUsersDB();
 
     /** Popola il carousel con le cinque ricette più votate */
     try {
