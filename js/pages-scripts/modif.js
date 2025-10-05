@@ -62,6 +62,8 @@ const settingsClearBtn = document.getElementById("clear");
 const settingsSaveBtn = document.getElementById("save-btn");
 
 
+let deleteRequest = false;
+
 // ============================================================================
 // INIZIALIZZAZIONE PAGINA
 // ============================================================================
@@ -109,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  */
 window.addEventListener("load", () => {
 
+    console.log("On load: ", deleteRequest);
     try {
         if(!LoggedUser.isLogged()){
             window.location.href = "./login.html"
@@ -277,7 +280,9 @@ settingsCurrentPassInput.addEventListener("input", () => {
     }
 });
 
+document.getElementById("delete-btn").addEventListener("click", () => deleteRequest = true);
 
+document.getElementById("delete-dismiss-btn").addEventListener("click", () => deleteRequest = false);
 // ============================================================================
 // GESTIONE SUBMIT
 // ============================================================================
@@ -343,41 +348,51 @@ settingsConfirmBtn.addEventListener("click", async () => {
     let currentInputField;
 
     try {
+        showOverlay();
+        
         const currentPasswordInput = document.getElementById("current-password");
 
         if(await LoggedUser.authOperations(currentPasswordInput.value)){
             
-            showOverlay();
-
-            for(const input of settingsInputFields){ // NB -> forech non adatto per async op
-                if(input.required){
-                    currentInputField = input.dataset.field;       
-                    switch(currentInputField){
-                        case "password":
-                            if(input.id != "confirm-password"){
-                                await LoggedUser.changePassword(input.value, document.getElementById("confirm-password").value);
+            if(!deleteRequest){ // Modifica dati
+                for(const input of settingsInputFields){ // NB -> forech non adatto per async op
+                    if(input.required){
+                        currentInputField = input.dataset.field;       
+                        switch(currentInputField){
+                            case "password":
+                                if(input.id != "confirm-password"){
+                                    await LoggedUser.changePassword(input.value, document.getElementById("confirm-password").value);
+                                    alert(`${input.dataset.field} successfully updated`);
+                                }
+                                break;
+                            case "username":
+                                await LoggedUser.changeUsername(input.value);
                                 alert(`${input.dataset.field} successfully updated`);
-                            }
-                            break;
-                        case "username":
-                            await LoggedUser.changeUsername(input.value);
-                            alert(`${input.dataset.field} successfully updated`);
-                            break;
-                        case "email":
-                            await LoggedUser.changeEmail(input.value);
-                            alert(`${input.dataset.field} successfully updated`);
-                            break;
-                        default:
-                            if(input.dataset.field != "confirm-password"){
-                                const badRequest = new Error(`${input.id} is not a supported field type`);
-                                console.error(badRequest.message);
-                                throw badRequest;   
-                            }
+                                break;
+                            case "email":
+                                await LoggedUser.changeEmail(input.value);
+                                alert(`${input.dataset.field} successfully updated`);
+                                break;
+                            default:
+                                if(input.dataset.field != "confirm-password"){
+                                    const badRequest = new Error(`${input.id} is not a supported field type`);
+                                    console.error(badRequest.message);
+                                    throw badRequest;   
+                                }
+                        }
                     }
+                };
+
+            }else{ // Eliminazione account
+                const lastConfirm = confirm("Selecting ok your account will be permanently deleted.\nDo you want to proceed anyway?");
+                if(lastConfirm){
+                    LoggedUser.deleteAccount();
+                    alert("Account deleted successfully");
                 }
-            };
+            }
             
-            location.reload();
+        location.reload();
+
         }else{
             currentPasswordInput.value = "";
             alert("Wrong password");
@@ -387,6 +402,7 @@ settingsConfirmBtn.addEventListener("click", async () => {
         if(error.code === 409 || error.code === 422){
             alert(error.message);
         }else{
+            console.error(error.stack);
             alert(`Ooops! Something went wrong.\nUnable to modify ${currentInputField}. Please try again.`);
         }
         location.reload();

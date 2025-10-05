@@ -343,7 +343,7 @@ export const LoggedUser = {
             });
             UsersManagement.deleteUser(currentUserId);
             LoggedUser.endSession();
-            return Response("user-id", currentUserId, "delete");
+            return new Response("user-id", currentUserId, "delete");
         } catch (error) {
             throw error;
         }

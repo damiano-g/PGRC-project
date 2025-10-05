@@ -124,7 +124,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
         
         // Persistenza dati aggiornati
         StorageOperations.set(REVIEWS_DB_KEY, recipeReviewsArray, REVIEWS_STORAGE_OPTS);
-        return Response("review", updatedReview, operationType);
+        return new Response("review", updatedReview, operationType);
     } catch (error) {
         throw error;
     }    

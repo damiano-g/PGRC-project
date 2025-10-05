@@ -121,12 +121,39 @@
 
                     <!-- Pulsanti azione form: Reset per cancellare modifiche, Save per
                     salvare dati solo con validazione completa -->
-                    <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Reset</button>
-                    <button class="btn btn-primary mb-3 mt-3" type="button" id="save-btn" data-bs-toggle="modal" data-bs-target="#auth-dialog" disabled>Save</button>
+                    <button class="btn btn-danger mb-3 mt-3" type="button" id="delete-btn" data-bs-toggle="modal" data-bs-target="#confirm-delete-dialog">
+                        Delete account
+                    </button>
+                    <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">
+                        Reset
+                    </button>
+                    <button class="btn btn-primary mb-3 mt-3" type="button" id="save-btn" data-bs-toggle="modal" data-bs-target="#auth-dialog" disabled>
+                        Save
+                    </button>
                 </form>
             </div>
         </div>  
 
+        <div class="modal" id="confirm-delete-dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Delete account</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <span>Are you sure you want to delete your account?<br>Operation is irreversible!</span>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="delete-dismiss-btn" data-bs-dismiss="modal">Dismiss</button>
+                        <button type="button" class="btn btn-danger" id="delete-proceed-btn" data-bs-toggle="modal" data-bs-target="#auth-dialog">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
        
         <div class="modal" id="auth-dialog">
             <div class="modal-dialog">
@@ -149,11 +176,11 @@
         </div>
 
 
-        <div id="spinner-overlay" class="d-none">
+        <!-- <div id="spinner-overlay" class="d-none">
             <div class="spinner-border text-light">
-                <span class="visually-hidden">Loading</span> <!-- Per screen reader -->
+                <span class="visually-hidden">Loading</span>
             </div>
-        </div>
+        </div> -->
 
 
         <script type="module" src="../js/pages-scripts/modif.js"></script>
