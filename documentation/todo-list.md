@@ -2,8 +2,6 @@
 
 @todo implementare oggetti di ritorno in caso di successo operazioni per future readiness e HTTP logic consistency
 
-@todo implementare eliminazione id utente da recensioni in eliminazione account utente
-
 @todo popolamento carousel homepage con rnd ricette se non abbastanza recensite
 
 @todo layout personal page sistemazione fine

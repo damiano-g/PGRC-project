@@ -320,7 +320,7 @@ export async function rndSearch(quantity){
         const accumulator = [];
         const picked = [];
 
-        for(let i=0; i <= quantity; i++){
+        for(let i=0; i < quantity; i++){
             let rndIndex;
 
             do {

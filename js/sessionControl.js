@@ -708,14 +708,21 @@ export const PreviewArray = {
                         reviewCount++;
                     }
                 });
-                revPerRecipe.push({obj: recipe, totalReviews: reviewCount});
+                if(reviewCount > 0){
+                    revPerRecipe.push({obj: recipe, totalReviews: reviewCount});
+                }
             });
 
             revPerRecipe.sort((a,b) => b.totalReviews - a.totalReviews);
+            const selectedRecipes = revPerRecipe.map(recipe => recipe.obj);
 
-            revPerRecipe.length = quantity;
+            if(selectedRecipes.length < quantity){
+                selectedRecipes.push(...await RecipesManagement.rndSearch(quantity - selectedRecipes.length));
+            }else{
+                selectedRecipes.length = quantity;
+            }
 
-            return {type: "meals", items: revPerRecipe.map(recipe => recipe.obj)};
+            return {type: "meals", items: selectedRecipes};
 
         } catch (error) {
             throw error;
