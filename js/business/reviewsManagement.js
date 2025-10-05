@@ -7,9 +7,9 @@
  * @requires storageManagement.js - Modulo StorageManagement per persistenza dati
  */
 
-import { Review, Response } from "../data-models.js";
-import { StorageOperations } from "../storageManagement.js";
+import { Review } from "../data-models.js";
 import * as ErrorsManagment from "../errorsManagement.js";
+import { StorageOperations } from "../storageManagement.js";
 
 // ===============================
 // CONFIGURAZIONE STORAGE
@@ -67,7 +67,7 @@ export function getStoredReviews(){
  * @param {number|null} [tasteRate=null] - Rating gusto (1-5) per ADD, null per DELETE
  * @param {number|null} [difficultyRate=null] - Rating difficoltà (1-5) per ADD, null per DELETE
  * 
- * @returns {{resourceType: "review", resourceObj: Review, statusCode: "add"|"delete"}} Response object contenente la recensione aggiornata
+ * @returns {Review} Oggetto Review creato/modificato nell'operazione
  * 
  * @see {@link getStoredReviews} Per lettura database recensioni
  * @see {@link StorageOperations} Per aggionamento database recensioni
@@ -87,7 +87,6 @@ export function getStoredReviews(){
 export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficultyRate = null){
     try {
         let updatedReview;
-        let operationType;
         const recipeReviewsArray = getStoredReviews();
  
         if(recipeId && userId && tasteRate && difficultyRate){
@@ -98,7 +97,6 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
                 throw duplicated;
             }else{
                 updatedReview = new Review(recipeId, userId, Number(tasteRate), Number(difficultyRate));
-                operationType = "add";
                 recipeReviewsArray.unshift(updatedReview);
             }
         }else{
@@ -111,7 +109,6 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
                     throw notFound;
                 }else{
                     updatedReview = recipeReviewsArray[index];
-                    operationType = "delete";
                     recipeReviewsArray.splice(index, 1);
                 }
             }else{
@@ -124,7 +121,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
         
         // Persistenza dati aggiornati
         StorageOperations.set(REVIEWS_DB_KEY, recipeReviewsArray, REVIEWS_STORAGE_OPTS);
-        return new Response("review", updatedReview, operationType);
+        return updatedReview;
     } catch (error) {
         throw error;
     }    

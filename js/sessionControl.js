@@ -12,8 +12,8 @@ import { createUsers } from "../create-user-db.js";
 import * as RecipesManagement from "./business/recipesManagement.js";
 import * as ReviewsManagement from "./business/reviewsManagement.js";
 import * as UsersManagement from "./business/usersManagement.js";
-import { generateItemId, Response } from "./data-models.js";
-import * as ErrorsManagement from "./errorsManagement.js"
+import { generateItemId } from "./data-models.js";
+import * as ErrorsManagement from "./errorsManagement.js";
 import { StorageOperations } from "./storageManagement.js";
 
 /** @type {string} Chiave sessionStorage per ID utente correntemente loggato */
@@ -341,12 +341,12 @@ export const LoggedUser = {
             const currentUserReviews = ReviewsManagement.getStoredReviews().filter(review => review.userId === currentUserId);
 
             currentUserReviews.forEach(review => {
-                const deletedReview = ReviewsManagement.updateRecipeReviews(currentUserId, review.recipeId).resourceObj;
+                const deletedReview = ReviewsManagement.updateRecipeReviews(currentUserId, review.recipeId);
                 ReviewsManagement.updateRecipeReviews(deletedUserId, deletedReview.recipeId, deletedReview.tasteRate, deletedReview.difficultyRate);
             });
             UsersManagement.deleteUser(currentUserId);
             LoggedUser.endSession();
-            return new Response("user-id", currentUserId, "delete");
+            return currentUserId;
         } catch (error) {
             throw error;
         }
@@ -512,7 +512,7 @@ export const Recipe = {
      */
     deleteUserReview: (recipeId) => {
         try {
-            ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId);
+            return ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId);
         } catch (error) {
             throw error;
         }
