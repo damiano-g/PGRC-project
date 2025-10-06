@@ -1,10 +1,44 @@
+/* ========================================================================
+   STYLE.CSS - FOGLIO STILI PRINCIPALE PROGETTO PGRC
+   
+   @description
+   Foglio stili principale per l'applicazione PGRC (Personal Recipe Collection).
+   Gestisce layout responsive, animazioni, componenti UI e stili specifici
+   per le diverse pagine dell'applicazione.
+   
+   @structure
+   - Reset e configurazione globale
+   - Gestione navbar principale
+   - Sistema card responsive
+   - Animazioni e transizioni
+   - Carousel management
+   - Gestione icone
+   - Stili specifici per pagine
+   - Container e posizionamento
+   - Utilità varie
+   
+   @responsive
+   - Mobile first design (320px+)
+   - Tablet layout (560px+)
+   - Desktop layout (720px+)
+   
+   @author damia
+   @version 1.0.0
+   @since 2025-08-28
+   ======================================================================== */
 
+/* ========================================================================
+   RESET E CONFIGURAZIONE GLOBALE
+   ======================================================================== */
+
+/* Reset globale e font family applicazione */
 *{
     font-family: MontserratGZ, sans-serif;
     margin: 0;
     padding: 0;
 }
 
+/* Cursore pointer per elementi interattivi */
 #search-page .card,
 #personal-page .card,
 #results-container .card,
@@ -18,37 +52,32 @@ nav li,
     cursor: pointer;
 }
 
+/* ========================================================================
+   GESTIONE NAVBAR PRINCIPALE
+   ======================================================================== */
 
-/*
-====================================================
-MAIN NAVBAR MANAGEMENT
-====================================================
-*/
-
+/* Logo navbar - dimensione fissa */
 nav img{
     height: 43px;
 }
 
+/* Stili navbar: sfondo bianco con bordo inferiore */
 nav{
     background-color: white;
     border-bottom: 2px solid rgb(238, 238, 238);
 }
 
-/*------------------------------------------------------------
+/* ========================================================================
+   SISTEMA CARD RESPONSIVE
+   ======================================================================== */
 
-
-
-/*
-==============================
-CARDS MANAGEMENT 
-==============================
-*/
-
+/* Card base - container flessibile con overflow nascosto */
 .card{
-    overflow: hidden; /* Nasconde contenuto in eccesso */
+    overflow: hidden; /* Nasconde contenuto in eccesso per animazioni zoom */
     display: flex;
 }
 
+/* Card categorie - layout orizzontale compatto */
 #categories-container .card{
     flex-direction: row;
     height: 75px;
@@ -62,6 +91,7 @@ CARDS MANAGEMENT
     width: 60%;
 }
 
+/* Immagini card - responsive con object-fit per mantenere proporzioni */
 .card img{
     width: 100%;
     height: 100%;
@@ -69,14 +99,14 @@ CARDS MANAGEMENT
     object-position: center;
 }
 
+/* Card ricerca e pagina personale - layout verticale mobile first */
 #search-page .card,
 #personal-page .card,
 #recipe-page .card{
     flex-direction: column;
 }
 
-
-/*Determinano le proporzioni degli elementi delle card quando verticali*/
+/* Proporzioni card verticali - mobile first */
 #search-page .card-image,
 #personal-page .card-image{
     height: 70%;
@@ -85,11 +115,10 @@ CARDS MANAGEMENT
 
 #search-page .card-body,
 #personal-page .card-body{
-    /* height: 30%; */
     width: 100%;
 }
-/*******************************/
 
+/* Sezione note nelle card - stili lista */
 .card #noted-section ul{
     padding-left: 20px;
     list-style-type: circle;
@@ -97,23 +126,32 @@ CARDS MANAGEMENT
     font-style: italic;
 }
 
+/* Titoli recipe-contents - tipografia prominente */
 #recipe-contents .card-title{
     font-size: 30px;
     font-weight: 900;
 }
 
+/* Container rating - spaziatura e dimensione */
 #recipe-contents .rate-container{
     margin: 30px 0;
     font-size: 18px;
 }
 
+/* ========================================================================
+   MEDIA QUERIES - LAYOUT RESPONSIVE
+   ======================================================================== */
+
+/* Mobile (320px+) - Grid categorie responsive */
 @media(min-width: 320px){
     #categories-container{
         grid-template-columns: repeat(auto-fit, minmax(200px, 300px)); 
     }
 }
 
+/* Tablet (560px+) - Layout ottimizzato per schermi medi */
 @media(min-width: 560px) {
+    /* Grid container principali */
     #fav-recipes,
     #rev-recipes,
     #results-container,
@@ -121,20 +159,24 @@ CARDS MANAGEMENT
         grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
     }
     
+    /* Grid categorie */
     #categories-container{
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 
+    /* Card altezza fissa per consistenza layout */
     #search-page .card,
     #personal-page .card{
         height: 200px;
     }
 
+    /* Card layout orizzontale da tablet */
     #search-page .card,
     #personal-page .card{
         flex-direction: row;
     }
     
+    /* Proporzioni card orizzontali */
     #search-page .card-image,
     #personal-page .card-image{
         height: 100%;
@@ -148,6 +190,7 @@ CARDS MANAGEMENT
     }
 }
 
+/* Desktop (720px+) - Layout orizzontale recipe contents */
 @media(min-width: 720px){
     #recipe-contents .card{
         height: 450px;
@@ -163,23 +206,20 @@ CARDS MANAGEMENT
     }
 }
 
-/*-------------------------------------------------------*/
+/* ========================================================================
+   ANIMAZIONI E TRANSIZIONI
+   ======================================================================== */
 
-/*
-=======================================================
-ANIMATIONS
-=======================================================
-*/
-
+/* Animazioni hover card - transizioni smooth */
 #results-container .card,
 #categories-container .card,
 #fav-recipes .card,
 #rev-recipes .card,
 #noted-recipes .card{
-    transition: transform 0.5s ease;
-    transition: box-shadow 0.2s ease;
+    transition: transform 0.5s ease, box-shadow 0.2s ease;
 }
 
+/* Effetti hover card - scala e ombra */
 #results-container .card:hover,
 #categories-container .card:hover,
 #personal-page .card:hover{
@@ -187,6 +227,7 @@ ANIMATIONS
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+/* Animazioni immagini - zoom lento su hover */
 .carousel img,
 .card img{
     transition: transform 3s ease-in-out;
@@ -199,31 +240,30 @@ ANIMATIONS
     transform: scale(1.017);
 }
 
-/*-----------------------------------------------------------*/
+/* ========================================================================
+   CAROUSEL MANAGEMENT
+   ======================================================================== */
 
-
-/* 
-======================================================
-CAROUSEL MANAGEMENT 
-======================================================
-*/
-
+/* Carousel e recipe card - centramento e margini */
 .carousel,
 #recipe-page .card{
     margin: 0 auto 25px;
 }
 
+/* Carousel dimensioni fisse per consistenza */
 .carousel,
 .carousel-inner,
 .carousel-item img{
     height: 450px;
 }
 
+/* Immagini carousel - copertura completa */
 .carousel-item img{
     width: 100%;
     object-fit: cover;
 }
 
+/* Controlli carousel - stili personalizzati */
 .carousel button span{
     background-color: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
@@ -231,12 +271,14 @@ CAROUSEL MANAGEMENT
     display: inline-block;
 }
 
+/* Carousel inner - bordi arrotondati e centramento */
 .carousel-inner{
     border-radius: 10px;
     margin-left: auto;
     margin-right: auto;
 }
 
+/* Posizionamento controlli carousel */
 .carousel .carousel-control-prev{
     padding-left: 16px;
     justify-content: start;
@@ -247,6 +289,7 @@ CAROUSEL MANAGEMENT
     justify-content: end;
 }
 
+/* Dimensioni pulsanti carousel */
 .carousel button{
     width: 32px;
     height: 32px;
@@ -254,6 +297,7 @@ CAROUSEL MANAGEMENT
     margin-bottom: auto;
 }
 
+/* Caption carousel - tipografia con ombra */
 .carousel-caption{
     text-shadow: 0 0 0px #000, 0 2px 4px #000, 0 0 6px rgba(255, 255, 255, 0.15);
     text-align: start;
@@ -265,20 +309,16 @@ CAROUSEL MANAGEMENT
     font-weight: 800;
 }
 
+/* Icona preferiti carousel */
 .carousel .fav-icon{
     margin-right: 16px;
 }
 
-/*---------------------------------------------------------------------------*/
+/* ========================================================================
+   GESTIONE ICONE
+   ======================================================================== */
 
-
-
-/*
-================================ 
-ICONS MANAGEMENT 
-================================
-*/
-
+/* Icone cuore (preferiti) - colore rosso con ombra */
 .bi-heart,
 .bi-heart-fill{
     color: red;
@@ -289,28 +329,27 @@ ICONS MANAGEMENT
     margin: 5px;
 }
 
+/* Icone stella (rating) - colore giallo */
 .bi-star,
 .bi-star-fill{
     color: rgb(255, 255, 0);
 }
 
+/* Icona difficoltà - colore rosso */
 .bi-fork-knife{
     color: red;
 }
 
+/* Ombra globale icone per leggibilità */
 i{
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3), -1px -1px 0 rgba(0, 0, 0, 0.3);
 }
 
-/*------------------------------------------------------*/
+/* ========================================================================
+   PAGINA SETTINGS - STILI SPECIFICI
+   ======================================================================== */
 
-
-/*
-====================================
-SETTINGS PAGE SPECIFICS
-====================================
-*/
-
+/* Pulsanti abilitazione modifica - stili italici */
 #settings-page form .allow-modif,
 #settings-page form #auth-modif{
     margin-left: 10px;
@@ -318,29 +357,28 @@ SETTINGS PAGE SPECIFICS
     font-size: 85%;
 }
 
+/* Sezioni form settings - layout flex per allineamento */
 #settings-page .form-section>span{
     display: flex;
     align-items: center;
     padding-bottom: 5px;
 }
 
-
+/* Label form settings - rimozione margini */
 #settings-page .form-section label{
     margin: 0;
 }
 
-/*---------------------------------------*/
+/* ========================================================================
+   PAGINA PERSONALE - STILI SPECIFICI
+   ======================================================================== */
 
-/*
-==========================================
-PERSONAL PAGE SPECIFICS
-==========================================
-*/
-
+/* Container ricette pagina preferiti - margine superiore per contenuti fissi */
 #personal-page #recipes-container{
-    margin: 130px 0 0 0  ; 
+    margin: 130px 0 0 0; 
 }
 
+/* Titolo pagina fisso - posizionamento e z-index */
 #personal-page #page-title{
     position: fixed;
     z-index: 10;
@@ -351,6 +389,7 @@ PERSONAL PAGE SPECIFICS
     border-width: 0;
 }
 
+/* Tab navigation - centramento e spacing */
 #personal-page #page-title .nav-tabs{
     width: 100%;
     display: flex;
@@ -358,6 +397,7 @@ PERSONAL PAGE SPECIFICS
     margin-top: 4px;
 }
 
+/* Link tab navigation pagina personale - display inline-block per layout orizzontale */
 #personal-page #page-title a{
     display: inline-block;
 }
@@ -366,19 +406,19 @@ PERSONAL PAGE SPECIFICS
     text-align: center;
 }
 
-/* NB -> display: grid non è compatibile con le tab di bootstrap -> tab occupano spazio nel DOM anche se non visibili*/
+/* Fix Bootstrap tabs - nasconde tab non attive per grid compatibility */
 .tab-pane:not(.active) {
     display: none !important;
 }
 
-
-/*Formattazione link alle sezioni nella personal page*/
+/* Link sezioni pagina personale - stili base */
 #personal-page #page-title a{
     color: #333;
     font-style: italic;
     text-decoration: underline;
 }
 
+/* Link attivo - enfasi tipografica */
 #personal-page #page-title a:is(.active){
     font-size: 110%;
     color: rgb(0, 0, 0);
@@ -386,20 +426,17 @@ PERSONAL PAGE SPECIFICS
     text-decoration: none;
 }
 
-/*----------------------------------------------------*/
+/* ========================================================================
+   CONTAINER E POSIZIONAMENTO
+   ======================================================================== */
 
-
-/*
-==================================== 
-CONTAINERS AND POSITIONING
-====================================
-*/
-
+/* Container principale - padding per navbar e larghezza massima */
 body>.container-fluid{
     padding: 80px 0 20px;
     max-width: 90%;
 }
 
+/* Grid container - layout e spacing */
 #fav-recipes,
 #rev-recipes,
 #noted-recipes,
@@ -409,6 +446,7 @@ body>.container-fluid{
     gap: 10px;
 }
 
+/* Padding container ricette */
 #fav-recipes,
 #rev-recipes,
 #results-container,
@@ -416,6 +454,7 @@ body>.container-fluid{
     padding: 0 15px;
 }
 
+/* Form container centrati - larghezza controllata */
 #settings-page>.container-fluid>div,
 #login-page>.container-fluid>div,
 #signin-page>.container-fluid>div{
@@ -423,6 +462,7 @@ body>.container-fluid{
     width: 60%;
 }
 
+/* Container specifici - centramento e larghezza massima */
 #categories-container,
 #ingredients-box,
 #instructions-box,
@@ -433,6 +473,7 @@ body>.container-fluid{
     max-width: 95%;
 }
 
+/* Layout centrato verticalmente - per form login/signup */
 .centered-content {
     min-height: 100vh;
     display: flex;
@@ -440,6 +481,7 @@ body>.container-fluid{
     justify-content: center;
 }
 
+/* Recipe contents - padding personalizzato */
 #recipe-contents h3,
 #recipe-contents p{
     padding-left: 0;
@@ -450,22 +492,21 @@ body>.container-fluid{
     padding-left: 16px;
 }
 
-/*-------------------------------------------------------------------*/
+/* ========================================================================
+   UTILITÀ E STILI VARI
+   ======================================================================== */
 
-
-/* MISC */
-
+/* Testo validazione - colore successo */
 .valid-text{
     color: green;
 }
 
-
-
+/* Titoli h3 - enfasi bold */
 h3{
     font-weight: bold;
 }
 
-
+/* Overlay spinner - posizionamento fisso con sfondo semi-trasparente */
 #spinner-overlay{
     background-color: rgba(0, 0, 0, 0.5);
     position: fixed;
