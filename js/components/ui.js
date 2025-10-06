@@ -101,7 +101,7 @@ function cardRatingContent(tasteRate, difficultyRate, title) {
       </div>
       `;
    }else{
-      content += "Ancora nessuna recensione";
+      content += "No ratings yet";
    }
 
    reviews.innerHTML = content;
