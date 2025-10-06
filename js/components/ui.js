@@ -379,7 +379,7 @@ const CardDisplayStrategy = {
     * 
     * @see {@link cardRatingContent} Per creazione elemento rating
     * @see {@link Recipe.userTasteRate} Per recupero rating sapore utente
-    * @see {@link Recipe.userDifficulyRate} Per recupero rating difficoltà utente
+    * @see {@link Recipe.userDifficultyRate} Per recupero rating difficoltà utente
     * 
     * @description
     * Strategia display per ricette con rating personale dell'utente.
@@ -396,7 +396,7 @@ const CardDisplayStrategy = {
       let difficultyRate;
       try {
          tasteRate = Recipe.userTasteRate(itemObj.id);
-         difficultyRate = Recipe.userDifficulyRate(itemObj.id);
+         difficultyRate = Recipe.userDifficultyRate(itemObj.id);
       } catch (error) {
          tasteRate = 0;
          difficultyRate = 0;

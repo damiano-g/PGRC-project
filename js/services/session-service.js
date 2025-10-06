@@ -448,7 +448,7 @@ export const Recipe = {
      * @see {@link ReviewsManagement.recipeUserRate} Per lettura dati recensione utente 
      * @throws {Error} Rilancia errori di storage o parametri errati 
      */
-    userDifficulyRate: (recipeId) => {
+    userDifficultyRate: (recipeId) => {
         try {
             return ReviewsManagement.recipeUserRate(recipeId, LoggedUser.getId(), "difficultyRate");
         } catch (error) {
