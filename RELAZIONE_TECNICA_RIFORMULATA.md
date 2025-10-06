@@ -53,6 +53,8 @@ Oltre ai requisiti base, l'applicazione introduce:
 
 ---
 
+<div style="page-break-before: always;"></div>
+
 ## 2. ARCHITETTURA E DESIGN
 
 ### 2.1 Struttura Modulare a Tre Layer
@@ -185,6 +187,8 @@ PGRC-project/
 
 ---
 
+<div style="page-break-before: always;"></div>
+
 ## 3. IMPLEMENTAZIONE CORE
 
 ### 3.1 Session Service: Orchestrazione Centralizzata
@@ -301,6 +305,8 @@ La ricerca per nome implementa un **algoritmo di scoring** che normalizza query 
 
 ---
 
+<div style="page-break-before: always;"></div>
+
 ## 4. GESTIONE DATI E API
 
 ### 4.1 Integrazione TheMealDB API
@@ -335,6 +341,8 @@ Il sistema di storage unificato (`js/core/storage.js`) astrae localStorage/sessi
 - Error handling con logging per debugging e re-throw per propagazione
 
 ---
+
+<div style="page-break-before: always;"></div>
 
 ## 5. INTERFACCIA UTENTE E UX
 
@@ -379,6 +387,8 @@ Il progetto implementa gestione stati tramite classi Bootstrap e funzioni dedica
 La navbar dinamica si aggiorna automaticamente basandosi sullo stato di autenticazione, mostrando menu contestuali per utenti loggati (dropdown con username, settings, logout) o guest (solo search e login) tramite il dropdown menu del logo.
 
 ---
+
+<div style="page-break-before: always;"></div>
 
 ## 6. TESTING E VALIDAZIONE
 
@@ -433,6 +443,8 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - **Tablet (560-719px):** Grid 2-colonne, card orizzontali  
 - **Desktop (720px+):** Grid ottimizzata, card orizzontali
 ---
+
+<div style="page-break-before: always;"></div>
 
 ## 7. CONCLUSIONI
 
