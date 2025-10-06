@@ -67,6 +67,7 @@
             <div>
                 <h2>Signin</h2>
                 <form id="signin-form" class="needs-validation">
+                    <!-- Username -->
                     <div class="mb-3 mt-3">
                         <label class="form-label" for="username">Username</label>
                         <input class="form-control" type="text" id="username" data-field="username" placeholder="Choose a username" required>
@@ -79,6 +80,7 @@
                             </span>
                         </div>
                     </div>
+                    <!-- Email -->
                     <div class="mb-3 mt-3">
                         <label class="form-label" for="email">Email</label>
                         <input class="form-control" type="email" id="email" data-field="email" placeholder="Insert your email" required>
@@ -91,6 +93,7 @@
                             </span>
                         </div>
                     </div>
+                    <!-- Password-->
                     <div class="mb-3 mt-3">
                         <label class="form-label" for="password">Password</label>
                         <input class="form-control" type="password" id="password" data-field="password" placeholder="Choose a password" required>
@@ -100,21 +103,17 @@
                             </span>
                         </div>
                     </div>
+                    <!-- Password confirm -->
                     <div class="mb-3 mt-3">
                         <label class="form-label" for="confirm-password">Confirm password</label>
                         <input class="form-control" type="password" id="confirm-password" data-field="confirm-password" placeholder="Confirm password" required disabled>
                         <div class="invalid-feedback">Passwords don't match</div>
                     </div>
+                    <!-- Buttons -->
                     <button class="btn btn-secondary mb-3 mt-3" type="button" id="gotoLog">Go to login</button>
                     <button class="btn btn-secondary mb-3 mt-3" type="reset" id="clear">Clear</button>
                     <button class="btn btn-primary mb-3 mt-3" type="button" id="submit" disabled>Signin</button>
                 </form>
-            </div>
-        </div>
-
-        <div id="spinner-overlay" class="d-none">
-            <div class="spinner-border text-light">
-                <span class="visually-hidden">Loading</span> <!-- Per screen reader -->
             </div>
         </div>
 

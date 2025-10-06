@@ -1,5 +1,5 @@
 <!-- ==========================================================================
-   settings.HTML - PAGINA MODIFICA DATI UTENTE
+   SETTINGS.HTML - PAGINA MODIFICA DATI UTENTE
 
    @description
    Pagina per modifica dati profilo utente autenticato. Include form con campi
@@ -10,11 +10,13 @@
    - Navbar: menu dropdown con navigazione globale, barra ricerca e gestione autenticazione
    - Container principale: form modifica dati con sezioni per username, email e password
    - Form validation: feedback real-time su requisiti campi e conferma password
+   - Modal delete: conferma eliminazione account irreversibile
+   - Modal auth: richiesta password corrente per autorizzazione modifiche
 
    @dependencies
-   - Bootstrap CSS/JS per layout, componenti e validazione form
+   - Bootstrap CSS/JS per layout, componenti, validazione form e modal
    - style.css per stili custom e layout centrato
-   - modif.js per logica validazione, gestione eventi e salvataggio modifiche
+   - settings.js per logica validazione, gestione eventi e salvataggio modifiche
    ========================================================================== -->
 
 <!DOCTYPE html>
@@ -118,6 +120,9 @@
             </div>
         </div>  
 
+        <!-- MODAL CONFERMA ELIMINAZIONE ACCOUNT -->
+        <!-- Modal Bootstrap per conferma eliminazione account: messaggio irreversibilità,
+            pulsanti Dismiss per annullare, Delete per procedere con autenticazione -->
         <div class="modal" id="confirm-delete-dialog">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -138,7 +143,10 @@
                 </div>
             </div>
         </div>
-       
+        
+        <!-- MODAL AUTENTICAZIONE PASSWORD CORRENTE -->
+        <!-- Modal Bootstrap per richiesta password corrente: campo input password,
+            pulsante Confirm disabilitato fino a inserimento valido -->
         <div class="modal" id="auth-dialog">
             <div class="modal-dialog">
                 <div class="modal-content">
