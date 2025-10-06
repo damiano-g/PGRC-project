@@ -128,7 +128,7 @@ window.addEventListener("load", () => {
         }else{
             const currentUser = LoggedUser.getData();
             settingsInputFields.forEach(input =>{
-                if(input.dataset.field != "password"){
+                if(input.dataset.field != "password" && input.dataset.field != "confirm-password"){
                     input.value = currentUser[input.dataset.field];
                 }
             });

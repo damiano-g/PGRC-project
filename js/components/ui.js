@@ -590,7 +590,7 @@ export function favBtnDisplay(btn, recipeId) {
  */
 export function revBtnDisplay(btn, recipeId) {
    try {
-      const dialogBody = document.querySelector("#reviewDialog .modal-body");
+      const dialogBody = document.querySelector("#review-dialog .modal-body");
       btn.innerText = "Add review";
 
       if(LoggedUser.isLogged()){
@@ -646,9 +646,9 @@ export function createRecipeOverview(recipeObj) {
    const cardRevBtn = document.createElement("button");
    cardRevBtn.classList.add("btn", "btn-outline-secondary", "position-absolute", "bottom-0", "end-0");
    cardRevBtn.type = "button";
-   cardRevBtn.id = "revBtn";
+   cardRevBtn.id = "rev-btn";
    cardRevBtn.dataset.bsToggle = "modal";
-   cardRevBtn.dataset.bsTarget = "#reviewDialog";
+   cardRevBtn.dataset.bsTarget = "#review-dialog";
 
    overviewCard.appendChild(cardRevBtn);
 

@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  * @description
  * Gestisce interazioni utente su preferiti e recensioni tramite event delegation.
  * - Click su .fav-icon: toggle preferiti se loggato, redirect login altrimenti
- * - Click su #revBtn: gestione recensioni (aggiunta/eliminazione) con validazione
+ * - Click su #rev-btn: gestione recensioni (aggiunta/eliminazione) con validazione
  * - Aggiornamento UI dopo ogni azione per riflettere nuovo stato
  * - Gestione errori robusta con graceful degradation: alert utente, log console, disabilitazione pulsante in caso di fallimenti
  * - Event delegation per gestire elementi creati dinamicamente
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  * @example
  * // Evento catturato automaticamente dal container
  * recipeOverviewContainer.addEventListener("click", async click => {
- *    if(click.target.matches(".fav-icon") || click.target.matches("#revBtn")){ ... }
+ *    if(click.target.matches(".fav-icon") || click.target.matches("#rev-btn")){ ... }
  * });
  * 
  * @todo Implementare retry automatico per operazioni fallite a causa di problemi temporanei
@@ -95,21 +95,22 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  */
 recipeOverviewContainer.addEventListener("click", async click => { // Event delegation in container per aggirare tempi di caricamento card
    
-   if(click.target.matches(".fav-icon") || click.target.matches("#revBtn")){
-      try {
+   try {
          const isUserLogged = LoggedUser.isLogged();
-         try {      
-            if(click.target.matches(".fav-icon")){
-               if(isUserLogged){
-                  LoggedUser.updateFavourites(detailedRecipeId);
-                  favBtnDisplay(document.querySelector(".card .fav-icon"), detailedRecipeId);
-               }else{
-                  window.location.href = "./login.html";
-               };
-            };
          
-            if(click.target.matches("#revBtn")){
+         if(click.target.matches(".fav-icon")){
+            if(isUserLogged){
+               LoggedUser.updateFavourites(detailedRecipeId);
+               favBtnDisplay(document.querySelector(".card .fav-icon"), detailedRecipeId);
+            }else{
+               window.location.href = "./login.html";
+            };
+         };
+
+         try {      
+            if(click.target.matches("#rev-btn")){
                if(isUserLogged){
+                  document.getElementById("review-dialog").classList.remove("d-none"); // d-none previene che la modal venga mostrata prima del reindirizzamento in caso di utente non loggato
                   revConfirmBtn.onclick = async () =>{ // NB -> eventListener si accumulano - onCLick viene sostituito
                      if(Recipe.isReviewed(detailedRecipeId)){
                         Recipe.deleteUserReview(detailedRecipeId);
@@ -142,10 +143,9 @@ recipeOverviewContainer.addEventListener("click", async click => { // Event dele
             console.error(error);
          }
       } catch (error) {
-         document.getElementById("revBtn").disabled = true;
+         document.getElementById("rev-btn").disabled = true;
          console.error(error);
-      }
-   } 
+      } 
 });
 
 
@@ -291,7 +291,7 @@ window.addEventListener("load", async () => {
  * 
  * 4. **Gestione interazioni preferiti e recensioni (event delegation su recipeOverviewContainer)**:
  *    - Ascolta click su .fav-icon: se loggato, toggle preferiti e aggiorna UI; altrimenti redirect a login
- *    - Ascolta click su #revBtn: se loggato, gestisce aggiunta/eliminazione review con validazione; altrimenti redirect a login
+ *    - Ascolta click su #rev-btn: se loggato, gestisce aggiunta/eliminazione review con validazione; altrimenti redirect a login
  *    - Aggiorna UI dopo ogni azione (replaceChild per ricreare card overview)
  *    - Gestione errori con try-catch per graceful degradation
  * 
