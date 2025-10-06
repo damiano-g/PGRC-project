@@ -8,7 +8,7 @@
  */
 
 import { LoggedUser, PreviewArray, Recipe } from "../services/session-service.js";
-import { addPreviewToContainer, favBtnDisplay, initializeNavbar, populatePreviewContainer, removePreviewFromContainer } from "../components/ui.js";
+import { addPreviewToContainer, favBtnDisplay, hideOverlay, initializeNavbar, populatePreviewContainer, removePreviewFromContainer, showOverlay } from "../components/ui.js";
 
 // ================================================================================================
 // DOM ELEMENTS
@@ -151,6 +151,8 @@ window.addEventListener("load", async () => {
         personalPageBody.classList.remove("d-none");
     };
 
+    showOverlay();
+
     // Rendering sezione preferiti
     personalFavsContainer.innerHTML = "Add recipes to favourites to view them in this area";
     try {
@@ -177,6 +179,8 @@ window.addEventListener("load", async () => {
         personalFavsContainer.innerHTML = "Ooops. Something went wrong. Try reload the page";
         console.error(error);
     }
+
+    hideOverlay();
 });
 
 /**

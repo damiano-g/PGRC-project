@@ -11,7 +11,7 @@
 // ===============================
 
 import { LoggedUser, PreviewArray } from "../services/session-service.js";
-import { favBtnDisplay, initializeNavbar, populatePreviewContainer } from "../components/ui.js"; // Componenti UI per rendering
+import { favBtnDisplay, hideOverlay, initializeNavbar, populatePreviewContainer, showOverlay } from "../components/ui.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -55,10 +55,13 @@ async function navigationSearch(){
     
     if(query[0] === "cat"){
         try {
+            showOverlay();
             populatePreviewContainer(await PreviewArray.mealsByCategory(query[1]), resultsContainer);
         } catch (error) {
             resultsContainer.innerHTML = "Ooops! Something went wrong. Try reload the page";
             console.error(error);
+        }finally{
+            hideOverlay();
         }
     }  
 };
@@ -171,6 +174,7 @@ window.addEventListener("popstate", navigationSearch);
  * @todo Aggiungere feedback visivo (spinner, messaggi di stato) durante operazioni asincrone
  */
 searchBtn.addEventListener("click", async () => {
+    showOverlay();
     try {
         const recipesPreviewArray = await PreviewArray.mealsByName(String(searchBar.value));
         if(recipesPreviewArray){
@@ -185,6 +189,8 @@ searchBtn.addEventListener("click", async () => {
     } catch (error) {
         resultsContainer.innerHTML = "Ooops! Something went wrong. Try reload the page."
         console.error(error);
+    }finally{
+        hideOverlay();
     }
 });
 

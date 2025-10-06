@@ -11,7 +11,7 @@
 // ===============================
 
 import { initUsersDB, LoggedUser, PreviewArray } from "../services/session-service.js";
-import { favBtnDisplay, initializeNavbar, populateCarousel, populatePreviewContainer } from "../components/ui.js"; // Componenti UI per rendering
+import { favBtnDisplay, hideOverlay, initializeNavbar, populateCarousel, populatePreviewContainer, showOverlay } from "../components/ui.js"; // Componenti UI per rendering
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -72,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  */
 window.addEventListener("load", async () => {
     
+    showOverlay();
     // Solo per testing: popola users database
     await initUsersDB();
 
@@ -97,7 +98,10 @@ window.addEventListener("load", async () => {
     } catch (error) {
         catContainer.innerHTML = "Oooops! Something went wrong. Try reload the page.";
         console.error(error);
+    }finally{
+        hideOverlay();
     }
+
 });
 
 

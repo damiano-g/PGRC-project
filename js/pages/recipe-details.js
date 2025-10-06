@@ -11,7 +11,7 @@
 // ===============================
 
 import { LoggedUser, Recipe } from "../services/session-service.js";
-import { createRecipeOverview, favBtnDisplay, initializeNavbar, populateRecipeNotes } from "../components/ui.js";
+import { createRecipeOverview, favBtnDisplay, hideOverlay, initializeNavbar, populateRecipeNotes, showOverlay } from "../components/ui.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -131,7 +131,7 @@ recipeOverviewContainer.addEventListener("click", async click => { // Event dele
          } catch (error) {
             switch(error.code){
                case 404:
-                  alert("No review found for current user and recipe")
+                  alert("No review found for current user and recipe");
                   break;
                case 409:
                   alert("Current user has already reviewed this recipe.");
@@ -238,6 +238,7 @@ userNotesContainer.addEventListener("click", click => {
 window.addEventListener("load", async () => {
    
    try {
+      showOverlay();
       const fullRecipeObj = await Recipe.getFullData(detailedRecipeId);
  
       recipeOverviewContainer.appendChild(createRecipeOverview(fullRecipeObj)); 
@@ -248,9 +249,13 @@ window.addEventListener("load", async () => {
          listItem.innerText = element.name+": "+element.measure;
          ingredientsList.appendChild(listItem);
       });
+
+      ingredientsList.parentElement.classList.remove("d-none");
       
       // Inserisce le istruzioni di preparazione
       instructionsSteps.innerText = fullRecipeObj.instructions;
+
+      instructionsSteps.parentElement.classList.remove("d-none");
       
       // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
       if(LoggedUser.isLogged()){
@@ -260,6 +265,8 @@ window.addEventListener("load", async () => {
    } catch (error) {
       alert("Something went wrong. Please try reload the page.");
       console.error(error);
+   }finally{
+      hideOverlay();
    }
 });
 
