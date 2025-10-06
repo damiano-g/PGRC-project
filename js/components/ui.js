@@ -887,37 +887,71 @@ export function hideOverlay(){
    }
 }
 
-// ================================================================================================
-// ARCHITECTURE NOTES
-// ================================================================================================
 
-/*
-DESIGN PATTERNS IMPLEMENTATI:
+// ============================================================================
+// ANALISI E DESCRIZIONE DEL FILE
+// ============================================================================
 
-1. **Factory Pattern**:
-   - createPreviewCard() e createCarouselItem() sono factory per elementi DOM
-   - Input standardizzato (ItemPreview) → Output consistente (HTMLElement)
-   - Incapsulano logica di creazione e struttura HTML
-
-2. **Strategy Pattern**:
-   - DisplayPreviews namespace con strategie multiple
-   - displayWithRating, displayWithNote, displayCategories
-   - Interfaccia comune, implementazione specializzata
-
-3. **Separation of Concerns**:
-   - Funzioni private per creazione, pubbliche per orchestrazione
-   - Layout responsive delegato a CSS Grid/Bootstrap
-   - Event handling delegato al codice chiamante
-
-4. **Data Attributes Strategy**:
-   - dataset.itemId per identificazione senza inquinare proprietà DOM
-   - Permette event delegation efficiente nel codice chiamante
-   - Type conversion esplicita (String()) per consistenza
-
-ARCHITETTURA MODULARE:
-
-- **Private Utilities**: Funzioni base per creazione elementi
-- **Public API Display**: Strategie specializzate per contenuto
-- **Public API Specialized**: Container e button management
-- **No Layout Logic**: Responsabilità delegata a CSS/Bootstrap
-*/
+/**
+ * @description Analisi e descrizione del file ui.js
+ * 
+ * **Scopo e ruolo nel progetto:**
+ * Modulo principale per la gestione dell'interfaccia utente (UI).
+ * Fornisce componenti riutilizzabili per il rendering di elementi DOM, la gestione dello stato dei pulsanti,
+ * la validazione dei form e l'interazione con l'utente.
+ * È progettato per separare la logica di presentazione dalla logica di business, facilitando la manutenzione e la scalabilità.
+ * 
+ * **Architettura e struttura:**
+ * - **Funzioni private:** Utility interne per creazione elementi (createPreviewCard, cardRatingContent, ecc.).
+ * - **Namespace CardDisplayStrategy:** Strategie specializzate per rendering contenuti dinamici (rating, note).
+ * - **API pubblica:** Funzioni esportate per popolamento container, gestione carousel, navbar, form e overlay.
+ * - **Dipendenze:** Importa moduli da session-service.js per logica business (LoggedUser, Recipe, inputValidation).
+ * 
+ * **Interazioni con altri moduli:**
+ * - **session-service.js:** Riceve dati e stati utente/ricette per rendering dinamico.
+ * - **Pagine (es. signin.js, recipe-details.js):** Utilizzano funzioni come formatInputField, showOverlay per validazione e feedback.
+ * - **Storage:** Indiretto tramite moduli business per recupero dati da visualizzare.
+ * 
+ * **Flusso di esecuzione documentato:**
+ * 
+ * 1. **Import moduli e dipendenze:**
+ *    - Importa funzioni da session-service.js per validazione, stati utente e ricette.
+ * 
+ * 2. **Definizione funzioni private (utility):**
+ *    - createPreviewCard: Factory per card preview con contenuto opzionale.
+ *    - cardRatingContent: Crea elementi rating con icone e testo.
+ *    - createCarouselItem: Factory per slide carousel con caption e preferiti.
+ *    - createNoteCard: Factory per card note utente con pulsante rimozione.
+ * 
+ * 3. **Namespace CardDisplayStrategy:**
+ *    - withGlobalRating: Rendering rating globale per ricette.
+ *    - withUserRating: Rendering rating personale utente.
+ *    - withNotes: Rendering note testuali utente.
+ * 
+ * 4. **API pubblica - popolamento container:**
+ *    - populatePreviewContainer: Popola container con card basate su tipo (meals, reviews, notes).
+ *    - addPreviewToContainer/removePreviewFromContainer: Wrapper per aggiunta/rimozione selettiva.
+ *    - populateCarousel: Popola carousel Bootstrap con slide.
+ *    - populateRecipeNotes: Gestisce container note con show/hide automatico.
+ * 
+ * 5. **API pubblica - gestione stato pulsanti:**
+ *    - favBtnDisplay: Aggiorna icona preferiti (bi-heart/bi-heart-fill) basata su stato.
+ *    - revBtnDisplay: Aggiorna testo pulsante recensione (Add/Delete) basata su stato.
+ *    - createRecipeOverview: Crea card completa overview con rating e pulsante.
+ * 
+ * 6. **API pubblica - navbar e form:**
+ *    - initializeNavbar: Configura navbar dinamica basata su pagina e stato utente.
+ *    - formatInputField: Valida campi form e applica classi Bootstrap con feedback specifico.
+ * 
+ * 7. **API pubblica - overlay e spinner:**
+ *    - showOverlay: Crea e mostra spinner overlay per operazioni asincrone.
+ *    - hideOverlay: Rimuove spinner overlay al completamento.
+ * 
+ * **Note tecniche:**
+ * - **Graceful degradation:** Errori nei moduli downstream (es. Recipe.avgTasteRate) non bloccano rendering.
+ * - **Scalabilità:** Permette aggiunta facile di nuovi tipi di contenuto senza modificare codice esistente.
+ * - **Testabilità:** Funzioni pure dove possibile, separazione logica UI da business facilita unit testing.
+ * 
+ * @note Questo modulo è centrale per l'UX: errori qui impattano direttamente l'interfaccia utente.
+ * @note Compatibilità: Dipendente da Bootstrap 5 per classi CSS e componenti (carousel, modal, form validation).
+ */

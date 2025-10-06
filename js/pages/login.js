@@ -251,11 +251,13 @@ loginGotoSigninBtn.addEventListener("click", () => window.location.href = "./sig
  * 2. **Selezione elementi DOM**:
  *    - Recupera riferimenti a input form, pulsante submit e pulsante navigazione
  * 
- * 3. **Inizializzazione pagina**:
- *    - DOMContentLoaded: configura navbar
+ * 3. **Inizializzazione pagina (DOMContentLoaded)**:
+ *    - Configura navbar
  * 
- * 4. **Gestione navigazione (event listener su loginGotoSigninBtn)**:
- *    - Redirect a signin.html per registrazione
+ * 4. **Protezione accesso (window load)**:
+ *    - Verifica autenticazione esistente
+ *    - Redirect intelligente basato su provenienza
+ *    - Mostra pagina se non autenticato
  * 
  * 5. **Gestione validazione input (event listener su loginRequiredInputs)**:
  *    - Validazione semplice: presenza testo → classe "valid"
@@ -268,10 +270,8 @@ loginGotoSigninBtn.addEventListener("click", () => window.location.href = "./sig
  *    - Gestione errori: alert specifici per 404, generici per altri
  *    - Nasconde overlay sempre
  * 
- * 7. **Protezione accesso (event listener su window load)**:
- *    - Verifica autenticazione esistente
- *    - Redirect intelligente basato su provenienza
- *    - Mostra pagina se non autenticato
+ * 7. **Gestione navigazione (event listener su loginGotoSigninBtn)**:
+ *    - Redirect a signin.html per registrazione
  * 
  * @note Il flusso è asincrono per submit, sincrono per validazione
  * @note Protezione accesso: redirect automatico se già autenticato

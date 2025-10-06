@@ -781,3 +781,86 @@ export async function initUsersDB(){
         await createUsers();
     }
 }
+
+
+// ============================================================================
+// ANALISI E DESCRIZIONE DEL FILE
+// ============================================================================
+
+/**
+ * @description Analisi e descrizione del file session-service.js
+ * 
+ * **Scopo e ruolo nel progetto:**
+ * Modulo centrale di servizio per la gestione dello stato sessione utente e delle operazioni su ricette.
+ * Fornisce interfacce unificate per autenticazione, gestione profilo utente, operazioni CRUD su recensioni/note/preferiti,
+ * e generazione di array preview ricette. Agisce come layer di astrazione tra UI, business logic e storage,
+ * garantendo isolamento e facilitando l'integrazione con moduli di presentazione.
+ * 
+ * **Architettura e struttura:**
+ * - **Namespace NewUser:** Operazioni utenti non autenticati (registrazione, login).
+ * - **Namespace LoggedUser:** Operazioni utente autenticato (profilo, preferenze, note, recensioni).
+ * - **Namespace Recipe:** Query stato ricette (preferiti, recensioni, rating aggregati).
+ * - **Namespace PreviewArray:** Generazione array preview per popolamento UI.
+ * - **Funzioni utility:** inputValidation per validazione form, initUsersDB per testing.
+ * - **Pattern utilizzati:** Namespace per organizzazione logica, wrapper per isolamento dipendenze.
+ * - **Dipendenze:** Importa users-service.js, recipes-service.js, reviews-service.js, storage.js, errors.js, data-models.js.
+ * 
+ * **Interazioni con altri moduli:**
+ * - **Business (users-service.js, recipes-service.js, reviews-service.js):** Wrapper per operazioni CRUD.
+ * - **Storage (storage.js):** Persistenza stato sessione e dati utente.
+ * - **Errors (errors.js):** Rilancio errori custom per validazioni.
+ * - **Data models (data-models.js):** Utilizzo classi per generazione ID.
+  * - **UI (ui.js, pagine):** Interagiscono direttamente con per accesso dati e operazioni utente.
+ * 
+ * **Flusso di esecuzione documentato:**
+ * 
+ * 1. **Import e configurazione:**
+ *    - Importa moduli business, storage, errori e utility.
+ *    - Definisce chiave sessionStorage per ID utente loggato.
+ * 
+ * 2. **Utility functions:**
+ *    - updateLoggedUser: Salva ID utente in sessionStorage.
+ *    - recipesAccumulator: Accumula oggetti ricetta da array ID.
+ * 
+ * 3. **Namespace NewUser:**
+ *    - startSession: Autentica utente e avvia sessione.
+ *    - addToDB: Registra nuovo utente.
+ * 
+ * 4. **Namespace LoggedUser:**
+ *    - getId/isLogged: Lettura/verifica stato autenticazione.
+ *    - getData/getRecipeNotes/getReviews: Lettura dati utente.
+ *    - changeUsername/changeEmail/changePassword: Aggiornamenti profilo.
+ *    - updateFavourites/addNote/deleteNote: Gestione preferenze/note.
+ *    - deleteAccount: Eliminazione account con trasferimento recensioni.
+ *    - authOperations/endSession: Autenticazione e logout.
+ * 
+ * 5. **Namespace Recipe:**
+ *    - isFavourite/isReviewed: Verifica stato ricetta per utente.
+ *    - userTasteRate/userDifficultyRate: Rating utente per ricetta.
+ *    - avgTasteRate/avgDifficultyRate: Rating aggregato ricetta.
+ *    - addUserReview/deleteUserReview: CRUD recensioni.
+ *    - getFullData: Recupero ricetta completa.
+ * 
+ * 6. **Namespace PreviewArray:**
+ *    - categories/mealsByName/mealsByCategory: Ricerca per tipo.
+ *    - mealsById/rndMeals: Recupero specifico/casuale.
+ *    - fromUserReviews/fromUserFavourites/fromAllUserNotes: Dati utente.
+ *    - mostPopular: Ordinamento per popolarità.
+ * 
+ * 7. **Funzioni globali:**
+ *    - inputValidation: Validazione form per tipo input.
+ *    - initUsersDB: Inizializzazione database per testing.
+ * 
+ * **Note tecniche:**
+ * - **Astrazione layer:** Wrapper isolano dipendenze, facilitano testing e refactoring.
+ * - **Gestione sessione:** sessionStorage per stato temporaneo, localStorage per dati persistenti.
+ * - **Validazione input:** Delegata a business layer per consistenza.
+ * - **Aggregazioni real-time:** Calcoli on-demand senza caching per accuratezza.
+ * - **Gestione errori:** Rilancio errori custom per graceful degradation.
+ * - **Performance:** Operazioni sincrone per lettura, asincrone per scrittura/storage.
+ * - **Scalabilità:** Namespace modulari facilitano aggiunta funzionalità.
+ * - **Limitazioni:** Nessun caching aggregazioni, dipendenza storage browser.
+ * 
+ * @note Questo modulo è il cuore dell'applicazione: errori qui impattano autenticazione e stato utente.
+ * @note Compatibilità: Usa sessionStorage/localStorage, compatibile con browser moderni.
+ */

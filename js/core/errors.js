@@ -1,4 +1,9 @@
 /**
+ * @fileoverview Modulo per gestione errori custom del progetto PGRC
+ * @description Definisce classi errore estese da Error con codici HTTP e informazioni contestuali per error handling strutturato
+ */
+
+/**
  * Errore custom per risorsa non trovata.
  * Estende Error e aggiunge informazioni contestuali e codice HTTP standard.
  *
@@ -37,7 +42,7 @@ export class NotFound extends Error{
  * @class
  * @extends Error
  *
- * @property {string} itemType - Tipo di oggetto non trovato
+ * @property {string} itemType - Tipo di oggetto duplicato
  * @property {string} fieldType - Campo di ricerca
  * @property {string} fieldValue - Valore cercato
  * @property {number} code - Codice errore HTTP (409)
@@ -109,3 +114,62 @@ export class BadRequest extends Error{
         this.code = 400;
     }
 }
+
+
+// ============================================================================
+// ANALISI E DESCRIZIONE DEL FILE
+// ============================================================================
+
+/**
+ * @description Analisi e descrizione del file errors.js
+ * 
+ * **Scopo e ruolo nel progetto:**
+ * Modulo core per la gestione degli errori custom.
+ * Fornisce classi di errore estese da `Error` con informazioni contestuali e codici HTTP standard,
+ * facilitando la propagazione di errori strutturati attraverso i moduli business e UI.
+ * Implementa un sistema di error handling consistente per graceful degradation e debugging.
+ * 
+ * **Architettura e struttura:**
+ * - **Error classes:** Classi che estendono `Error` con proprietà aggiuntive (itemType, fieldType, code, ecc.).
+ * - **HTTP codes:** Codici standard (404, 409, 422, 400) per mappare errori business a risposte HTTP.
+ * - **Pattern utilizzati:** Custom error classes con costruttori parametrici, estensione di Error nativo.
+ * - **Dipendenze:** Nessuna dipendenza esterna - modulo self-contained basato su Error nativo.
+ * 
+ * **Interazioni con altri moduli:**
+ * - **Business (usersManagement.js, recipesManagement.js):** Lancio errori custom per validazione e lookup.
+ * - **UI (ui.js, pagine):** Cattura errori per feedback utente (alert, form validation).
+ * - **Storage (storage.js):** Gestione errori durante operazioni CRUD.
+ * - **Session (session-service.js):** Propagazione errori da autenticazione e stato utente.
+ * 
+ * **Flusso di esecuzione documentato:**
+ * 
+ * 1. **Import e setup:**
+ *    - Nessun import esterno - modulo autonomo.
+ * 
+ * 2. **Definizione classi errore:**
+ *    - NotFound: Per risorse non esistenti (es. utente non trovato per username).
+ *    - Duplicated: Per risorse duplicate (es. username già esistente).
+ *    - InvalidFormat: Per dati con formato invalido (es. email malformata).
+ *    - BadRequest: Per richieste con formato dati non supportato.
+ * 
+ * 3. **Costruzione errori:**
+ *    - Istanziamento con parametri contestuali (itemType, fieldType, ecc.).
+ *    - Assegnamento codice HTTP e messaggio dinamico.
+ * 
+ * 4. **Propagazione e gestione:**
+ *    - Lancio (`throw`) nei moduli business per condizioni di errore.
+ *    - Cattura (`catch`) nei moduli UI per feedback specifico (es. alert, form invalid).
+ *    - Logging console per debug, graceful degradation per UX.
+ * 
+ * **Note tecniche:**
+ * - **Estensione Error:** Mantiene stack trace nativo, aggiunge proprietà custom.
+ * - **Codici HTTP:** Mappano errori business a standard web (404 not found, 409 conflict, ecc.).
+ * - **Parametri opzionali:** Alcuni costruttori hanno parametri default (null) per flessibilità.
+ * - **Messaggi dinamici:** Costruiti con template literals per contestualizzazione.
+ * - **Type safety:** JSDoc specifica tipi parametri per IDE support.
+ * - **Scalabilità:** Facile aggiunta nuove classi errore seguendo pattern esistente.
+ * - **Limitazioni:** Nessun logging automatico (delegato a catch blocks), dipendenza da gestione upstream.
+ * 
+ * @note Questo modulo è cruciale per error handling: errori mal gestiti impattano UX e debugging.
+ * @note Compatibilità: Usa solo Error nativo, compatibile con tutti gli ambienti JavaScript.
+ */

@@ -4,7 +4,8 @@
  * calcoli statistici aggregati e persistenza localStorage. Gestisce business rules come unicità
  * recensioni per utente/ricetta e validazione parametri.
  * @requires data-models.js - Classe Review per costruzione oggetti recensione
- * @requires storageManagement.js - Modulo StorageManagement per persistenza dati
+ * @requires errors.js - Modulo errori custom per validazioni
+ * @requires storage.js - Modulo StorageOperations per persistenza dati
  */
 
 import { Review } from "../core/data-models.js";
@@ -187,43 +188,62 @@ export function recipeUserRate(recipeId, userId, ratingType) {
     }
 }
 
-// ===============================
-// NOTE ARCHITETTURALI
-// ===============================
+// ============================================================================
+// ANALISI E DESCRIZIONE DEL FILE
+// ============================================================================
 
 /**
- * ARCHITETTURA E PATTERN:
+ * @description Analisi e descrizione del file reviews-service.js
  * 
- * PATTERN IMPLEMENTATI:
- * - Repository Pattern: getStoredReviews() come data access layer con astrazione storage
- * - Command Pattern: updateRecipeReviews() polivalente per ADD/DELETE basata su parametri
- * - Immutability: structuredClone() previene mutazioni accidentali dati
+ * **Scopo e ruolo nel progetto:**
+ * Modulo di servizio per la gestione unificata delle recensioni utente.
+ * Fornisce un'interfaccia pubblica per operazioni CRUD su recensioni con sistema rating duale (gusto/difficoltà),
+ * calcoli statistici aggregati in tempo reale e persistenza localStorage. 
+ * Implementa business rules come unicità recensioni per coppia utente-ricetta e validazione parametri, abilitando feedback
+ * granulare sulle ricette.
  * 
- * BUSINESS RULES:
- * - Unicità: Max 1 recensione per utente per ricetta
- * - Dual Rating: Ogni recensione richiede gusto + difficoltà
- * - No Partial Updates: Modifiche tramite delete + add per atomicità
- * - Real-time Aggregation: Statistiche calcolate on-demand senza caching (scelta effettuata per non appesantire troppo fase di costruzione pagine)
+ * **Architettura e struttura:**
+ * - **Configurazione storage:** Costanti per chiave localStorage e opzioni.
+ * - **Operazioni storage:** Funzione per lettura con copia profonda (getStoredReviews).
+ * - **CRUD engine:** Funzione principale per ADD/DELETE toggle (updateRecipeReviews).
+ * - **Aggregazioni:** Funzioni per calcoli statistici (recipeAvgRate, recipeUserRate).
+ * - **Pattern utilizzati:** Toggle mode basato su parametri, real-time aggregation senza caching.
+ * - **Dipendenze:** Importa data-models.js (Review), errors.js (Duplicated, NotFound), storage.js (StorageOperations).
  * 
- * DIPENDENZE:
- * - data-models.js: Costruttore Review per validazione oggetti
- * - errorsManagement.js: ReviewsManagementError per errori tipizzati business
- * - storageManagement.js: StorageManagement per persistenza localStorage
+ * **Interazioni con altri moduli:**
+ * - **Data models (data-models.js):** Istanzia oggetti Review per nuove recensioni.
+ * - **Storage (storage.js):** Persiste/legge array recensioni in localStorage.
+ * - **Errors (errors.js):** Lancia errori custom (Duplicated, NotFound) per validazioni.
+ * - **Session (session-service.js):** Utilizzato per operazioni business su recensioni
+ * - **UI (ui.js, pagine):** Non interagisce direttamente - accedono ai dati unicamente tramite session-service per isolamento e astrazione.
  * 
- * PERFORMANCE:
- * - Array Linear Search: Accettabile per MVP, ottimizzabile con Map/Index per scale
- * - Storage Access: Reload completo ad ogni operazione (trade-off consistency vs performance)
- * - Immutability Overhead: structuredClone() garantisce safety ma aumenta memoria
+ * **Flusso di esecuzione documentato:**
  * 
- * LIMITAZIONI:
- * - No Cache Expiry: Dati persistono indefinitamente
- * - No Concurrency: Operazioni sequenziali, no locking per multi-tab
- * - No Validation Range: Rating accettati senza controllo 1-5 (da gestire upstream)
+ * 1. **Import e configurazione:**
+ *    - Importa classi modelli, errori e storage.
+ *    - Definisce costanti chiave storage e opzioni.
  * 
- * FUTURI MIGLIORAMENTI:
- * - Caching intelligente per ridurre accessi localStorage
- * - Validazione range rating prima costruzione Review
- * - Supporto UPDATE mode separato da ADD/DELETE
- * - Ottimizzazione lookup con Map() per performance O(1)
- * - Gestione concorrenza con versioning o locking
+ * 2. **Lettura dati:**
+ *    - getStoredReviews: Recupera array da storage, ritorna copia profonda.
+ * 
+ * 3. **CRUD operazioni:**
+ *    - updateRecipeReviews: Toggle ADD/DELETE basato su parametri (rating presenti = ADD, null = DELETE).
+ *    - Validazione unicità per ADD, ricerca per DELETE.
+ *    - Persistenza aggiornata in storage.
+ * 
+ * 4. **Aggregazioni statistiche:**
+ *    - recipeAvgRate: Itera recensioni per media aritmetica su tipo rating.
+ *    - recipeUserRate: Ricerca rating specifico utente per ricetta.
+ * 
+ * **Note tecniche:**
+ * - **Sistema rating duale:** Supporto gusto/difficoltà per feedback completo.
+ * - **Business rules:** Unicità per coppia utente-ricetta, validazione parametri.
+ * - **Real-time aggregation:** Calcoli on-demand senza caching per leggerezza.
+ * - **Immutabilità:** Copia profonda previene mutazioni accidentali.
+ * - **Gestione errori:** Rilancia errori custom per graceful degradation.
+ * - **Scalabilità:** Facile aggiunta tipi rating o statistiche seguendo pattern esistente.
+ * - **Limitazioni:** Nessun caching aggregazioni, dipendenza storage locale.
+ * 
+ * @note Questo modulo gestisce logica recensioni: errori qui impattano rating e feedback utente.
+ * @note Compatibilità: Usa localStorage per persistenza, compatibile con browser moderni.
  */

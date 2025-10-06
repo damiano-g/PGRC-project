@@ -109,6 +109,7 @@ personalPageBody.addEventListener("click", async (click) => {
 });
 
 /**
+ /**
  * Event listener per inizializzazione pagina personale utente
  * 
  * @param {Event} load - Evento load della finestra (triggerato automaticamente al caricamento completo della pagina)
@@ -133,7 +134,6 @@ personalPageBody.addEventListener("click", async (click) => {
  *    // ... popolamento altre sezioni
  * });
  * 
- * @todo Aggiungere loading spinner durante caricamento dati
  */
 window.addEventListener("load", async () => {
     // Check autenticazione utente
@@ -167,7 +167,7 @@ window.addEventListener("load", async () => {
     try {
         populatePreviewContainer(await PreviewArray.fromUserReviews(), personalRevsContainer);
     } catch (error) {
-        personalFavsContainer.innerHTML = "Ooops. Something went wrong. Try reload the page";
+        personalRevsContainer.innerHTML = "Ooops. Something went wrong. Try reload the page";
         console.error(error);
     }
 
@@ -176,7 +176,7 @@ window.addEventListener("load", async () => {
     try {
         populatePreviewContainer(await PreviewArray.fromAllUserNotes(), personalNotesContainer);
     } catch (error) {
-        personalFavsContainer.innerHTML = "Ooops. Something went wrong. Try reload the page";
+        personalNotesContainer.innerHTML = "Ooops. Something went wrong. Try reload the page";
         console.error(error);
     }
 

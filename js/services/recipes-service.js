@@ -160,7 +160,7 @@ async function createLocalCategoriesDB() {
 
 /**
  * Orchestratore principale per accesso dati con strategia cache-first
- * Prima controlla localStorage tramite StorageManagement, se vuoto inizializza DB da API
+ * Prima controlla localStorage tramite StorageManagement, se vuoto o dati obsoleti (non di oggi) inizializza DB da API
  * Ritorna copia profonda per evitare mutazioni accidentali
  * 
  * @private
@@ -174,7 +174,7 @@ async function createLocalCategoriesDB() {
  * @throws {Error} Rilancia errori critici e di storage
  * 
  * @example
- * const recipes = await getData("recipes"); // Carica da cache o API
+ * const recipes = await getData("recipes"); // Carica da cache o API se vuota/obsoleta
  */
 export async function getData(dataType) {
     try {
@@ -360,25 +360,66 @@ export async function searchRecipesByCategory(category){
     }  
 }
 
-// ===============================
-// NOTE IMPLEMENTAZIONE E LIMITI
-// ===============================
+// ============================================================================
+// ANALISI E DESCRIZIONE DEL FILE
+// ============================================================================
 
 /**
- * ARCHITETTURA E LIMITAZIONI:
+ * @description Analisi e descrizione del file recipes-service.js
  * 
- * PATTERN ARCHITETTURALI:
- * - Cache-first strategy: localStorage prioritario, API fallback
- * - Lazy initialization: DB creati solo su richiesta
- * - Structured cloning: prevenzione mutazioni accidentali dati
- * - Error resilience: gestione graceful fallimenti API
+ * **Scopo e ruolo nel progetto:**
+ * Modulo di servizio per la gestione unificata dei dati ricette e categorie.
+ * Fornisce un'interfaccia pubblica per accesso a dati locali (cache-first) e API esterne (TheMealDB), abilitando
+ * ricerche avanzate, filtri e recupero casuale. Implementa strategia cache-first con refresh giornaliero
+ * per ottimizzare performance e ridurre chiamate API, garantendo dati freschi senza sovraccarico.
  * 
- * DIPENDENZE:
- * - data-models.js: classi Category e FullRecipe per strutturazione dati
- * - storageManagement.js: astrazione gestione localStorage
+ * **Architettura e struttura:**
+ * - **Configurazione API:** Costanti per endpoint TheMealDB e opzioni fetch.
+ * - **Funzioni core API:** Wrapper generico per chiamate HTTP (fetchRecipes).
+ * - **Gestione DB locale:** Creazione cache da API (createLocalRecipesDB, createLocalCategoriesDB).
+ * - **API pubblica:** Orchestratore getData e funzioni ricerca (searchRecipeById, searchRecipesByName, ecc.).
+ * - **Pattern utilizzati:** Cache-first strategy, structuredClone per immutabilità, scoring algorithm per ricerca.
+ * - **Dipendenze:** Importa data-models.js (Category, FullRecipe), storage.js (StorageOperations), errors.js (NotFound).
  * 
- * LIMITAZIONI API THEMEALDB:
- * - Rate limiting non documentato (possibili blocchi temporanei)
- * - Campi opzionali possono essere null/vuoti (gestione robusta richiesta)
- * - Max ~100 risultati per query lettera (iterazione alfabeto necessaria)
+ * **Interazioni con altri moduli:**
+ * - **Data models (data-models.js):** Istanzia oggetti Category/FullRecipe da dati API.
+ * - **Storage (storage.js):** Persiste/legge cache in localStorage.
+ * - **Errors (errors.js):** Lancia errori custom (NotFound) per ricerche fallite.
+* - **Session (session-service.js):** Utilizzato per operazioni business su ricette
+ * - **UI (ui.js, pagine):** Non interagiscono direttamente - accedono ai dati unicamente tramite session-service per isolamento e astrazione.
+ * 
+ * **Flusso di esecuzione documentato:**
+ * 
+ * 1. **Import e configurazione:**
+ *    - Importa classi modelli, storage e errori.
+ *    - Definisce costanti endpoint API e opzioni fetch.
+ * 
+ * 2. **Funzioni core API:**
+ *    - fetchRecipes: Wrapper per chiamate HTTP a TheMealDB, gestisce errori base.
+ * 
+ * 3. **Creazione DB locale:**
+ *    - createLocalRecipesDB: Scarica tutto il corpus ricette iterando alfabeto, salva in storage.
+ *    - createLocalCategoriesDB: Scarica categorie, converte e salva in storage.
+ * 
+ * 4. **Orchestratore getData:**
+ *    - Controlla cache in storage: se vuota o obsoleta (non di oggi), ricarica da API.
+ *    - Ritorna copia profonda per immutabilità.
+ * 
+ * 5. **API pubblica - ricerche:**
+ *    - searchRecipeById: Ricerca esatta per ID, lancia NotFound se non trovato.
+ *    - searchRecipesByName: Algoritmo scoring multi-termine, ordina per rilevanza.
+ *    - rndSearch: Estrazione casuale unica per quantità specificata.
+ *    - searchRecipesByCategory: Filtro per categoria specifica.
+ * 
+ * **Note tecniche:**
+ * - **Strategia cache-first:** Controllo data giornaliero previene dati stantii, riduce API calls.
+ * - **Algoritmo ricerca:** Scoring ponderato (match completi/parziali, ordine termini), garantisce risultati rilevanti.
+ * - **Immutabilità:** structuredClone previene mutazioni accidentali dei dati.
+ * - **Gestione errori:** Rilancia errori custom per ricerche fallite, graceful degradation.
+ * - **Performance:** Cache locale riduce latenza, iterazione alfabeto per copertura completa.
+ * - **Scalabilità:** Facile aggiunta filtri/ricerche seguendo pattern esistente.
+ * - **Limitazioni:** Dipendenza da TheMealDB API, quota storage (~5MB), refresh giornaliero potrebbe essere lento su connessioni lente.
+ * 
+ * @note Questo modulo è centrale per data access: errori qui impattano ricerche e popolamento UI.
+ * @note Compatibilità: Usa fetch API (supportato in browser moderni), localStorage per cache.
  */

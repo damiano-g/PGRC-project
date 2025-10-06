@@ -485,7 +485,7 @@ settingsClearBtn.addEventListener("click", () => location.reload());
 
 
 /**
- * @description Flusso di esecuzione del file modif.js
+ * @description Flusso di esecuzione del file settings.js
  * 
  * 1. **Import moduli e dipendenze**:
  *    - Importa LoggedUser da sessionControl.js per gestione utente autenticato

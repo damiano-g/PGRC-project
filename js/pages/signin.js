@@ -131,7 +131,7 @@ signinInputFields.forEach(field => field.addEventListener("input", () => {
  * - Mostra overlay per prevenire doppi submit.
  * - Raccoglie valori dai campi input.
  * - Chiama NewUser.addToDB per registrazione.
- * - In caso di successo: alert conferma e redirect a index.html.
+ * - In caso di successo: alert conferma e redirect a login.html.
  * - In caso di errore: gestione specifica per errori 409/422, altrimenti errore generico.
  * - Reset form e nascondi overlay in caso di errore.
  * - Gestione errori con try-catch: alert utente e log console per graceful degradation.
@@ -236,7 +236,7 @@ signinGotoLogBtn.addEventListener("click", () => window.location.href = "./login
 
 
 /**
- * @description Flusso di esecuzione del file singin.js
+ * @description Flusso di esecuzione del file signin.js
  * 
  * 1. **Import moduli e dipendenze**:
  *    - Importa NewUser da sessionControl.js per gestione registrazione
@@ -255,7 +255,7 @@ signinGotoLogBtn.addEventListener("click", () => window.location.href = "./login
  * 
  * 5. **Gestione submit form (event listener su signinSubBtn)**:
  *    - Mostra overlay per bloccare UI, raccoglie valori, chiama NewUser.addToDB
- *    - In caso di successo: alert e redirect a index.html
+ *    - In caso di successo: alert e redirect a login.html
  *    - In caso di errore: gestione specifica per 409/422, altrimenti errore generico con reset form
  *    - Gestione errori con try-catch per graceful degradation
  * 
@@ -268,5 +268,5 @@ signinGotoLogBtn.addEventListener("click", () => window.location.href = "./login
  * @note Il flusso è misto sincrono/asincrono: validazione sincrona, submit asincrono
  * @note Validazione granulare: feedback immediato su ogni input, pulsante submit abilitato solo se tutto valido
  * @note Graceful degradation: errori locali non crashano l'app, UI rimane funzionale con alert e reset
- * @note Sicurezza: overlay previene doppi submit, validazione lato page scripts + business modules
+ * @note Sicurezza: overlay previene doppi submit, validazione lato client + server
  */

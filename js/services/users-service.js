@@ -3,7 +3,7 @@
  * @description Sistema completo per gestione utenti con localStorage/sessionStorage,
  * validazione duplicati, autenticazione sicura e operazioni atomiche
  * @requires data-models.js - Classi User e Note per costruzione oggetti
- * @requires storageManagement.js - Modulo StorageManagement per persistenza dati
+ * @requires storage.js - Modulo StorageOperations per persistenza dati
  */
 
 import { Note, User } from "../core/data-models.js";
@@ -632,50 +632,77 @@ async function updateUserData(userId, field, newValue, needsHashing = null) {
 }
 
 
-
 // ============================================================================
-// NOTE ARCHITETTURALI E LIMITI
+// ANALISI E DESCRIZIONE DEL FILE
 // ============================================================================
 
 /**
- * ARCHITETTURA E PATTERN:
+ * @description Analisi e descrizione del file users-service.js
  * 
- * PATTERN IMPLEMENTATI:
- * - Repository Pattern: getRegisteredUsers() come data access layer con astrazione storage
- * - Factory Pattern: createUserObject() per costruzione oggetti User standardizzata
- * - Command Pattern: updateUserData() polivalente per aggiornamenti campi diversi
- * - Immutability: structuredClone() previene mutazioni accidentali dati
- * - Atomic Operations: read-modify-write per consistency storage
+ * **Scopo e ruolo nel progetto:**
+ * Modulo di servizio per la gestione completa degli utenti.
+ * Fornisce un'interfaccia pubblica per operazioni CRUD su utenti, autenticazione sicura con hashing SHA-256,
+ * validazione duplicati e unicità, e persistenza localStorage. Implementa business rules per registrazione,
+ * login, aggiornamenti profilo e gestione preferenze/note.
  * 
- * BUSINESS RULES:
- * - Unicità: Username e email unici nel sistema
- * - Sicurezza: Password hashate SHA-256, no storage in chiaro
- * - Toggle Favourites: Add/remove automatico basato su presenza ricetta
- * - CRUD Notes: Operazioni separate per aggiunta/rimozione note
- * - Validation Chain: Controlli duplicati prima creazione/aggiornamento
+ * **Architettura e struttura:**
+ * - **Configurazione storage:** Costanti per chiave localStorage e opzioni.
+ * - **API pubblica - Accesso dati:** Funzione per lettura utenti registrati.
+ * - **API pubblica - CRUD utenti:** Funzioni per aggiunta, eliminazione, aggiornamenti profilo.
+ * - **API pubblica - Autenticazione:** Funzioni per login e hashing password.
+ * - **Validazione:** Funzioni per controllo formato e duplicati.
+ * - **Factory:** Funzione per creazione oggetti User.
+ * - **Utility:** Funzioni per ricerca e aggiornamento generico.
+ * - **Pattern utilizzati:** Validation chain per sicurezza, operazioni atomiche per consistenza.
+ * - **Dipendenze:** Importa data-models.js (User, Note), storage.js (StorageOperations), errors.js (Duplicated, NotFound, InvalidFormat).
  * 
- * DIPENDENZE:
- * - errorsManagement.js: UsersManagementError per errori tipizzati business
- * - data-models.js: Classi User/Note per validazione e costruzione oggetti
- * - storageManagement.js: StorageManagement per persistenza localStorage
+ * **Interazioni con altri moduli:**
+ * - **Data models (data-models.js):** Istanzia oggetti User/Note per costruzione.
+ * - **Storage (storage.js):** Persiste/legge array utenti in localStorage.
+ * - **Errors (errors.js):** Lancia errori custom (Duplicated, NotFound, InvalidFormat) per validazioni.
+ * - **Session (session-service.js):** Agisce come layer di astrazione superiore, orchestrando operazioni business sugli utenti tramite chiamate a questo modulo (users-service.js) 
+ *      per isolamento e astrazione dalla logica di basso livello.
+ * - **UI (ui.js, pagine):** Non interagisce direttamente - accedono ai dati unicamente tramite session-service per isolamento e astrazione.
  * 
- * PERFORMANCE:
- * - Cache Locale: registeredUsers aggiornata ad ogni accesso (trade-off freshness vs performance)
- * - Linear Search: findIndex() accettabile per MVP, ottimizzabile con Map per scale
- * - Atomic Updates: Lettura completa array per ogni modifica (consistency over performance)
- * - Hashing Overhead: SHA-256 computazionalmente costoso ma sicuro
+ * **Flusso di esecuzione documentato:**
  * 
- * LIMITAZIONI:
- * - No Session Expiry: Utenti persistono indefinitamente
- * - No Concurrency: Operazioni sequenziali, no locking per multi-tab
- * - No Password Recovery: Sistema solo verifica, no reset mechanism
- * - No Email Validation: Controllo formato lasciato a upstream
- * - No Rate Limiting: Nessun limite tentativi login/fail
+ * 1. **Import e configurazione:**
+ *    - Importa classi modelli, storage e errori.
+ *    - Definisce costanti chiave storage e opzioni.
  * 
- * SICUREZZA:
- * - Password Hashing: SHA-256 con Web Crypto API (standard sicuro)
- * - No Plain Text: Password mai memorizzate in chiaro
- * - Input Sanitization: Validation duplicati previene injection indiretta
- * - Error Handling: Messaggi errori non rivelano info sensibili
+ * 2. **Lettura dati:**
+ *    - getRegisteredUsers: Recupera array utenti con deep copy.
  * 
+ * 3. **CRUD operations:**
+ *    - addNewUser: Validation chain, creazione User, storage atomico.
+ *    - deleteUser: Ricerca per ID, rimozione da array, update storage.
+ *    - updateUserUsername/updateUserEmail/updateUserPassword: Validation, update atomico.
+ *    - updateUserFavourites: Toggle add/remove ricetta da preferiti.
+ *    - updateUserNotes: Toggle add/remove note utente.
+ * 
+ * 4. **Autenticazione:**
+ *    - admitUser: Verifica credenziali con confronto hash.
+ *    - hashString: Genera hash SHA-256 per password.
+ * 
+ * 5. **Validazione:**
+ *    - searchDuplicates: Controllo unicità username/email.
+ *    - authPassword/authEmail/authUsername: Validazione formato + duplicati.
+ * 
+ * 6. **Factory e utility:**
+ *    - createUserObject: Costruzione User con hashing.
+ *    - searchUser: Ricerca generica per campo univoco.
+ *    - updateUserData: Aggiornamento atomico con preprocessing.
+ * 
+ * **Note tecniche:**
+ * - **Sicurezza:** Hashing SHA-256 per password, validation chain per input.
+ * - **Consistenza:** Operazioni atomiche (read-modify-write) per evitare race conditions.
+ * - **Immutabilità:** Deep copy per prevenzione mutazioni accidentali.
+ * - **Business rules:** Unicità username/email, formato password complesso.
+ * - **Gestione errori:** Rilancio errori custom per graceful degradation.
+ * - **Performance:** Letture sincrone, scritture asincrone per hashing.
+ * - **Scalabilità:** Funzioni modulari facilitano aggiunta campi/validazioni.
+ * - **Limitazioni:** Dipendenza localStorage (no server), hashing lato client.
+ * 
+ * @note Questo modulo gestisce logica utenti: errori qui impattano registrazione e autenticazione.
+ * @note Compatibilità: Usa Web Crypto API per hashing, compatibile con browser moderni.
  */

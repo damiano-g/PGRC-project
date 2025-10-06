@@ -51,7 +51,7 @@ export function generateItemId(itemType) {
  * Factory per utenti con validazione delegata a layer superiore.
  * - ID auto-generato per unicità garantita
  * - Arrays vuoti per favourites/notes (populate on-demand)
- * - Timestamp ISO per audit trail
+ * - Oggetto date per tracciamento creazione oggetto
  * - Password management delegato a auth layer
  *
  * @example
@@ -66,7 +66,7 @@ export class User {
     /** @type {string} */ password;
     /** @type {Array<string>} */ favourites;
     /** @type {Array<Note>} */ notes;
-    /** @type {string} */ creationDate;
+    /** @type {Date} */ creationDate;
 
     constructor(validUsername, validEmail, hashedPassword) {
         this.id = generateItemId("user");
@@ -89,7 +89,7 @@ export class User {
  * @description
  * Factory per annotazioni utente con metadata automatici.
  * - ID auto-generato per riferimenti univoci
- * - Date string locale per display user-friendly
+ * - Oggetto date per tracciamento creazione oggetto
  * - Associazione diretta recipeId per lookup rapido
  * 
  * @example
@@ -100,7 +100,7 @@ export class Note {
     /** @type {string} */ id;
     /** @type {string} */ recipeId;
     /** @type {string} */ text;
-    /** @type {string} */ date;
+    /** @type {Date} */ creationDate;
 
     constructor(recipeId, text){
         this.id = generateItemId("note");
@@ -123,7 +123,7 @@ export class Note {
  * Factory per recensioni con business rule validation.
  * - Dual rating system per categorizzazione multi-dimensionale
  * - User-recipe uniqueness gestita a livello storage
- * - Date string per chronological sorting
+ * - Oggetto date per tracciamento creazione oggetto
  * 
  * @example
  * const review = new Review("52772", "user123", 4, 3);
@@ -136,7 +136,7 @@ export class Review {
     /** @type {string} */ userId;
     /** @type {number} */ tasteRate;
     /** @type {number} */ difficultyRate;
-    /** @type {string} */ dateAdded;
+    /** @type {Date} */ creationDate;
     
     constructor(recipeId, userId, tasteRate, difficultyRate){
         this.id = generateItemId("review");
@@ -185,7 +185,7 @@ export class Category {
     /** @type {string} */ id;
     /** @type {string} */ name;
     /** @type {string} */ image;
-    /** @type {string} */ dateAdded;
+    /** @type {Date} */ creationDate;
 
     constructor(rawCategoryObj){
         this.id = rawCategoryObj.strCategory || "";
@@ -214,13 +214,6 @@ export class Category {
  * 
  * @see {@link FullRecipe.getIngredients} Per dettagli processamento ingredienti
  * 
- * @property {string} id - ID univoco ricetta
- * @property {string} name - Nome display ricetta  
- * @property {string} image - URL immagine ricetta
- * @property {string} instructions - Istruzioni preparazione complete
- * @property {string} creationDate - ISO timestamp di quando l'oggetto è stato creato localmente
- * @property {Array<{name: string, measure: string}>} ingredients - Array ingredienti processati
- * 
  * @description
  * Normalizzazione della struttura peculiare TheMealDB API per oggetto ricetta.
  * Gestisce dati incompleti tramite fallback chain
@@ -245,7 +238,7 @@ export class FullRecipe {
     /** @type {string} Categoria di appartenenza */ category;
     /** @type {string} URL immagine */ image; 
     /** @type {string} Istruzioni preparazione complete */ instructions;
-    /** @type {string} ISO timestamp creazione oggetto locale (non da API) */ dateAdded;
+    /** @type {Date} oggetto Date di creazione oggetto locale */ creationDate;
     /** 
      * @type {Array<{name: string, measure: string}>} 
      * Array ingredienti processati - chiamata al metodo prototype durante costruzione
@@ -310,51 +303,60 @@ export class FullRecipe {
 };
 
 
-// ================================================================================================
-// ARCHITECTURE NOTES
-// ================================================================================================
+// ============================================================================
+// ANALISI E DESCRIZIONE DEL FILE
+// ============================================================================
 
-/*
-DESIGN PATTERNS IMPLEMENTATI:
-
-1. **Factory Pattern**:
-   - Tutti i constructors sono factory per oggetti business specifici
-   - Input validation e normalization centralizzata
-   - Consistent object structure indipendentemente da input quality
-
-2. **Adapter Pattern**:
-   - ItemPreview adatta diverse API structures (meals vs categories)
-   - FullRecipe adatta struttura peculiare TheMealDB (20 ingredient fields)
-   - Fallback chains per graceful degradation con dati incompleti
-
-3. **Builder Pattern (partial)**:
-   - FullRecipe.getIngredients() processa complex ingredients structure
-   - createPreviewArray() builds collections con tipo detection
-   - Separation tra data extraction e object construction
-
-4. **Prototype Pattern**:
-   - FullRecipe.prototype.getIngredients condiviso tra istanze
-   - Evita function duplication per ogni recipe object
-   - Consistent processing logic across objects
-
-DATA NORMALIZATION STRATEGY:
-
-- **Fallback Chains**: obj.field1 || obj.field2 || defaultValue
-- **Graceful Degradation**: Empty strings invece di undefined/null
-- **Type Coercion**: Automatic String() conversion per consistency
-- **Null Safety**: Optional chaining e truthy checks preventivi
-
-BUSINESS RULES IMPLEMENTATE:
-
-- **Unique IDs**: Timestamp + random per collision avoidance
-- **Date Consistency**: ISO strings per storage, locale strings per display
-- **Image Fallbacks**: Default image path per missing thumbnails
-- **Ingredient Filtering**: Empty slots automatically excluded
-
-PERFORMANCE CONSIDERATIONS:
-
-- **Fixed Loops**: 20 iterations max per ingredients (non input-dependent)
-- **Minimal String Ops**: Solo trim() necessario, no regex/complex parsing
-- **Memory Efficient**: Arrays sized to actual content, no pre-allocation
-- **Prototype Sharing**: Methods shared across instances, no duplication
-*/
+/**
+ * @description Analisi e descrizione del file data-models.js
+ * 
+ * **Scopo e ruolo nel progetto:**
+ * Modulo core per la definizione e gestione dei modelli dati del progetto PGRC.
+ * Fornisce classi unificate per rappresentare entità (utenti, note, recensioni, categorie, ricette)
+ * provenienti da API esterne (TheMealDB) o generate localmente. Garantisce normalizzazione,
+ * validazione strutturale e pattern di fallback per dati incompleti, facilitando l'integrazione
+ * con storage e moduli business.
+ * 
+ * **Architettura e struttura:**
+ * - **Utility functions:** Funzioni helper per generazione ID univoci (generateItemId).
+ * - **User management models:** Classi per entità utente (User, Note, Review).
+ * - **API data models:** Classi per dati da API (Category, FullRecipe).
+ * - **Dipendenze:** Nessuna dipendenza esterna - modulo self-contained.
+ * 
+ * **Interazioni con altri moduli:**
+ * - **Storage (storage.js):** Classi istanziate vengono serializzate/deserializzate per persistenza.
+ * - **Business (usersManagement.js, recipesManagement.js):** Utilizzate per creazione e manipolazione oggetti.
+ * - **UI (ui.js):** Oggetti popolano componenti di rendering (card, preview).
+ * - **Session (session-service.js):** Integrazione con logica autenticazione e stato utente.
+ * 
+ * **Flusso di esecuzione documentato:**
+ * 
+ * 1. **Import e setup:**
+ *    - Nessun import esterno - modulo autonomo.
+ * 
+ * 2. **Utility functions:**
+ *    - generateItemId: Genera ID univoci con timestamp + random per tutte le entità.
+ * 
+ * 3. **User management models:**
+ *    - User: Costruttore per nuovi utenti con dati pre-validati (username, email, password hashata).
+ *    - Note: Costruttore per note utente legate a ricette, con metadata automatici.
+ *    - Review: Costruttore per recensioni con rating duali (gusto + difficoltà).
+ * 
+ * 4. **API data models - Preview objects:**
+ *    - Category: Normalizzazione dati categoria da TheMealDB API, con fallback per campi mancanti.
+ * 
+ * 5. **API data models - Full recipe objects:**
+ *    - FullRecipe: Costruttore per ricette complete, con processamento ingredienti via prototype method.
+ *    - getIngredients: Metodo per trasformare 20 campi API separati in array strutturato.
+ * 
+ * **Note tecniche:**
+ * - **Normalizzazione API:** Gestisce strutture peculiari TheMealDB (20 campi ingredienti separati) con processamento robusto.
+ * - **Fallback chain:** Uso di `|| ""` per campi mancanti, previene errori runtime.
+ * - **ID generation:** Strategia timestamp + random riduce collisioni, prefisso tipo per categorizzazione.
+ * - **Validazione:** Delegata upstream (es. password hashata in User), focus su struttura dati.
+ * - **Scalabilità:** Facile aggiunta nuove classi seguendo pattern esistente.
+ * - **Limitazioni:** Nessuna validazione interna (delegata), dipendenza da struttura API esterna.
+ * 
+ * @note Questo modulo è fondamentale per data integrity: errori qui impattano storage e rendering.
+ * @note Compatibilità: Indipendente da framework, usa solo JavaScript vanilla.
+ */
