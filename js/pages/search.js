@@ -180,6 +180,7 @@ searchBtn.addEventListener("click", async () => {
         if(recipesPreviewArray){
             history.pushState(null, "", `../../pages/search.html?q=${String(searchBar.value)}`);
             populatePreviewContainer(recipesPreviewArray, resultsContainer);
+            window.scroll({top: 0, behavior: "smooth"});
         }else{
             const paragraph = document.createElement("div");
             paragraph.innerText = "La ricerca non ha prodotto risultati";
