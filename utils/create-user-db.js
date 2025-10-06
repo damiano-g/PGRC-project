@@ -33,7 +33,7 @@ export async function createUsers(){
         for(let i=0; i < (Math.floor(Math.random() * (30 + 1))); i++){
             next = Math.floor(Math.random() * (300 + 1));
             picked.push(next);
-            UsersManagement.updateUserNotes(newUser.id, recipes_db[next].id, `Note ${i}, recipe ${recipes_db[i].name}`);
+            UsersManagement.updateUserNotes(newUser.id, recipes_db[next].id, `Note ${i}, recipe ${recipes_db[next].name}`);
         }
     }
 }

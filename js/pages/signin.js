@@ -160,7 +160,7 @@ signinSubBtn.addEventListener("click", async () => {
         await NewUser.addToDB(chosenUsername, chosenEmail, chosenPassword, passwordConfirm);
         
         alert("User registered");
-        window.location.href = "../../index.html";
+        window.location.href = "./login.html";
 
     }catch(error){
         if(error.code === 409 || error.code === 422){
