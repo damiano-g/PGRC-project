@@ -552,7 +552,7 @@ export function favBtnDisplay(btn, recipeId) {
    let condition;
    
    try {
-      condition = LoggedUser.isLogged() && Recipe.isFavourite(recipeId);
+      condition = Recipe.isFavourite(recipeId);
    } catch (error) {
       condition = false;
       console.error(error);
@@ -593,15 +593,13 @@ export function revBtnDisplay(btn, recipeId) {
       const dialogBody = document.querySelector("#review-dialog .modal-body");
       btn.innerText = "Add review";
 
-      if(LoggedUser.isLogged()){
-         if(Recipe.isReviewed(recipeId)){
-            btn.innerText = "Delete review";
-            dialogBody.querySelector(".form").classList.add("d-none");
-            dialogBody.querySelector(".text").classList.remove("d-none");
-         }else{
-            dialogBody.querySelector(".form").classList.remove("d-none");
-            dialogBody.querySelector(".text").classList.add("d-none");
-         }
+      if(Recipe.isReviewed(recipeId)){
+         btn.innerText = "Delete review";
+         dialogBody.querySelector(".form").classList.add("d-none");
+         dialogBody.querySelector(".text").classList.remove("d-none");
+      }else{
+         dialogBody.querySelector(".form").classList.remove("d-none");
+         dialogBody.querySelector(".text").classList.add("d-none");
       }
    } catch (error) {
       console.error(error);

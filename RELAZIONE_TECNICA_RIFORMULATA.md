@@ -1,16 +1,14 @@
-# RELAZIONE TECNICA - PROGETTO PGRC
+### RELAZIONE TECNICA - PROGETTO PGRC
 **Piattaforma per la Gestione di Ricette di Cucina**
 
 ---
-
 **Corso:** Programmazione Web e Mobile  
-**Anno Accademico:** 2025/2026  
+**Anno Accademico:** 2024/2025  
 **Candidato:** Damiano Ghibaudo  
 **Data:** Ottobre 2025
 
 ---
-
-## INDICE
+### INDICE
 
 1. [Introduzione e Obiettivi](#1-introduzione-e-obiettivi)
 2. [Architettura e Design](#2-architettura-e-design)
@@ -21,10 +19,26 @@
 7. [Conclusioni](#7-conclusioni)
 
 ---
+<div style="page-break-before: always;"></div>
 
-## 1. INTRODUZIONE E OBIETTIVI
+### 1. INTRODUZIONE E OBIETTIVI
 
-### 1.1 Panoramica del Progetto
+<style>
+/* stile per blocco file-tree: monospace, dimensione ridotta e tentativo di evitare page-break */
+pre.file-tree {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.75em;   
+    line-height: 1.5;
+    margin: 0 0 1rem 0;
+    page-break-inside: avoid;
+}
+/* Evita che titoli h4 siano separati dal contenuto */
+h4 {
+    page-break-after: avoid;
+}
+</style>
+
+#### 1.1 Panoramica del Progetto
 
 PGRC (Piattaforma per la Gestione di Ricette di Cucina) è un'applicazione web frontend-only sviluppata per soddisfare quattro macro-scenari funzionali:
 
@@ -33,7 +47,7 @@ PGRC (Piattaforma per la Gestione di Ricette di Cucina) è un'applicazione web f
 3. **Ricettario Personale:** Sistema preferiti con note private personalizzabili
 4. **Sistema Recensioni:** Rating duale (gusto/difficoltà) con aggregazione community
 
-### 1.2 Vincoli Tecnici e Soluzioni Adottate
+#### 1.2 Vincoli Tecnici e Soluzioni Adottate
 
 Il progetto rispetta rigorosamente i vincoli di consegna implementando le seguenti soluzioni e tecnologie:
 
@@ -42,7 +56,7 @@ Il progetto rispetta rigorosamente i vincoli di consegna implementando le seguen
 - **Separazione Concerns:** Architettura modulare a tre layer (Presentation, Service, Data)
 - **Responsive Design:** Mobile-first approach con CSS Grid e Flexbox
 
-### 1.3 Valore Aggiunto Implementato
+#### 1.3 Valore Aggiunto Implementato
 
 Oltre ai requisiti base, l'applicazione introduce:
 - Session Service come orchestratore centrale con facade pattern
@@ -52,12 +66,11 @@ Oltre ai requisiti base, l'applicazione introduce:
 - UI dinamica con event delegation pattern
 
 ---
-
 <div style="page-break-before: always;"></div>
 
-## 2. ARCHITETTURA E DESIGN
+### 2. ARCHITETTURA E DESIGN
 
-### 2.1 Struttura Modulare a Tre Layer
+#### 2.1 Struttura Modulare a Tre Layer
 
 ```
 ┌─────────────────────────────────────┐
@@ -85,7 +98,7 @@ Il `session-service.js` agisce come facade pattern esponendo namespace dedicati:
 #### Data Layer
 Gestisce persistenza tramite `storage.js` (astrazione localStorage/sessionStorage), integrazione API con `recipes-service.js`, e modelli dati con `data-models.js` per entità business.
 
-### 2.2 Design Pattern Strategici
+#### 2.2 Design Pattern Strategici
 
 #### Factory Pattern per Data Models
 Il sistema utilizza factory pattern per la creazione consistente di entità business:
@@ -93,6 +106,7 @@ Il sistema utilizza factory pattern per la creazione consistente di entità busi
 - **Recipe Factory:** Normalizza dati API TheMealDB in formato interno consistente
 - **Review Factory:** Crea recensioni con validazione parametri e timestamp automatici
 - **ID Generation:** Sistema centralizzato per generazione identificatori univoci basati su timestamp e randomizzazione
+<!-- page-break removed -->
 
 #### Strategy Pattern per Error Handling
 Sistema di gestione errori tipizzato con classi custom per scenari specifici:
@@ -103,36 +117,22 @@ Sistema di gestione errori tipizzato con classi custom per scenari specifici:
 Ogni classe mantiene codice HTTP, tipo entità e metadati per logging centralizzato.
 
 #### Event Delegation Pattern
-```javascript
-// Esempio reale da search.js - gestione eventi su card dinamiche
-resultsContainer.addEventListener("click", (click) => {
-    const card = click.target.closest(".card");
-    const isBtn = click.target.matches(".fav-icon");
+Il sistema implementa event delegation per gestire interazioni su contenuto generato dinamicamente:
 
-    if(card && !isBtn){
-        // Naviga alla pagina dettagli passando l'ID della ricetta come query parameter
-        window.location.href = `../../pages/recipe-details.html?id=${card.dataset.itemId}`;
-    }
+**Strategia Implementata:**
+- **Single Event Listener:** Un listener sul container padre gestisce eventi di tutti gli elementi figli
+- **Target Detection:** Utilizzo di `closest()` e `matches()` per identificare l'elemento specifico cliccato
+- **Action Routing:** Logic condizionale per instradare azioni diverse (navigazione vs. toggle preferiti)
+- **Authentication Guard:** Controllo stato utente per proteggere operazioni autenticate
 
-    if(isBtn){
-        try {
-            if(LoggedUser.isLogged()){
-                LoggedUser.updateFavourites(card.dataset.itemId);
-                favBtnDisplay(card.querySelector(".fav-icon"), card.dataset.itemId);
-            }else{
-                window.location.href = "./login.html";
-            }
-        } catch (error) {
-            alert("Ooops! Something went wrong. Please try again.");
-            console.error(error);
-        }
-    }
-});
-```
+**Vantaggi Tecnici:**
+- **Performance:** Riduzione memoria con un solo listener invece di N listener per N elementi
+- **Dinamicità:** Gestione automatica di elementi aggiunti/rimossi dinamicamente
+- **Manutenibilità:** Centralizzazione logica eventi in un singolo punto
+<div style="page-break-before: always;"></div>
 
-### 2.3 Organizzazione File System
-
-```
+#### 2.3 Organizzazione File System
+<pre class="file-tree">
 PGRC-project/
 ├── index.html                 # Homepage con carousel ricette popolari
 ├── style.css                  # Stili CSS principali responsive
@@ -183,15 +183,15 @@ PGRC-project/
 │
 └── utils/                     # Utilità sviluppo
     └── create-user-db.js      # Script creazione database utenti test
-```
+</pre>
 
 ---
 
-<div style="page-break-before: always;"></div>
+<div style="page-break-after: always;"></div>
 
-## 3. IMPLEMENTAZIONE CORE
+### 3. IMPLEMENTAZIONE CORE
 
-### 3.1 Session Service: Orchestrazione Centralizzata
+#### 3.1 Session Service: Orchestrazione Centralizzata
 
 Il Session Service (`js/services/session-service.js`) rappresenta il cuore architetturale dell'applicazione, implementando il pattern **Facade** per fornire una API unificata che astrae la complessità della gestione stati utente, operazioni business e interazioni con storage.
 
@@ -224,7 +224,7 @@ Questo namespace risolve il problema della **preparazione dati per il rendering 
 
 La funzione `mostPopular()` implementa una **strategia del fallback** che garantisce contenuti sempre disponibili anche quando il database recensioni è insufficiente, riempiendo con ricette casuali.
 
-### 3.2 Cache-First Strategy per Performance
+#### 3.2 Cache-First Strategy per Performance
 
 L'integrazione API implementa strategia cache intelligente:
 
@@ -241,7 +241,7 @@ L'integrazione API implementa strategia cache intelligente:
 - Batch processing per riduzione chiamate API sequenziali
 - Error handling con graceful degradation
 
-### 3.3 Validazione Dual-Layer
+#### 3.3 Validazione Dual-Layer
 
 Il sistema di validazione implementa un **approccio dual-layer** che separa la **responsabilità UX** (feedback immediato) dalla **logica business** (sicurezza e integrità dati), garantendo sia usabilità che robustezza.
 
@@ -257,7 +257,7 @@ Il layer business implementa **validazioni rigorose** con controlli di formato t
 
 Il Session Service orchestra la validazione attraverso `inputValidation()` che determina il tipo di controllo da eseguire e propaga gli errori tipizzati per il rendering UI. Questa architettura garantisce **separazione**, **riusabilità** e **sicurezza multi-layer**.
 
-### 3.4 Sistema Recensioni con Rating Duale
+#### 3.4 Sistema Recensioni con Rating Duale
 
 Il sistema recensioni (`js/services/reviews-service.js`) implementa un **rating duale gusto/difficoltà** con un'architettura CRUD semplificata che utilizza un **pattern toggle intelligente** per gestire aggiunta e rimozione recensioni attraverso un'unica funzione.
 
@@ -285,7 +285,7 @@ Il sistema espone funzioni specifiche per le esigenze dell'interfaccia:
 - **Rating aggregati:** `recipeAvgRate()` per le statistiche community
 - **Deep copy:** `getStoredReviews()` restituisce sempre copie profonde per evitare mutazioni accidentali
 
-### 3.5 Gestione Ricette e API Integration
+#### 3.5 Gestione Ricette e API Integration
 
 Il modulo `js/services/recipes-service.js` risolve il problema dell'**integrazione con API esterne** implementando una **strategia cache-first** che bilancia performance locale e freschezza dati.
 
@@ -305,11 +305,11 @@ La ricerca per nome implementa un **algoritmo di scoring** che normalizza query 
 
 ---
 
-<div style="page-break-before: always;"></div>
+<!-- <div style="page-break-before: always;"></div> -->
 
-## 4. GESTIONE DATI E API
+### 4. GESTIONE DATI E API
 
-### 4.1 Integrazione TheMealDB API
+#### 4.1 Integrazione TheMealDB API
 
 L'applicazione utilizza strategia cache-first con due endpoint strategici di TheMealDB:
 - **Categorie:** `https://www.themealdb.com/api/json/v1/1/categories.php`
@@ -317,7 +317,7 @@ L'applicazione utilizza strategia cache-first con due endpoint strategici di The
 
 La scelta del secondo endpoint consente caricamento completo del database (A-Z) implementando ricerca lato client con algoritmo di scoring per rilevanza. La gestione API è centralizzata nel modulo `recipes-service.js` con wrapper `fetchRecipes()` per chiamate HTTP unificate e gestione errori graceful.
 
-### 4.2 Modelli Dati Normalizzati
+#### 4.2 Modelli Dati Normalizzati
 
 #### Modello Recipe Esteso
 La classe `FullRecipe` in `js/core/data-models.js` normalizza i dati API TheMealDB:
@@ -326,7 +326,7 @@ La classe `FullRecipe` in `js/core/data-models.js` normalizza i dati API TheMeal
 - **Fallback Values:** Gestione campi mancanti con valori di default e immagine placeholder
 - **Timestamp Creation:** Aggiunta automatica `creationDate` per cache management
 
-### 4.3 Storage Strategy Unificata
+#### 4.3 Storage Strategy Unificata
 
 Il sistema di storage unificato (`js/core/storage.js`) astrae localStorage/sessionStorage attraverso il namespace `StorageOperations`:
 
@@ -342,11 +342,11 @@ Il sistema di storage unificato (`js/core/storage.js`) astrae localStorage/sessi
 
 ---
 
-<div style="page-break-before: always;"></div>
+<!-- <div style="page-break-before: always;"></div> -->
 
-## 5. INTERFACCIA UTENTE E UX
+### 5. INTERFACCIA UTENTE E UX
 
-### 5.1 Responsive Design Mobile-First
+#### 5.1 Responsive Design Mobile-First
 
 L'approccio mobile-first è implementato tramite CSS Grid e media queries. Il file `style.css` definisce breakpoint ottimizzati per tutti i dispositivi:
 
@@ -356,7 +356,7 @@ L'approccio mobile-first è implementato tramite CSS Grid e media queries. Il fi
 
 La navbar utilizza Bootstrap 5 con design fixed-top e dropdown menu per la navigazione, mentre i container di ricette implementano CSS Grid responsive con `auto-fill` e `minmax()` per adattamento automatico.
 
-### 5.2 Architettura Componenti UI
+#### 5.2 Architettura Componenti UI
 
 Il sistema di rendering (`js/components/ui.js`) implementa un'**architettura component-based** con pattern Factory per la generazione dinamica di elementi DOM, risolvendo il problema della **creazione consistente di UI elements** senza framework esterni.
 
@@ -380,7 +380,7 @@ Il sistema di popolazione implementa **type-based rendering** tramite `populateP
 
 Questa architettura garantisce **consistenza visiva**, **riusabilità dei componenti** e **facilità di manutenzione** senza la complessità di framework esterni.
 
-### 5.3 Gestione Stati UI e Navbar Dinamica
+#### 5.3 Gestione Stati UI e Navbar Dinamica
 
 Il progetto implementa gestione stati tramite classi Bootstrap e funzioni dedicate. Gli stati di loading vengono gestiti con overlay CSS, mentre la validazione form utilizza le classi `is-valid`/`is-invalid` di Bootstrap per feedback real-time.
 
@@ -388,11 +388,11 @@ La navbar dinamica si aggiorna automaticamente basandosi sullo stato di autentic
 
 ---
 
-<div style="page-break-before: always;"></div>
+<!-- <div style="page-break-before: always;"></div> -->
 
-## 6. TESTING E VALIDAZIONE
+### 6. TESTING E VALIDAZIONE
 
-### 6.1 Test Scenari Critici
+#### 6.1 Test Scenari Critici
 
 #### Scenario 1: Workflow Completo Utente
 ```
@@ -416,7 +416,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - ✅ Validazione robusta input utente con feedback specifico
 - ✅ Loading states per operazioni asincrone lunghe
 
-### 6.2 Test Performance e Compatibilità
+#### 6.2 Test Performance e Compatibilità
 
 #### Metriche Performance
 - **Page Load:** Rapido con cache (localStorage/sessionStorage)
@@ -436,7 +436,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - Chrome, Firefox, Safari, Edge (versioni recenti con supporto ES6+ completo)
 - Mobile browsers moderni con Web APIs standard
 
-### 6.3 Test Responsive Design
+#### 6.3 Test Responsive Design
 
 #### Breakpoint Testing
 - **Mobile (320-559px):** Layout single-column, card verticali con dimensione del body adattiva
@@ -444,11 +444,11 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - **Desktop (720px+):** Grid ottimizzata, card orizzontali
 ---
 
-<div style="page-break-before: always;"></div>
+<!-- <div style="page-break-before: always;"></div> -->
 
-## 7. CONCLUSIONI
+### 7. CONCLUSIONI
 
-### 7.1 Analisi Decisioni Architetturali
+#### 7.1 Analisi Decisioni Architetturali
 
 **Three-Layer Architecture:**
 - *Vantaggi:* Separazione concerns, modularità, manutenibilità del codice
@@ -465,7 +465,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - *Svantaggi:* Debugging più complesso, controllo granulare limitato
 - *Trade-off:* Efficienza vs. granularità controllo eventi
 
-### 7.2 Conformità Requisiti Vincolanti
+#### 7.2 Conformità Requisiti Vincolanti
 
 **Vincoli Frontend-Only:**
 - *Implementazione:* HTML5/CSS3/JavaScript ES6+ puro senza backend
@@ -479,7 +479,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - *Implementazione:* localStorage/sessionStorage per persistenza completa
 - *Implicazioni:* Storage limitato (~5MB), volatilità dati, nessuna concorrenza
 
-### 7.3 Valutazione Scelte Tecnologiche
+#### 7.3 Valutazione Scelte Tecnologiche
 
 **JavaScript ES6+ Modules:**
 - *Vantaggi:* Import/export nativi, tree-shaking, sviluppo modulare
@@ -491,7 +491,34 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - *Svantaggi:* Bundle size, personalizzazione limitata, dipendenza esterna
 - *Impatto:* Velocità sviluppo vs. controllo granulare styling
 
-### 7.4 Conformità Requisiti vs. Limitazioni
+#### 7.4 Strategia Performance vs. Semplicità di Sviluppo
+
+**Scelta Progettuale: Semplicità Prima di Performance**
+
+Data la natura accademica del progetto e la **mole di dati limitata** (dataset utenti locale, ricette API esterna con cache), si è deliberatamente privilegiata la **semplicità di sviluppo** rispetto alle ottimizzazioni di performance avanzate.
+
+**Esempi di Scelte Semplificate:**
+- **Funzioni di interrogazione iterative:** funzioni di interrogazione come `Recipe.isFavourite()` e `Recipe.isReviewed()` eseguono ricerche lineari senza caching interno
+- **Calcoli aggregati real-time:** Statistiche recensioni calcolate on-demand senza pre-computazione
+- **Validazioni ridondanti:** Controlli duplicati tra layer per robustezza invece di ottimizzazione
+- **Coerenza dati garantita:** Approccio lineare e diretto nelle operazioni per evitare stati inconsistenti, privilegiando chiarezza del codice
+
+**Razionale della Decisione:**
+- *Dataset piccolo:* Utenti limitati, ricette disponibili localmente, operazioni O(n) accettabili
+- *Manutenibilità:* Codice lineare e leggibile, debugging semplificato
+- *Coerenza garantita:* Operazioni atomiche prevengono stati inconsistenti
+- *Time-to-market:* Focus su completezza funzionale rispetto a micro-ottimizzazioni
+
+**Implicazioni per Ambiente di Produzione:**
+Per un utilizzo in produzione con mole di dati significativa (migliaia di utenti, database estesi), sarebbero necessarie ottimizzazioni quali:
+- **Sistema di caching:** Per ridurre calcoli ripetitivi
+- **Database dedicato:** Per gestire volumi maggiori e concorrenza
+- **Ottimizzazioni algoritmi:** Per migliorare performance con dataset grandi
+
+**Trade-off Accettato:**
+Considerati il contesto e la scala del progetto, si è scelto di accettare latenza aggiuntiva marginale per privilegiare **architettura chiara**, **codice facilmente manutenibile** e **tempi di sviluppo ottimizzati**.  
+
+#### 7.5 Conformità Requisiti vs. Limitazioni
 
 **Vincoli Rispettati:**
 - Frontend-only: ✅ Nessuna dipendenza backend
@@ -505,7 +532,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - Affidabilità: Dipendenza API esterna
 - Performance: latenza API variabile
 
-### 7.5 Impatto Decisioni sul Prodotto Finale
+#### 7.6 Impatto Decisioni sul Prodotto Finale
 
 L'architettura implementata risulta **appropriata per il contesto accademico** con requisiti frontend-only, fornendo equilibrio tra complessità implementativa e funzionalità complete. Le scelte tecnologiche sono state orientate verso **conformità ai vincoli** e **tentativo di predisposizione per scalabilità futura**.
 
