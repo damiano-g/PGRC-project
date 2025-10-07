@@ -108,6 +108,7 @@ export async function addNewUser(chosenUsername, chosenEmail, chosenPassword, pa
  * Operazione atomica per eliminazione account
  * 
  * @param {string} userId - ID utente da eliminare
+ * @returns {string} Stringa JSON dell'array utenti aggiornato
  * @see {@link getRegisteredUsers} Per lettura db utenti
  * @see {@link StorageOperations} Per aggiornamento db utenti
  * @throws {new ErrorsManagement.NotFound} Se utente non trovato
@@ -124,15 +125,14 @@ export function deleteUser(userId){
 
     try {
         const actualRegUsersArray = getRegisteredUsers();
-        const currentUserId = userId;
-        const index = actualRegUsersArray.findIndex(user => user.id === currentUserId);
+        const index = actualRegUsersArray.findIndex(user => user.id === userId);
         
         if(index < 0){
             throw new ErrorsManagement.NotFound("User", "id", userId);
         }
         
         actualRegUsersArray.splice(index, 1);
-        StorageOperations.set(USERS_DB_KEY, actualRegUsersArray, USERS_STORAGE_OPTS);
+        return StorageOperations.set(USERS_DB_KEY, actualRegUsersArray, USERS_STORAGE_OPTS);
     } catch (error) {
         throw error;
     }
@@ -149,6 +149,7 @@ export function deleteUser(userId){
  * @async
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newUsername - Nuovo username desiderato
+ * @return {string} Username aggiornato
  * @see {@link searchDuplicates} Per controllo valori duplicati
  * @see {@link updateUserData} Per aggiornamento dati utente
  * @throws {ErrorsManagement.Duplicated} Se username già in uso
@@ -165,7 +166,7 @@ export function deleteUser(userId){
 export async function updateUserUsername(userId, newUsername){
     try {
         authUsername(newUsername); // Validation duplicati
-        await updateUserData(userId, "username", newUsername);
+        return await updateUserData(userId, "username", newUsername); // NB -> await per consistenza
     } catch (error) {
         throw error;
     }
@@ -178,6 +179,7 @@ export async function updateUserUsername(userId, newUsername){
  * @async
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newEmail - Nuova email desiderata
+ * @return {string} Email aggiornata
  * @see {@link searchDuplicates} Per controllo valori duplicati
  * @see {@link updateUserData} Per aggiornamento db utenti 
  * @throws {ErrorsManagement.Duplicated} Se email già in uso
@@ -194,7 +196,7 @@ export async function updateUserUsername(userId, newUsername){
 export async function updateUserEmail(userId, newEmail){
     try {
         authEmail(newEmail); // Validation duplicati
-        await updateUserData(userId, "email", newEmail);
+        return await updateUserData(userId, "email", newEmail);
     } catch (error) {
         throw error;
     }   
@@ -208,6 +210,7 @@ export async function updateUserEmail(userId, newEmail){
  * @param {string} userId - ID utente da aggiornare
  * @param {string} newPassword - Nuova password in chiaro
  * @param {string} passConfirm - Valore di conferma della password
+ * @returns {string} Password aggiornata e hashata
  * @throws {Error} Se errori durante hashing, errori di storage, parametri errati
  * @throws {ErrorsManagement.NotFound} se utente non trovato
  * 
@@ -221,7 +224,7 @@ export async function updateUserEmail(userId, newEmail){
 export async function updateUserPassword(userId, newPassword, passConfirm){
     try {
         authPassword(newPassword, passConfirm);
-        await updateUserData(userId, "password", newPassword, true); // needsHashing = true
+        return await updateUserData(userId, "password", newPassword, true); // needsHashing = true
     } catch (error) {
         throw error;
     }
@@ -234,6 +237,7 @@ export async function updateUserPassword(userId, newPassword, passConfirm){
  * @async
  * @param {string} userId - ID utente da aggiornare
  * @param {string} recipeId - ID ricetta da aggiungere/rimuovere dai preferiti
+ * @returns {Array} Array preferiti aggiornato
  * @see {@link searchUser} Per lettura dati utente
  * @see {@link updateUserData} Per aggiornamento dati utente
  * @throws {Error} Se errori di storage (r/w)
@@ -257,7 +261,7 @@ export async function updateUserFavourites(userId, recipeId){
             userFavourites.splice(index, 1);
         }
 
-        await updateUserData(userId, "favourites", userFavourites); 
+        return await updateUserData(userId, "favourites", userFavourites); 
     } catch (error) {
         throw error;
     }    
@@ -272,6 +276,7 @@ export async function updateUserFavourites(userId, recipeId){
  * @param {string|null} recipeId - ID ricetta per aggiunta nota (null per rimozione)
  * @param {string|null} text - Testo nota per aggiunta (null per rimozione)
  * @param {string|null} noteId - ID nota per rimozione (null per aggiunta)
+ * @returns {Array} Array note utente aggiornato
  * @see {@link searchUser} Per recupero note utente
  * @see {@link updateUserData} Per aggiornamento note utente
  * @throws {ErrorsManagement.NotFound} Se utente loggato non trovato 
@@ -302,7 +307,7 @@ export async function updateUserNotes(userId, recipeId = null, text = null, note
             }
         }
         
-        await updateUserData(userId, "notes", userNotes);
+        return await updateUserData(userId, "notes", userNotes);
     } catch (error) {
         throw error;
     }    
@@ -394,6 +399,7 @@ export async function hashString(originalString) {
  * @private
  * @param {"username"|"email"} fieldType - Campo da verificare
  * @param {string} fieldValue - Valore fornito per il campo
+ * @returns {false} Se nessun duplicato trovato (NB -> valori duplicati lanciano eccezione)
  * @see {@link getRegisteredUsers} - Per lettura array utenti registrati
  * @throws {ErrorsManagement.Duplicated} Se valore già in uso per il campo selezionato
  * @throws {Error} Se errori di lettura storage
@@ -411,7 +417,9 @@ function searchDuplicates(fieldType, fieldValue){
 
         if(registeredUsers.some(user => user[fieldType] === fieldValue)){ 
             throw new ErrorsManagement.Duplicated("User", fieldType, fieldValue);
-        }    
+        }
+        
+        return false;
     } catch (error) {
         throw error;
     }
@@ -424,6 +432,7 @@ function searchDuplicates(fieldType, fieldValue){
  * @private
  * @param {string} password - Password in chiaro da validare
  * @param {string} passConfirm - Valore di conferma della password
+ * @returns {true} Se password validata
  * @throws {ErrorsManagement.InvalidFormat} Se password non rispetta formato richiesto
  * @see {@link ErrorsManagement.InvalidFormat} Per gestione errori formato
  * 
@@ -445,6 +454,8 @@ export function authPassword(password, passConfirm){
     if(!regEx.test(password) || password != passConfirm){
         throw new ErrorsManagement.InvalidFormat("password", password);
     }
+
+    return true;
 };
 
 
@@ -456,6 +467,7 @@ export function authPassword(password, passConfirm){
  * @param {string} email - Email da validare
  * @throws {ErrorsManagement.InvalidFormat} Se email non rispetta formato
  * @throws {ErrorsManagement.Duplicated} Se email già registrata
+ * @returns {true} Se email validata
  * @see {@link ErrorsManagement.InvalidFormat} Per errori formato
  * @see {@link ErrorsManagement.Duplicated} Per errori duplicati
  * @see {@link searchDuplicates} Per controllo unicità
@@ -482,6 +494,7 @@ export function authEmail(email){
 
     try {
         searchDuplicates("email", email);
+        return true;
     } catch (error) {
         throw error;
     }
@@ -494,6 +507,7 @@ export function authEmail(email){
  * 
  * @private
  * @param {string} username - Username da validare
+ * @return {true} Se username validato
  * @throws {ErrorsManagement.InvalidFormat} Se username troppo corto
  * @throws {ErrorsManagement.Duplicated} Se username già registrato
  * @see {@link ErrorsManagement.InvalidFormat} Per errori formato
@@ -517,6 +531,7 @@ export function authUsername(username){
 
     try {
         searchDuplicates("username", username);
+        return true;
     } catch (error) {
         throw error;
     }
@@ -595,6 +610,7 @@ export function searchUser(searchField, searchValue){
  * @param {"username"|"email"|"password"|"favourites"|"notes"} field - Nome campo da aggiornare
  * @param {string|Array} newValue - Nuovo valore da assegnare
  * @param {boolean} [needsHashing=false] - Se true, applica hash SHA-256 (necessario per processamento password)
+ * @returns {string|Array} Valore del campo aggiornato
  * @see {@link getRegisteredUsers} Per lettura db utenti
  * @see {@link hashString} Per hashing password
  * @see {@link StorageOperations} Per aggiornamento db utenti
@@ -616,15 +632,15 @@ async function updateUserData(userId, field, newValue, needsHashing = null) {
         const index = registeredUsers.findIndex(user => user.id === currentUserId);
         
         if(index < 0){
-            const notFound = new ErrorsManagement.NotFound("User", "id", userId);
-            console.error(notFound);
-            throw notFound;
+            throw new ErrorsManagement.NotFound("User", "id", userId);
         }
 
         const processedValue = (needsHashing ? await hashString(newValue) : newValue);
         
         registeredUsers[index][field] = processedValue;
         StorageOperations.set(USERS_DB_KEY, registeredUsers, USERS_STORAGE_OPTS);
+
+        return processedValue;
         
     } catch (error) {
         throw error;

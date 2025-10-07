@@ -206,6 +206,7 @@ export const LoggedUser = {
     /**
      * Aggiorna username utente - funzione wrapper
      * @param {string} newUsername - Nuovo username
+     * @returns {string} Username aggiornato
      * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
      * @throws {ErrorsManagement.Duplicated} Se username già in uso
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
@@ -213,7 +214,7 @@ export const LoggedUser = {
      */
     changeUsername: async (newUsername) => {
         try {
-            await UsersManagement.updateUserUsername(LoggedUser.getId(), newUsername);
+            return await UsersManagement.updateUserUsername(LoggedUser.getId(), newUsername);
         } catch (error) {
             throw error;
         };
@@ -222,6 +223,7 @@ export const LoggedUser = {
     /**
      * Aggiorna email utente - funzione wrapper
      * @param {string} newEmail - Nuova email
+     * @returns {string} Email aggiornata
      * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
      * @throws {ErrorsManagement.Duplicated} Se email già in uso
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
@@ -229,7 +231,7 @@ export const LoggedUser = {
      */
     changeEmail: async (newEmail) => {
         try {
-            await UsersManagement.updateUserEmail(LoggedUser.getId(), newEmail);
+            return await UsersManagement.updateUserEmail(LoggedUser.getId(), newEmail);
         } catch (error) {
             throw error;
         };
@@ -239,13 +241,14 @@ export const LoggedUser = {
      * Aggiorna password utente - funzione wrapper
      * @async
      * @param {string} newPassword - Nuova password
+     * @returns {string} Password aggiornata e ashata
      * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
     changePassword: async (newPassword, passConfirm) => {
         try {
-            await UsersManagement.updateUserPassword(LoggedUser.getId(), newPassword, passConfirm);
+            return await UsersManagement.updateUserPassword(LoggedUser.getId(), newPassword, passConfirm);
         } catch (error) {
             throw error;
         };
@@ -255,13 +258,14 @@ export const LoggedUser = {
      * Aggiorna lista preferiti utente - funzione wrapper
      * @async
      * @param {string} recipeId - ID ricetta da aggiungere/rimuovere
+     * @returns {Array} Array preferiti utente aggiornato
      * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
     updateFavourites: async (recipeId) => {
         try {
-            await UsersManagement.updateUserFavourites(LoggedUser.getId(), recipeId);
+            return await UsersManagement.updateUserFavourites(LoggedUser.getId(), recipeId);
         } catch (error) {
             throw error;
         };
@@ -272,13 +276,14 @@ export const LoggedUser = {
      * @async
      * @param {string} recipeId - ID ricetta
      * @param {string} text - Testo nota
+     * @returns {Array} Array note utente aggiornato
      * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
     addNote: async (recipeId, text) => {
         try {
-            await UsersManagement.updateUserNotes(LoggedUser.getId(), recipeId, text);
+            return await UsersManagement.updateUserNotes(LoggedUser.getId(), recipeId, text);
         } catch (error) {
             throw error;
         };
@@ -288,13 +293,14 @@ export const LoggedUser = {
      * Elimina nota specifica - funzione wrapper
      * @async
      * @param {string} recipeId - ID ricetta
+     * @returns {Array} Array note utente aggiornato
      * @see {@link UsersManagement.updateUserUsername} Per aggiornamento dati utente
      * @throws {ErrorsManagement.NotFound} Se utente non trovato
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
     deleteNote: async (noteId) => {
         try {
-            await UsersManagement.updateUserNotes(LoggedUser.getId(), null, null, noteId);
+            return await UsersManagement.updateUserNotes(LoggedUser.getId(), null, null, noteId);
         } catch (error) {
             throw error;
         };
@@ -318,7 +324,7 @@ export const LoggedUser = {
      * 5. Elimina definitivamente l'utente dal database utenti
      * 6. Termina la sessione corrente
      * 
-     * @returns {{resourceType: "user-id", resourceObj: string, statusCode: "delete"}} Response object con conferma eliminazione account
+     * @returns {string, string} Oggetto contenente database utenti e recensioni aggiornati (JSON)
      * 
      * @see {@link UsersManagement.deleteUser} Per eliminazione utente dal database
      * @see {@link LoggedUser.endSession} Per terminazione sessione corrente
@@ -337,16 +343,18 @@ export const LoggedUser = {
         try {
             const currentUserId = LoggedUser.getId();
             const deletedUserId = generateItemId("deleted-user");
+            let updatedUsersDB;
+            let updatedReviewsDB;
 
             const currentUserReviews = ReviewsManagement.getStoredReviews().filter(review => review.userId === currentUserId);
 
             currentUserReviews.forEach(review => {
                 const deletedReview = ReviewsManagement.updateRecipeReviews(currentUserId, review.recipeId);
-                ReviewsManagement.updateRecipeReviews(deletedUserId, deletedReview.recipeId, deletedReview.tasteRate, deletedReview.difficultyRate);
+                updatedReviewsDB = ReviewsManagement.updateRecipeReviews(deletedUserId, deletedReview.recipeId, deletedReview.tasteRate, deletedReview.difficultyRate);
             });
-            UsersManagement.deleteUser(currentUserId);
+            updatedUsersDB = UsersManagement.deleteUser(currentUserId);
             LoggedUser.endSession();
-            return currentUserId;
+            return {updatedUsersDB, updatedReviewsDB};
         } catch (error) {
             throw error;
         }
@@ -372,11 +380,12 @@ export const LoggedUser = {
     /**
      * Termina sessione utente
      * @see {@link StorageOperations.set} Per aggiornamento web storage
+     * @returns {string} Stringa vuota
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
     endSession: () => {
         try{
-            StorageOperations.set(LOGGED_USER_KEY, "", {storageLocation: "session", dataType: "string"});
+            return StorageOperations.set(LOGGED_USER_KEY, "", {storageLocation: "session", dataType: "string"});
         }catch(error){
             throw error;
         }
@@ -491,13 +500,13 @@ export const Recipe = {
      * @param {string} recipeId - ID ricetta
      * @param {number} tasteRate - Rating gusto (0-5)
      * @param {number} difficultyRate - Rating difficoltà (0-5)
+     * @returns {Review} Oggetto recensione aggiunto
      * @see {@link ReviewsManagement.updateRecipeReviews} Per aggiunta recesnione utente
      * @throws {Error} Rilancia errori di storage o parametri errati
      */
     addUserReview: (recipeId, tasteRate, difficultyRate) => {
         try {
-            ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId, tasteRate, difficultyRate);
-            return true;
+            return ReviewsManagement.updateRecipeReviews(LoggedUser.getId(), recipeId, tasteRate, difficultyRate);
         } catch (error) {
             throw error;
         };
@@ -506,6 +515,7 @@ export const Recipe = {
     /**
      * Elimina recensione utente loggato per ricetta
      * @param {string} recipeId - ID ricetta
+     * @returns {string} Database recensioni aggiornato (JSON)
      * @see {@link ReviewsManagement.updateRecipeReviews} Per rimozione recensione utente
      * @throws {Error} Rilancia errori di storage o parametri errati
      * @throws {ErrorsManagement.NotFound} Se recensione non trovata
@@ -738,6 +748,7 @@ export const PreviewArray = {
  * @param {"username"|"email"|"password"|"confirm-password"} inputType - Tipo di input da validare ("username", "email", "password")
  * @param {string} inputValue - Valore dell'input da validare
  * @param {string} [reference=null] - Valore di riferimento per confronto (usato per "confirm-password")
+ * @returns {true} Se operazione andata a buon fine
  * @throws {ErrorsManagement.InvalidFormat} Se formato input non valido o password non corrispondente
  * @throws {ErrorsManagement.Duplicated} Se valore già in uso (username/email)
  * @throws {ErrorsManagement.BadRequest} Se tipo input non supportato
@@ -753,21 +764,15 @@ export function inputValidation(inputType, inputValue, reference = null){
     try {
         switch(inputType){
             case "username":
-                UsersManagement.authUsername(inputValue);
-                break;
+                return UsersManagement.authUsername(inputValue);
             case "email":
-                UsersManagement.authEmail(inputValue);
-                break;
+                return UsersManagement.authEmail(inputValue);
             case "password":
-                UsersManagement.authPassword(inputValue, inputValue);
-                break;
+                return UsersManagement.authPassword(inputValue, inputValue);
             case "confirm-password":
-                UsersManagement.authPassword(inputValue, reference);
-                break;
+                return UsersManagement.authPassword(inputValue, reference);
             default:
-                const badRequest = new ErrorsManagement.BadRequest();
-                console.error(badRequest);
-                throw badRequest;
+                throw new ErrorsManagement.BadRequest();
         }
     } catch (error) {
         throw error;
