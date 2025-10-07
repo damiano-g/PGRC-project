@@ -498,7 +498,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 Data la natura accademica del progetto e la **mole di dati limitata** (dataset utenti locale, ricette API esterna con cache), si è deliberatamente privilegiata la **semplicità di sviluppo** rispetto alle ottimizzazioni di performance avanzate.
 
 **Esempi di Scelte Semplificate:**
-- **Funzioni di interrogazione iterative:** funzioni di interrogazione come `Recipe.isFavourite()` e `Recipe.isReviewed()` eseguono ricerche lineari senza caching interno
+- **Funzioni di interrogazione iterative:** funzioni di interrogazione come `Recipe.isFavourite()` eseguono ricerche lineari senza caching interno
 - **Calcoli aggregati real-time:** Statistiche recensioni calcolate on-demand senza pre-computazione
 - **Validazioni ridondanti:** Controlli duplicati tra layer per robustezza invece di ottimizzazione
 - **Coerenza dati garantita:** Approccio lineare e diretto nelle operazioni per evitare stati inconsistenti, privilegiando chiarezza del codice
