@@ -150,7 +150,6 @@ window.addEventListener("load", async () => {
     }else{
         personalPageBody.classList.remove("d-none");
     };
-
     showOverlay();
 
     // Rendering sezione preferiti

@@ -65,7 +65,6 @@ export const StorageOperations = {
                     throw new Error(`Unsupported data type: ${dataType}`);
             }
         } catch (error) {
-            console.error(error);
             // Re-throw errori per propagazione a business logic layer
             throw error;
         }
@@ -79,6 +78,7 @@ export const StorageOperations = {
      * @param {Object} options - Configurazione operazione storage
      * @param {("local"|"session")} options.storageLocation - Tipo storage da utilizzare
      * @param {("array"|"string")} options.dataType - Tipo dato per serializzazione
+     * @returns Dati processati e salvati su web storage
      * @throws {Error} Se parametri non validi o errori storage
      * 
      * @example
@@ -126,8 +126,9 @@ export const StorageOperations = {
                 default:    
                     throw new Error(`Unsupported storage location: ${storageLocation}`);
             }
+
+            return processedData;
         } catch (error) {
-            console.error(error);
             // Re-throw errori per propagazione a business logic layer
             throw error;
         }

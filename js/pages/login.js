@@ -104,6 +104,7 @@ window.addEventListener("load", () => {
             document.querySelector("body").classList.remove("d-none");
         }
     } catch (error) {
+        console.error(error);
         alert("Ooops. Something went wrong. Please try again");
     }
 });
@@ -214,6 +215,7 @@ loginSubBtn.addEventListener("click", async () => {
         if(error.code === 404){
             alert(`User ${insertedUsername} not found`)
         }else{
+            console.error(error);
             alert("Ooops. Something went wrong. Please try again");
         }
     }

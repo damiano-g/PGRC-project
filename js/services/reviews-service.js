@@ -93,9 +93,7 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
         if(recipeId && userId && tasteRate && difficultyRate){
             // ADD MODE: Crea nuova recensione
             if(recipeReviewsArray.some(review => review.userId === userId && review.recipeId === recipeId)){
-                const duplicated = new ErrorsManagment.Duplicated("Review");
-                console.error(duplicated);
-                throw duplicated;
+                throw new ErrorsManagment.Duplicated("Review");
             }else{
                 updatedReview = new Review(recipeId, userId, Number(tasteRate), Number(difficultyRate));
                 recipeReviewsArray.unshift(updatedReview);
@@ -105,24 +103,19 @@ export function updateRecipeReviews(userId, recipeId, tasteRate = null, difficul
                 // DELETE MODE: Rimuovi recensione esistente
                 const index = recipeReviewsArray.findIndex(element => (element.recipeId === recipeId) && (element.userId === userId));
                 if(index < 0){
-                    const notFound = new ErrorsManagment.NotFound("Review", "id", userId);
-                    console.error(notFound);
-                    throw notFound;
+                    throw new ErrorsManagment.NotFound("Review", "id", userId);
                 }else{
                     updatedReview = recipeReviewsArray[index];
                     recipeReviewsArray.splice(index, 1);
                 }
             }else{
                 // VALIDATION ERROR: Parametri malformati
-                const dataFormat = new Error("Wrong data format");
-                console.error(dataFormat);
-                throw dataFormat; 
+                throw new Error("Wrong data format"); 
             }
         }
         
         // Persistenza dati aggiornati
-        StorageOperations.set(REVIEWS_DB_KEY, recipeReviewsArray, REVIEWS_STORAGE_OPTS);
-        return updatedReview;
+        return StorageOperations.set(REVIEWS_DB_KEY, recipeReviewsArray, REVIEWS_STORAGE_OPTS);
     } catch (error) {
         throw error;
     }    

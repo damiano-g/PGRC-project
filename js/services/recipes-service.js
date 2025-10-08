@@ -68,7 +68,7 @@ const RECIPES_STORAGE_OPTS = {storageLocation: "local", dataType: "array"};
  * @param {string} URL - URL base dell'endpoint API
  * @param {Object} options - Opzioni fetch (metodo, headers, ecc.)
  * @param {string|null} [specifier=null] - Parametro aggiuntivo da concatenare all'URL
- * @returns {Promise<Object|null>} Oggetto JSON risposta API o null se errore
+ * @returns {Promise<Object|null>} Oggetto risposta API o null se errore
  * @throws {Error} Rilancia errori critici (non gestiti internamente)
  * 
  * @example
@@ -84,7 +84,6 @@ async function fetchRecipes(URL, options, specifier = null){
         const JSONFile = await response.json();
         return JSONFile;
     } catch (error) {
-        console.error(error);
         throw error;
     }
 }
@@ -180,9 +179,9 @@ export async function getData(dataType) {
     try {
         let dataArray = StorageOperations.get(dataType, RECIPES_STORAGE_OPTS);
         
-        // Se cache vuota, inizializza da API
+        // Se cache vuota, o obsoleta inizializza da API
         if(dataArray.length < 1 || (dataArray.length > 0 && new Date(dataArray[0].creationDate).toDateString() != new Date().toDateString())){
-            // NB -> la serializzazione json converte l'eggetto Date in stringa -> quindi crea nuovo oggetto Date da stringa
+            // NB -> la serializzazione json converte l'oggetto Date in stringa -> quindi crea nuovo oggetto Date da stringa
             switch(dataType){
                 case "recipes": 
                     dataArray = await createLocalRecipesDB();
@@ -191,9 +190,7 @@ export async function getData(dataType) {
                     dataArray = await createLocalCategoriesDB();
                     break;
                 default: 
-                    const dataError = new Error(`${dataType}: unsupported data type`);
-                    console.error(dataError);
-                    throw dataError;
+                    throw new Error(`${dataType}: unsupported data type`);
             }
         }
         return structuredClone(dataArray);

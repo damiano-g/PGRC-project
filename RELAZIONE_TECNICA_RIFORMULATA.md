@@ -491,7 +491,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - *Svantaggi:* Bundle size, personalizzazione limitata, dipendenza esterna
 - *Impatto:* Velocità sviluppo vs. controllo granulare styling
 
-#### 7.4 Conformità Requisiti vs. Limitazioni
+### 7.4 Conformità Requisiti vs. Limitazioni
 
 **Vincoli Rispettati:**
 - Frontend-only: ✅ Nessuna dipendenza backend
@@ -505,7 +505,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - Affidabilità: Dipendenza API esterna
 - Performance: latenza API variabile
 
-#### 7.5 Impatto Decisioni sul Prodotto Finale
+### 7.5 Impatto Decisioni sul Prodotto Finale
 
 L'architettura implementata risulta **appropriata per il contesto accademico** con requisiti frontend-only, fornendo equilibrio tra complessità implementativa e funzionalità complete. Le scelte tecnologiche sono state orientate verso **conformità ai vincoli** e **tentativo di predisposizione per scalabilità futura**.
 
