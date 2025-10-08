@@ -491,7 +491,34 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - *Svantaggi:* Bundle size, personalizzazione limitata, dipendenza esterna
 - *Impatto:* Velocità sviluppo vs. controllo granulare styling
 
-### 7.4 Conformità Requisiti vs. Limitazioni
+#### 7.4 Strategia Performance vs. Semplicità di Sviluppo
+
+**Scelta Progettuale: Semplicità Prima di Performance**
+
+Data la natura accademica del progetto e la **mole di dati limitata** (dataset utenti locale, ricette API esterna con cache), si è deliberatamente privilegiata la **semplicità di sviluppo** rispetto alle ottimizzazioni di performance avanzate.
+
+**Esempi di Scelte Semplificate:**
+- **Funzioni di interrogazione iterative:** funzioni di interrogazione come `Recipe.isFavourite()` eseguono ricerche lineari senza caching interno
+- **Calcoli aggregati real-time:** Statistiche recensioni calcolate on-demand senza pre-computazione
+- **Validazioni ridondanti:** Controlli duplicati tra layer per robustezza invece di ottimizzazione
+- **Coerenza dati garantita:** Approccio lineare e diretto nelle operazioni per evitare stati inconsistenti, privilegiando chiarezza del codice
+
+**Razionale della Decisione:**
+- *Dataset piccolo:* Utenti limitati, ricette disponibili localmente, operazioni O(n) accettabili
+- *Manutenibilità:* Codice lineare e leggibile, debugging semplificato
+- *Coerenza garantita:* Operazioni atomiche prevengono stati inconsistenti
+- *Time-to-market:* Focus su completezza funzionale rispetto a micro-ottimizzazioni
+
+**Implicazioni per Ambiente di Produzione:**
+Per un utilizzo in produzione con mole di dati significativa (migliaia di utenti, database estesi), sarebbero necessarie ottimizzazioni quali:
+- **Sistema di caching:** Per ridurre calcoli ripetitivi
+- **Database dedicato:** Per gestire volumi maggiori e concorrenza
+- **Ottimizzazioni algoritmi:** Per migliorare performance con dataset grandi
+
+**Trade-off Accettato:**
+Considerati il contesto e la scala del progetto, si è scelto di accettare latenza aggiuntiva marginale per privilegiare **architettura chiara**, **codice facilmente manutenibile** e **tempi di sviluppo ottimizzati**.  
+
+#### 7.5 Conformità Requisiti vs. Limitazioni
 
 **Vincoli Rispettati:**
 - Frontend-only: ✅ Nessuna dipendenza backend
@@ -505,7 +532,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - Affidabilità: Dipendenza API esterna
 - Performance: latenza API variabile
 
-### 7.5 Impatto Decisioni sul Prodotto Finale
+#### 7.6 Impatto Decisioni sul Prodotto Finale
 
 L'architettura implementata risulta **appropriata per il contesto accademico** con requisiti frontend-only, fornendo equilibrio tra complessità implementativa e funzionalità complete. Le scelte tecnologiche sono state orientate verso **conformità ai vincoli** e **tentativo di predisposizione per scalabilità futura**.
 
