@@ -21,9 +21,9 @@
 ---
 <div style="page-break-before: always;"></div>
 
-### 1. INTRODUZIONE E OBIETTIVI
+## 1. INTRODUZIONE E OBIETTIVI
 
-<style>
+<!-- <style>
 /* stile per blocco file-tree: monospace, dimensione ridotta e tentativo di evitare page-break */
 pre.file-tree {
     font-family: "Courier New", Courier, monospace;
@@ -36,9 +36,9 @@ pre.file-tree {
 h4 {
     page-break-after: avoid;
 }
-</style>
+</style> -->
 
-#### 1.1 Panoramica del Progetto
+### 1.1 Panoramica del Progetto
 
 PGRC (Piattaforma per la Gestione di Ricette di Cucina) è un'applicazione web frontend-only sviluppata per soddisfare quattro macro-scenari funzionali:
 
@@ -47,7 +47,7 @@ PGRC (Piattaforma per la Gestione di Ricette di Cucina) è un'applicazione web f
 3. **Ricettario Personale:** Sistema preferiti con note private personalizzabili
 4. **Sistema Recensioni:** Rating duale (gusto/difficoltà) con aggregazione community
 
-#### 1.2 Vincoli Tecnici e Soluzioni Adottate
+### 1.2 Vincoli Tecnici e Soluzioni Adottate
 
 Il progetto rispetta rigorosamente i vincoli di consegna implementando le seguenti soluzioni e tecnologie:
 
@@ -56,7 +56,7 @@ Il progetto rispetta rigorosamente i vincoli di consegna implementando le seguen
 - **Separazione Concerns:** Architettura modulare a tre layer (Presentation, Service, Data)
 - **Responsive Design:** Mobile-first approach con CSS Grid e Flexbox
 
-#### 1.3 Valore Aggiunto Implementato
+### 1.3 Valore Aggiunto Implementato
 
 Oltre ai requisiti base, l'applicazione introduce:
 - Session Service come orchestratore centrale con facade pattern
@@ -68,9 +68,9 @@ Oltre ai requisiti base, l'applicazione introduce:
 ---
 <div style="page-break-before: always;"></div>
 
-### 2. ARCHITETTURA E DESIGN
+## 2. ARCHITETTURA E DESIGN
 
-#### 2.1 Struttura Modulare a Tre Layer
+### 2.1 Struttura Modulare a Tre Layer
 
 ```
 ┌─────────────────────────────────────┐
@@ -85,22 +85,22 @@ Oltre ai requisiti base, l'applicazione introduce:
 └─────────────────────────────────────┘
 ```
 
-#### Presentation Layer
+## Presentation Layer
 Le pagine HTML implementano struttura con separazione netta tra contenuto e presentazione. I componenti UI in `js/components/ui.js` gestiscono rendering dinamico e interazioni, mentre i page scripts in `js/pages/` orchestrano la logica specifica di ogni pagina.
 
-#### Service Layer 
+## Service Layer 
 Il `session-service.js` agisce come facade pattern esponendo namespace dedicati:
 - `NewUser`: Operazioni utenti non autenticati (login, registrazione)
 - `LoggedUser`: Gestione profilo e operazioni autenticate
 - `Recipe`: Stato e operazioni su ricette
 - `PreviewArray`: Generazione oggetti per popolamento UI
 
-#### Data Layer
+## Data Layer
 Gestisce persistenza tramite `storage.js` (astrazione localStorage/sessionStorage), integrazione API con `recipes-service.js`, e modelli dati con `data-models.js` per entità business.
 
-#### 2.2 Design Pattern Strategici
+### 2.2 Design Pattern Strategici
 
-#### Factory Pattern per Data Models
+## Factory Pattern per Data Models
 Il sistema utilizza factory pattern per la creazione consistente di entità business:
 - **User Factory:** Genera istanze utente con ID univoci, dati personali e array inizializzati per preferiti/note
 - **Recipe Factory:** Normalizza dati API TheMealDB in formato interno consistente
@@ -108,7 +108,7 @@ Il sistema utilizza factory pattern per la creazione consistente di entità busi
 - **ID Generation:** Sistema centralizzato per generazione identificatori univoci basati su timestamp e randomizzazione
 <!-- page-break removed -->
 
-#### Strategy Pattern per Error Handling
+## Strategy Pattern per Error Handling
 Sistema di gestione errori tipizzato con classi custom per scenari specifici:
 - **NotFound (404):** Entità non trovate con dettagli campo/valore per debugging
 - **Duplicated (409):** Violazioni unicità con identificazione campo duplicato
@@ -116,7 +116,7 @@ Sistema di gestione errori tipizzato con classi custom per scenari specifici:
 
 Ogni classe mantiene codice HTTP, tipo entità e metadati per logging centralizzato.
 
-#### Event Delegation Pattern
+## Event Delegation Pattern
 Il sistema implementa event delegation per gestire interazioni su contenuto generato dinamicamente:
 
 **Strategia Implementata:**
@@ -129,9 +129,44 @@ Il sistema implementa event delegation per gestire interazioni su contenuto gene
 - **Performance:** Riduzione memoria con un solo listener invece di N listener per N elementi
 - **Dinamicità:** Gestione automatica di elementi aggiunti/rimossi dinamicamente
 - **Manutenibilità:** Centralizzazione logica eventi in un singolo punto
+
+## Event Flow Sequence
+
+```mermaid
+sequenceDiagram
+    participant USER as User
+    participant BTN as Button Element
+    participant CONTAINER as Container
+    participant HANDLER as Event Handler
+    participant SESSION as Session Service
+    
+    USER->>BTN: Click favorite button
+    BTN->>CONTAINER: Event bubbles up
+    CONTAINER->>HANDLER: Capture click event
+    HANDLER->>HANDLER: click.target.closest('.card')
+    HANDLER->>HANDLER: click.target.matches('.fav-icon')
+    
+    alt Click on card (not button)
+        HANDLER->>HANDLER: window.location.href = recipe-details.html?id=recipeId
+        HANDLER-->>USER: Navigate to recipe details
+    else Click on favorite button
+        HANDLER->>SESSION: LoggedUser.isLogged()
+        alt User Logged In
+            SESSION-->>HANDLER: true
+            HANDLER->>SESSION: LoggedUser.updateFavourites(recipeId)
+            SESSION-->>HANDLER: updatedFavourites
+            HANDLER->>HANDLER: Update UI (icon change)
+            HANDLER-->>USER: Visual feedback
+        else User Not Logged In
+            SESSION-->>HANDLER: false
+            HANDLER->>HANDLER: window.location.href = login.html
+            HANDLER-->>USER: Redirect to login
+        end
+    end
+```
 <div style="page-break-before: always;"></div>
 
-#### 2.3 Organizzazione File System
+### 2.3 Organizzazione File System
 <pre class="file-tree">
 PGRC-project/
 ├── index.html                 # Homepage con carousel ricette popolari
@@ -189,13 +224,13 @@ PGRC-project/
 
 <div style="page-break-after: always;"></div>
 
-### 3. IMPLEMENTAZIONE CORE
+## 3. IMPLEMENTAZIONE CORE
 
-#### 3.1 Session Service: Orchestrazione Centralizzata
+### 3.1 Session Service: Orchestrazione Centralizzata
 
 Il Session Service (`js/services/session-service.js`) rappresenta il cuore architetturale dell'applicazione, implementando il pattern **Facade** per fornire una API unificata che astrae la complessità della gestione stati utente, operazioni business e interazioni con storage.
 
-#### Architettura e Scopo
+## Architettura e Scopo
 
 Il modulo organizza tutte le operazioni in namespace logici che corrispondono ai diversi contesti d'uso dell'applicazione:
 
@@ -203,17 +238,81 @@ Il modulo organizza tutte le operazioni in namespace logici che corrispondono ai
 - **Single source of truth:** Centralizza lo stato dell'applicazione evitando inconsistenze
 - **Astrazione complessità:** Nasconde ai componenti UI la logica di business e storage
 
-#### Namespace NewUser: Gestione Utenti Non Autenticati
+### _ Namespace NewUser: Gestione Utenti Non Autenticati
 
 Il namespace gestisce operazioni per utenti non autenticati tramite funzioni `startSession()` per login e `addToDB()` per registrazione. La **logica del login** integra tre passaggi atomici: autenticazione credenziali, recupero ID utente, e aggiornamento stato sessione in sessionStorage. Questo pattern garantisce che un fallimento in qualsiasi fase non lasci l'applicazione in stato inconsistente.
 
-#### Namespace LoggedUser: Operazioni Utente Autenticato
+#### Login Flow Sequence
+
+```mermaid
+sequenceDiagram
+    participant UI as UI Component
+    participant SS as Session Service
+    participant US as Users Service
+    participant ST as Storage
+    
+    Note over UI,ST: User Authentication Flow
+    UI->>SS: NewUser.startSession(username, password)
+    SS->>US: admitUser("username", username, password)
+    US->>ST: get('users', {storageLocation: 'local'})
+    ST-->>US: userData[]
+    US-->>SS: boolean (admitted)
+    alt Authentication Success
+        SS->>US: searchUser("username", username)
+        US-->>SS: userObject
+        SS->>ST: set('loggedUser', userId, {storageLocation: 'session'})
+        ST-->>SS: processedData
+        SS-->>UI: true
+    else Authentication Failed
+        SS-->>UI: false
+    end
+```
+
+## Namespace LoggedUser: Operazioni Utente Autenticato
 
 Il namespace espone operazioni che richiedono autenticazione, utilizzando sempre `LoggedUser.getId()` per recuperare l'ID dell'utente corrente dal sessionStorage. Include gestione preferiti con toggle automatico e funzionalità profilo.
 
 La **funzione di eliminazione account** implementa una logica particolare per preservare l'integrità del sistema recensioni, trasferendo tutte le recensioni dell'utente a un "utente eliminato" prima di rimuovere l'account, garantendo che le statistiche rimangano integre.
 
-#### Namespace PreviewArray: Generazione Dati per UI
+```mermaid
+sequenceDiagram
+    participant UI as UI Component
+    participant SS as Session Service
+    participant US as Users Service
+    participant RVS as Reviews Service
+    participant DM as Data Models
+    
+    Note over UI,RVS: Delete User Account with Reviews Transfer
+    UI->>SS: LoggedUser.deleteAccount()
+    SS->>SS: LoggedUser.getId()
+    SS->>DM: generateItemId("deleted-user")
+    DM-->>SS: deletedUserId
+    
+    Note over SS,RVS: Get User Reviews to Transfer
+    SS->>RVS: getStoredReviews()
+    RVS-->>SS: allReviews
+    SS->>SS: currentUserReviews = allReviews.filter(review => review.userId === currentUserId)
+    
+    loop For each user review
+        Note over SS,RVS: Delete original review
+        SS->>RVS: updateRecipeReviews(currentUserId, recipeId, null, null)
+        RVS-->>SS: deletedReview
+        
+        Note over SS,RVS: Create review with deleted user ID
+        SS->>RVS: updateRecipeReviews(deletedUserId, recipeId, tasteRate, difficultyRate)
+        RVS-->>SS: updatedReviewsDB
+    end
+    
+    Note over SS,US: Delete User Account
+    SS->>US: deleteUser(currentUserId)
+    US-->>SS: updatedUsersDB
+    
+    Note over SS: End Session
+    SS->>SS: LoggedUser.endSession()
+    SS-->>UI: {updatedUsersDB, updatedReviewsDB}
+```
+
+## Namespace PreviewArray: Generazione Dati per UI
 
 Questo namespace risolve il problema della **preparazione dati per il rendering UI**, fornendo oggetti strutturati che contengono sia il tipo di contenuto che i dati formattati. Le principali strategie implementate includono:
 
@@ -224,60 +323,121 @@ Questo namespace risolve il problema della **preparazione dati per il rendering 
 
 La funzione `mostPopular()` implementa una **strategia del fallback** che garantisce contenuti sempre disponibili anche quando il database recensioni è insufficiente, riempiendo con ricette casuali.
 
-#### 3.2 Cache-First Strategy per Performance
+### 3.2 Cache-First Strategy per Performance
 
-L'integrazione API implementa strategia cache intelligente:
+Il sistema adotta una **strategia cache-first** per ottimizzare le performance e ridurre le chiamate API. La politica implementata prevede:
 
-**Strategia Cache-First:**
-- `getData(dataType)`: Orchestratore principale con controllo validità cache giornaliera
-- **Cache intelligente:** Verifica timestamp di creazione vs. data corrente, forza refresh automatico dopo 24h
-- **Gestione invalidazione:** Cache locale diventa obsoleta giornalmente per garantire dati aggiornati
-- Funzioni private interne: `createLocalRecipesDB()` per caricamento completo database A-Z, `createLocalCategoriesDB()` per categorie
-- `fetchRecipes()`: Wrapper unificato per chiamate HTTP con gestione errori
+**Controllo Temporale**: Validazione quotidiana della cache confrontando timestamp di creazione con data corrente. I dati vengono considerati validi se creati in giornata, altrimenti viene forzato un refresh automatico.
 
-**Gestione Performance:**
-- Cache localStorage con timestamp per controllo scadenza
-- Normalizzazione dati API in formato interno ottimizzato
-- Batch processing per riduzione chiamate API sequenziali
-- Error handling con graceful degradation
+**Gestione Invalidazione**: La cache diventa obsoleta giornalmente per garantire freschezza dei contenuti API. Questa scelta bilancia performance locale con aggiornamenti regolari dei dati esterni.
 
-#### 3.3 Validazione Dual-Layer
+**Fallback Strategy**: In caso di errori di connessione o problemi API, il sistema mantiene e utilizza i dati cache precedenti quando disponibili, garantendo continuità di servizio anche in condizioni di rete instabile.
+
+```mermaid
+flowchart TD
+    A[Request getData dataType] --> B{Cache exists?}
+    B -->|No| C[createLocalDB]
+    B -->|Yes| D{Cache valid today?}
+    D -->|No| E[Cache expired]
+    D -->|Yes| F[Return cached data]
+    E --> C
+    C --> G[Fetch from TheMealDB API]
+    G --> H{API Response OK?}
+    H -->|No| I[Handle API Error]
+    H -->|Yes| J[Normalize data]
+    J --> L[Add timestamp]
+    L --> K[Store in localStorage]
+    K --> M[Return fresh data]
+    I --> N[Graceful degradation]
+    
+    subgraph "API Integration Details"
+        G1[Categories endpoint]
+        G2[Recipes A-Z endpoint]
+    end
+    
+    G --> G1
+    G --> G2
+    
+    classDef cache fill:#e8f5e8
+    classDef api fill:#e3f2fd
+    classDef error fill:#ffebee
+    classDef process fill:#fff3e0
+    
+    class B,D,F,K,L cache
+    class G,G1,G2,H api
+    class E,I,N error
+    class A,C,J,M process
+```
+
+```mermaid
+sequenceDiagram
+    participant APP as Application
+    participant RS as Recipes Service
+    participant CACHE as localStorage
+    participant API as TheMealDB API
+    
+    APP->>RS: getData('recipes')
+    RS->>CACHE: get('recipes')
+    CACHE-->>RS: cachedData | null
+    
+    alt Cache Miss
+        RS->>API: fetchRecipes(A-Z)
+        loop For each letter A-Z
+            API-->>RS: recipes for letter
+        end
+        RS->>RS: normalizeData()
+        RS->>CACHE: set('recipes', normalizedData)
+        RS-->>APP: freshData
+    else Cache Hit
+        RS->>RS: validateTimestamp(cachedData[0].creationDate)
+        alt Cache Valid (today)
+            RS-->>APP: cachedData
+        else Cache Expired
+            RS->>API: fetchRecipes(A-Z)
+            API-->>RS: updatedData
+            RS->>CACHE: set('recipes', updatedData)
+            RS-->>APP: updatedData
+        end
+    end
+```
+
+### 3.3 Validazione Dual-Layer
 
 Il sistema di validazione implementa un **approccio dual-layer** che separa la **responsabilità UX** (feedback immediato) dalla **logica business** (sicurezza e integrità dati), garantendo sia usabilità che robustezza.
 
-#### Layer Presentation: Validazione UX Real-time
+## Layer Presentation: Validazione UX Real-time
 
 Il layer di presentazione gestisce l'**esperienza utente** con validazione immediata e feedback visivo tramite la funzione `formatInputField()` che applica classi Bootstrap (`is-valid`/`is-invalid`) e mostra messaggi specifici basati sul tipo di errore ricevuto dal layer business.
 
-#### Layer Business: Sicurezza e Integrità
+## Layer Business: Sicurezza e Integrità
 
 Il layer business implementa **validazioni rigorose** con controlli di formato tramite regex, unicità nel database utenti, e requisiti di sicurezza. Include validazione email pattern, password con requisiti complessi (maiuscola, minuscola, numero, lunghezza minima) e hashing sicuro SHA-256 tramite Web Crypto API.
 
-#### Orchestrazione Validazione
+## Orchestrazione Validazione
 
 Il Session Service orchestra la validazione attraverso `inputValidation()` che determina il tipo di controllo da eseguire e propaga gli errori tipizzati per il rendering UI. Questa architettura garantisce **separazione**, **riusabilità** e **sicurezza multi-layer**.
 
-#### 3.4 Sistema Recensioni con Rating Duale
+### 3.4 Sistema Recensioni con Rating Duale
 
 Il sistema recensioni (`js/services/reviews-service.js`) implementa un **rating duale gusto/difficoltà** con un'architettura CRUD semplificata che utilizza un **pattern toggle intelligente** per gestire aggiunta e rimozione recensioni attraverso un'unica funzione.
 
-#### Logica Toggle e Business Rules
+## Logica Toggle e Business Rules
 
 Il cuore del sistema è la funzione `updateRecipeReviews()` che implementa il **pattern toggle intelligente**: se invocata con tutti i parametri (userId, recipeId, tasteRate, difficultyRate) crea una nuova recensione, se invocata solo con userId e recipeId rimuove la recensione esistente. Questa logica unificata semplifica l'interfaccia e garantisce operazioni atomiche.
 
-#### Implementazione Business Rules
+## Implementazione Business Rules
 
 1. **Unicità utente-ricetta:** Un utente può recensire una ricetta solo una volta
 2. **Validazione parametri:** ADD richiede tutti i parametri, DELETE solo userId e recipeId
 3. **Gestione errori tipizzati:** `Duplicated` per violazioni unicità, `NotFound` per recensioni inesistenti
 
-#### Aggregazione Real-time
+## Aggregazione Real-time
 
 Il sistema calcola statistiche on-demand tramite `recipeAvgRate()` senza caching per garantire sempre dati aggiornati. La **strategia real-time**  richiede calcoli ripetuti, ma evita sovraccarico durante il caricamento iniziale di ricette e pagine, spostando il costo computazionale al momento della visualizzazione ed evita problemi di sincronizzazione cache. Per l'ambito del presente progetto, la performance è accettabile dato il dataset limitato.
 
 **Ottimizzazioni Performance:** Il calcolo real-time evita sovraccarico durante il caricamento iniziale di ricette e pagine, spostando il costo computazionale al momento della visualizzazione when needed. Per l'ambito del presente progetto, la performance è accettabile dato il dataset limitato.
 
-#### Integrazione con UI
+## Integrazione con UI
 
 Il sistema espone funzioni specifiche per le esigenze dell'interfaccia:
 
@@ -285,48 +445,44 @@ Il sistema espone funzioni specifiche per le esigenze dell'interfaccia:
 - **Rating aggregati:** `recipeAvgRate()` per le statistiche community
 - **Deep copy:** `getStoredReviews()` restituisce sempre copie profonde per evitare mutazioni accidentali
 
-#### 3.5 Gestione Ricette e API Integration
+### 3.5 Implementazione Tecnica API Integration
 
-Il modulo `js/services/recipes-service.js` risolve il problema dell'**integrazione con API esterne** implementando una **strategia cache-first** che bilancia performance locale e freschezza dati.
+Il modulo `js/services/recipes-service.js` implementa la strategia cache-first descritta nella sezione 3.2 attraverso:
 
-#### Strategia Cache-First e Gestione API
+## Architettura Cache-First
 
-La funzione orchestratrice `getData()` implementa la logica cache intelligente con controllo temporale che confronta la data di creazione del primo elemento cache con la data odierna, forzando il refresh ogni 24 ore per mantenere i dati aggiornati (implementazione dettagliata in sezione 3.2).
+La funzione orchestratrice `getData(dataType)` implementa la logica cache intelligente attraverso:
 
-**Gestione Cache e API:** Quando la cache locale risulta vuota o scaduta (non di oggi), il sistema attiva automaticamente il fetch da TheMealDB tramite le funzioni `createLocalRecipesDB()` e `createLocalCategoriesDB()`, garantendo dati sempre aggiornati con strategia cache-first.
+- **Controllo Validità**: Confronta il timestamp di creazione del primo elemento cache con la data corrente
+- **Caricamento Completo**: Le funzioni `createLocalRecipesDB()` e `createLocalCategoriesDB()` scaricano l'intero database API tramite iterazione A-Z per superare l'assenza di un endpoint "get all recipes"
+- **Gestione HTTP**: `fetchRecipes()` agisce come wrapper unificato per tutte le chiamate HTTP con error handling integrato
+- **Normalizzazione**: I dati vengono convertiti in formato interno ottimizzato e salvati in localStorage con timestamp
+- **Graceful Degradation**: In caso di errori API, il sistema mantiene i dati cache precedenti garantendo continuità di servizio
 
-#### Caricamento Database Completo
-
-Per superare i limiti dell'API TheMealDB (nessun endpoint "get all recipes"), il sistema implementa una **strategia di caricamento alfabetico** che itera tutte le lettere A-Z per scaricare il database completo. Questa strategia garantisce **copertura completa** del database TheMealDB e abilita ricerche lato client senza ulteriori chiamate API.
-
-#### Algoritmo di Ricerca Multi-termine
+## Algoritmo di Ricerca Multi-termine
 
 La ricerca per nome implementa un **algoritmo di scoring** che normalizza query e nomi ricette, assegna punteggi basati su match esatti (20 punti) e parziali (10 punti), con penalizzazione posizionale e bonus per match completi. La **logica di scoring** privilegia ricette con nomi che matchano completamente la query, penalizzando match parziali su termini secondari.
 
 ---
 
-<!-- <div style="page-break-before: always;"></div> -->
+## 4. GESTIONE DATI E API
 
-### 4. GESTIONE DATI E API
+### 4.1 Integrazione TheMealDB API
 
-#### 4.1 Integrazione TheMealDB API
-
-L'applicazione utilizza strategia cache-first con due endpoint strategici di TheMealDB:
+L'applicazione utilizza due endpoint strategici di TheMealDB:
 - **Categorie:** `https://www.themealdb.com/api/json/v1/1/categories.php`
 - **Ricette per lettera:** `https://www.themealdb.com/api/json/v1/1/search.php?f={letter}`
 
-La scelta del secondo endpoint consente caricamento completo del database (A-Z) implementando ricerca lato client con algoritmo di scoring per rilevanza. La gestione API è centralizzata nel modulo `recipes-service.js` con wrapper `fetchRecipes()` per chiamate HTTP unificate e gestione errori graceful.
+La scelta del secondo endpoint consente caricamento completo del database (A-Z) implementando ricerca lato client con algoritmo di scoring per rilevanza.
 
-#### 4.2 Modelli Dati Normalizzati
-
-#### Modello Recipe Esteso
+### 4.2 Modelli Dati Normalizzati
 La classe `FullRecipe` in `js/core/data-models.js` normalizza i dati API TheMealDB:
 - **Mapping Campi:** Conversione automatica da formato API a struttura interna consistente
 - **Ingredients Parsing:** Metodo `getIngredients(rawRecipeObj)` per estrazione ingredienti con misure da campi numerati (1-20)
 - **Fallback Values:** Gestione campi mancanti con valori di default e immagine placeholder
 - **Timestamp Creation:** Aggiunta automatica `creationDate` per cache management
 
-#### 4.3 Storage Strategy Unificata
+### 4.3 Storage Strategy Unificata
 
 Il sistema di storage unificato (`js/core/storage.js`) astrae localStorage/sessionStorage attraverso il namespace `StorageOperations`:
 
@@ -344,9 +500,9 @@ Il sistema di storage unificato (`js/core/storage.js`) astrae localStorage/sessi
 
 <!-- <div style="page-break-before: always;"></div> -->
 
-### 5. INTERFACCIA UTENTE E UX
+## 5. INTERFACCIA UTENTE E UX
 
-#### 5.1 Responsive Design Mobile-First
+### 5.1 Responsive Design Mobile-First
 
 L'approccio mobile-first è implementato tramite CSS Grid e media queries. Il file `style.css` definisce breakpoint ottimizzati per tutti i dispositivi:
 
@@ -356,23 +512,23 @@ L'approccio mobile-first è implementato tramite CSS Grid e media queries. Il fi
 
 La navbar utilizza Bootstrap 5 con design fixed-top e dropdown menu per la navigazione, mentre i container di ricette implementano CSS Grid responsive con `auto-fill` e `minmax()` per adattamento automatico.
 
-#### 5.2 Architettura Componenti UI
+### 5.2 Architettura Componenti UI
 
 Il sistema di rendering (`js/components/ui.js`) implementa un'**architettura component-based** con pattern Factory per la generazione dinamica di elementi DOM, risolvendo il problema della **creazione consistente di UI elements** senza framework esterni.
 
-#### Pattern Factory per Elementi DOM
+## Pattern Factory per Elementi DOM
 
 Il cuore del sistema è il **factory pattern** implementato nelle funzioni private che generano elementi DOM standardizzati come `createPreviewCard()`. Ogni elemento include data attributes per event delegation e supporta inserimento condizionale di contenuto body specifico (rating, note, etc.).
 
-#### Strategy Pattern per Contenuti Dinamici
+## Strategy Pattern per Contenuti Dinamici
 
 Il sistema utilizza uno **strategy Pattern** attraverso il namespace `CardDisplayStrategy` per gestire diversi tipi di contenuto nelle card: `withGlobalRating`, `withUserRating`, `withNotes`. Ogni strategia formatta i dati specifici e gestisce graceful degradation in caso di errori.
 
-#### Gestione Stati UI Centralizzata
+## Gestione Stati UI Centralizzata
 
 Il modulo centralizza la gestione degli **stati UI dinamici** attraverso funzioni dedicate come `favBtnDisplay()` che sincronizza l'interfaccia con lo stato applicativo, gestendo automaticamente il toggle delle icone preferiti basandosi sullo stato utente e ricetta.
 
-#### Popolazione Container con Type-Based Rendering
+## Popolazione Container con Type-Based Rendering
 
 Il sistema di popolazione implementa **type-based rendering** tramite `populatePreviewContainer()` che adatta automaticamente il contenuto in base al tipo di dati ricevuti (meals, reviews, notes, categories), selezionando la strategia di rendering appropriata dal namespace `CardDisplayStrategy`. 
 
@@ -380,7 +536,7 @@ Il sistema di popolazione implementa **type-based rendering** tramite `populateP
 
 Questa architettura garantisce **consistenza visiva**, **riusabilità dei componenti** e **facilità di manutenzione** senza la complessità di framework esterni.
 
-#### 5.3 Gestione Stati UI e Navbar Dinamica
+### 5.3 Gestione Stati UI e Navbar Dinamica
 
 Il progetto implementa gestione stati tramite classi Bootstrap e funzioni dedicate. Gli stati di loading vengono gestiti con overlay CSS, mentre la validazione form utilizza le classi `is-valid`/`is-invalid` di Bootstrap per feedback real-time.
 
@@ -390,41 +546,41 @@ La navbar dinamica si aggiorna automaticamente basandosi sullo stato di autentic
 
 <!-- <div style="page-break-before: always;"></div> -->
 
-### 6. TESTING E VALIDAZIONE
+## 6. TESTING E VALIDAZIONE
 
-#### 6.1 Test Scenari Critici
+### 6.1 Test Scenari Critici
 
-#### Scenario 1: Workflow Completo Utente
+## Scenario 1: Workflow Completo Utente
 ```
 Registrazione → Login → Ricerca → Dettaglio → Preferiti → Recensione → Note
 ```
 
 **Risultati verificati:**
-- ✅ Validazione form real-time con feedback Bootstrap
-- ✅ Persistenza dati localStorage attraverso refresh pagina
-- ✅ Sincronizzazione stato UI con storage (preferiti, recensioni)
-- ✅ Cache-first strategy riduce chiamate API duplicate
+-  Validazione form real-time con feedback Bootstrap
+-  Persistenza dati localStorage attraverso refresh pagina
+-  Sincronizzazione stato UI con storage (preferiti, recensioni)
+-  Cache-first strategy riduce chiamate API duplicate
 
-#### Scenario 2: Gestione Errori e Edge Cases
+## Scenario 2: Gestione Errori e Edge Cases
 ```
 Dati incompleti API → Valori null/undefined → Connessione lenta → Form validation
 ```
 
 **Risultati:**
-- ✅ Fallback chain per dati API incompleti (campi vuoti invece di errori)
-- ✅ Graceful degradation con console.error per debugging
-- ✅ Validazione robusta input utente con feedback specifico
-- ✅ Loading states per operazioni asincrone lunghe
+-  Fallback chain per dati API incompleti (campi vuoti invece di errori)
+-  Graceful degradation con console.error per debugging
+-  Validazione robusta input utente con feedback specifico
+-  Loading states per operazioni asincrone lunghe
 
-#### 6.2 Test Performance e Compatibilità
+### 6.2 Test Performance e Compatibilità
 
-#### Metriche Performance
+## Metriche Performance
 - **Page Load:** Rapido con cache (localStorage/sessionStorage)
 - **API Response:** Dipendente da TheMealDB (variabile 200ms-2s)
 - **Storage Access:** Sincrono e immediato (localStorage)
 - **UI Interactions:** Responsivo con event delegation pattern
 
-#### Browser Compatibility
+## Browser Compatibility
 
 **Requisiti per Piena Compatibilità:**
 - **ES6+ Support:** Moduli JavaScript, async/await, destructuring, structuredClone
@@ -436,19 +592,17 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - Chrome, Firefox, Safari, Edge (versioni recenti con supporto ES6+ completo)
 - Mobile browsers moderni con Web APIs standard
 
-#### 6.3 Test Responsive Design
+### 6.3 Test Responsive Design
 
-#### Breakpoint Testing
+## Breakpoint Testing
 - **Mobile (320-559px):** Layout single-column, card verticali con dimensione del body adattiva
 - **Tablet (560-719px):** Grid 2-colonne, card orizzontali  
 - **Desktop (720px+):** Grid ottimizzata, card orizzontali
 ---
 
-<!-- <div style="page-break-before: always;"></div> -->
+## 7. CONCLUSIONI
 
-### 7. CONCLUSIONI
-
-#### 7.1 Analisi Decisioni Architetturali
+### 7.1 Analisi Decisioni Architetturali
 
 **Three-Layer Architecture:**
 - *Vantaggi:* Separazione concerns, modularità, manutenibilità del codice
@@ -465,7 +619,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - *Svantaggi:* Debugging più complesso, controllo granulare limitato
 - *Trade-off:* Efficienza vs. granularità controllo eventi
 
-#### 7.2 Conformità Requisiti Vincolanti
+### 7.2 Conformità Requisiti Vincolanti
 
 **Vincoli Frontend-Only:**
 - *Implementazione:* HTML5/CSS3/JavaScript ES6+ puro senza backend
@@ -479,7 +633,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - *Implementazione:* localStorage/sessionStorage per persistenza completa
 - *Implicazioni:* Storage limitato (~5MB), volatilità dati, nessuna concorrenza
 
-#### 7.3 Valutazione Scelte Tecnologiche
+### 7.3 Valutazione Scelte Tecnologiche
 
 **JavaScript ES6+ Modules:**
 - *Vantaggi:* Import/export nativi, tree-shaking, sviluppo modulare
@@ -491,7 +645,7 @@ Dati incompleti API → Valori null/undefined → Connessione lenta → Form val
 - *Svantaggi:* Bundle size, personalizzazione limitata, dipendenza esterna
 - *Impatto:* Velocità sviluppo vs. controllo granulare styling
 
-#### 7.4 Strategia Performance vs. Semplicità di Sviluppo
+### 7.4 Strategia Performance vs. Semplicità di Sviluppo
 
 **Scelta Progettuale: Semplicità Prima di Performance**
 
@@ -501,7 +655,7 @@ Data la natura accademica del progetto e la **mole di dati limitata** (dataset u
 - **Funzioni di interrogazione iterative:** funzioni di interrogazione come `Recipe.isFavourite()` eseguono ricerche lineari senza caching interno
 - **Calcoli aggregati real-time:** Statistiche recensioni calcolate on-demand senza pre-computazione
 - **Validazioni ridondanti:** Controlli duplicati tra layer per robustezza invece di ottimizzazione
-- **Coerenza dati garantita:** Approccio lineare e diretto nelle operazioni per evitare stati inconsistenti, privilegiando chiarezza del codice
+- **Operazioni atomiche ripetute:** Privilegio per atomicità garantita con ripetizione operazioni invece di ottimizzazioni batch
 
 **Razionale della Decisione:**
 - *Dataset piccolo:* Utenti limitati, ricette disponibili localmente, operazioni O(n) accettabili
@@ -518,13 +672,13 @@ Per un utilizzo in produzione con mole di dati significativa (migliaia di utenti
 **Trade-off Accettato:**
 Considerati il contesto e la scala del progetto, si è scelto di accettare latenza aggiuntiva marginale per privilegiare **architettura chiara**, **codice facilmente manutenibile** e **tempi di sviluppo ottimizzati**.  
 
-#### 7.5 Conformità Requisiti vs. Limitazioni
+### 7.5 Conformità Requisiti vs. Limitazioni
 
 **Vincoli Rispettati:**
-- Frontend-only: ✅ Nessuna dipendenza backend
-- Web Storage: ✅ localStorage/sessionStorage per persistenza
-- API Integration: ✅ TheMealDB con gestione asincrona
-- Responsive: ✅ Mobile-first con breakpoint definiti
+- Frontend-only: Nessuna dipendenza backend
+- Web Storage: localStorage/sessionStorage per persistenza
+- API Integration: TheMealDB con gestione asincrona
+- Responsive: Mobile-first con breakpoint definiti
 
 **Limitazioni Intrinseche:**
 - Sicurezza: Validazione solo client-side, dati esposti
@@ -532,7 +686,7 @@ Considerati il contesto e la scala del progetto, si è scelto di accettare laten
 - Affidabilità: Dipendenza API esterna
 - Performance: latenza API variabile
 
-#### 7.6 Impatto Decisioni sul Prodotto Finale
+### 7.6 Impatto Decisioni sul Prodotto Finale
 
 L'architettura implementata risulta **appropriata per il contesto accademico** con requisiti frontend-only, fornendo equilibrio tra complessità implementativa e funzionalità complete. Le scelte tecnologiche sono state orientate verso **conformità ai vincoli** e **tentativo di predisposizione per scalabilità futura**.
 

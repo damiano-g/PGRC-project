@@ -19,7 +19,7 @@ sequenceDiagram
         SS->>US: searchUser("username", username)
         US-->>SS: userObject
         SS->>ST: set('loggedUser', userId, {storageLocation: 'session'})
-        ST-->>SS: success
+        ST-->>SS: processedData
         SS-->>UI: true
     else Authentication Failed
         SS-->>UI: false
@@ -50,11 +50,18 @@ sequenceDiagram
     SS->>US: updateUserFavourites(userId, recipeId)
     US->>ST: get('users', {storageLocation: 'local'})
     ST-->>US: userData[]
-    US->>US: toggleRecipeInFavorites(userId, recipeId)
+    US->>US: searchUser("id", userId)
+    US->>US: findIndex(favourites, recipeId)
+    alt Recipe not in favorites
+        US->>US: userFavourites.unshift(recipeId)
+    else Recipe in favorites
+        US->>US: userFavourites.splice(index, 1)
+    end
+    US->>US: updateUserData(userId, "favourites", userFavourites)
     US->>ST: set('users', updatedData, {storageLocation: 'local'})
-    ST-->>US: success
-    US-->>SS: void
-    SS-->>UI: void
+    ST-->>US: processedData
+    US-->>SS: userFavourites
+    SS-->>UI: userFavourites
 ```
 
 ## 3. Review System Flow
@@ -66,32 +73,117 @@ sequenceDiagram
     participant RVS as Reviews Service
     participant ST as Storage
     
-    Note over UI,ST: Add/Update Recipe Review
+    Note over UI,ST: Add Recipe Review
     UI->>SS: Recipe.addUserReview(recipeId, tasteRate, difficultyRate)
     SS->>SS: LoggedUser.getId()
     SS->>RVS: updateRecipeReviews(userId, recipeId, tasteRate, difficultyRate)
     RVS->>ST: get('reviews', {storageLocation: 'local'})
     ST-->>RVS: reviewsData[]
-    RVS->>RVS: addOrUpdateReview(userId, recipeId, rates)
-    RVS->>ST: set('reviews', updatedReviews, {storageLocation: 'local'})
-    ST-->>RVS: success
-    RVS-->>SS: void
-    SS-->>UI: true
+    RVS->>RVS: checkIfReviewExists(userId, recipeId)
+    alt Review does not exist
+        RVS->>RVS: new Review(recipeId, userId, tasteRate, difficultyRate)
+        RVS->>RVS: recipeReviewsArray.unshift(updatedReview)
+        RVS->>ST: set('reviews', updatedReviews, {storageLocation: 'local'})
+        ST-->>RVS: processedData
+        RVS-->>SS: updatedReview
+        SS-->>UI: updatedReview
+    else Review already exists
+        RVS-->>SS: throw Duplicated("Review")
+        SS-->>UI: Error (Duplicated)
+    end
     
     Note over UI,ST: Delete User Review
     UI->>SS: Recipe.deleteUserReview(recipeId)
-    SS->>RVS: updateRecipeReviews(userId, recipeId)
-    RVS-->>SS: result
-    SS-->>UI: result
+    SS->>SS: LoggedUser.getId()
+    SS->>RVS: updateRecipeReviews(userId, recipeId, null, null)
+    RVS->>ST: get('reviews', {storageLocation: 'local'})
+    ST-->>RVS: reviewsData[]
+    RVS->>RVS: findIndex(recipeReviewsArray, userId, recipeId)
+    alt Review exists
+        RVS->>RVS: recipeReviewsArray.splice(index, 1)
+        RVS->>ST: set('reviews', updatedReviews, {storageLocation: 'local'})
+        ST-->>RVS: processedData
+        RVS-->>SS: processedData
+        SS-->>UI: processedData
+    else Review not found
+        RVS-->>SS: throw NotFound("Review", "id", userId)
+        SS-->>UI: Error (NotFound)
+    end
     
     Note over UI,ST: Get User Review Rates
     UI->>SS: Recipe.userTasteRate(recipeId)
+    SS->>SS: LoggedUser.getId()
     SS->>RVS: recipeUserRate(recipeId, userId, "tasteRate")
-    RVS-->>SS: number (0-5)
-    SS-->>UI: tasteRate
+    RVS->>ST: get('reviews', {storageLocation: 'local'})
+    ST-->>RVS: reviewsData[]
+    RVS->>RVS: getStoredReviews().find(element => element.recipeId === recipeId && element.userId === userId)
+    RVS->>RVS: review ? Number(review[ratingType]).toFixed(1) : 0
+    RVS-->>SS: string (rate value)
+    SS-->>UI: string (tasteRate)
+    
+    Note over UI,ST: Get Average Recipe Rates
+    UI->>SS: Recipe.avgTasteRate(recipeId)
+    SS->>RVS: recipeAvgRate(recipeId, "tasteRate")
+    RVS->>ST: get('reviews', {storageLocation: 'local'})
+    ST-->>RVS: reviewsData[]
+    RVS->>RVS: getStoredReviews().forEach(review => if recipeId matches)
+    RVS->>RVS: sum += review[ratingType], totalReviews++
+    RVS->>RVS: avgRate = (sum/totalReviews).toFixed(1)
+    RVS-->>SS: string (average rate)
+    SS-->>UI: string (avgTasteRate)
 ```
 
-## 5. Logout Flow
+## 5. Profile Update Flow
+
+```mermaid
+sequenceDiagram
+    participant UI as UI Component
+    participant SS as Session Service
+    participant US as Users Service
+    participant ST as Storage
+    
+    Note over UI,ST: Update Username/Email (Generic Flow)
+    UI->>SS: LoggedUser.changeUsername(newValue) / changeEmail(newValue)
+    SS->>SS: LoggedUser.getId()
+    SS->>US: updateUserUsername(userId, newValue) / updateUserEmail(userId, newValue)
+    US->>US: authUsername(newValue) / authEmail(newValue)
+    alt Field is unique
+        US->>US: updateUserData(userId, field, newValue)
+        US->>ST: get('users', {storageLocation: 'local'})
+        ST-->>US: userData[]
+        US->>US: findIndex(users, userId)
+        US->>US: registeredUsers[index][field] = newValue
+        US->>ST: set('users', updatedData, {storageLocation: 'local'})
+        ST-->>US: processedData
+        US-->>SS: newValue
+        SS-->>UI: newValue
+    else Field already exists
+        US-->>SS: throw Duplicated(fieldType)
+        SS-->>UI: Error (Duplicated)
+    end
+    
+    Note over UI,ST: Update Password
+    UI->>SS: LoggedUser.changePassword(newPassword, passConfirm)
+    SS->>SS: LoggedUser.getId()
+    SS->>US: updateUserPassword(userId, newPassword, passConfirm)
+    US->>US: authPassword(newPassword, passConfirm)
+    alt Passwords match
+        US->>US: updateUserData(userId, "password", newPassword, true)
+        US->>US: hashString(newPassword)
+        US->>ST: get('users', {storageLocation: 'local'})
+        ST-->>US: userData[]
+        US->>US: registeredUsers[index]["password"] = hashedPassword
+        US->>ST: set('users', updatedData, {storageLocation: 'local'})
+        ST-->>US: processedData
+        US-->>SS: hashedPassword
+        SS-->>UI: hashedPassword
+    else Passwords don't match
+        US-->>SS: throw InvalidFormat("password confirmation")
+        SS-->>UI: Error (InvalidFormat)
+    end
+```
+
+## 6. Logout Flow
 
 ```mermaid
 sequenceDiagram
@@ -102,9 +194,51 @@ sequenceDiagram
     Note over UI,ST: User Logout
     UI->>SS: LoggedUser.endSession()
     SS->>ST: set('loggedUser', "", {storageLocation: 'session'})
-    ST-->>SS: success
+    ST-->>SS: processedData
     SS-->>UI: void
 ```
+
+## 7. Delete Account Flow
+
+```mermaid
+sequenceDiagram
+    participant UI as UI Component
+    participant SS as Session Service
+    participant US as Users Service
+    participant RVS as Reviews Service
+    participant DM as Data Models
+    
+    Note over UI,RVS: Delete User Account with Reviews Transfer
+    UI->>SS: LoggedUser.deleteAccount()
+    SS->>SS: LoggedUser.getId()
+    SS->>DM: generateItemId("deleted-user")
+    DM-->>SS: deletedUserId
+    
+    Note over SS,RVS: Get User Reviews to Transfer
+    SS->>RVS: getStoredReviews()
+    RVS-->>SS: allReviews
+    SS->>SS: currentUserReviews = allReviews.filter(review => review.userId === currentUserId)
+    
+    loop For each user review
+        Note over SS,RVS: Delete original review
+        SS->>RVS: updateRecipeReviews(currentUserId, recipeId, null, null)
+        RVS-->>SS: deletedReview
+        
+        Note over SS,RVS: Create review with deleted user ID
+        SS->>RVS: updateRecipeReviews(deletedUserId, recipeId, tasteRate, difficultyRate)
+        RVS-->>SS: updatedReviewsDB
+    end
+    
+    Note over SS,US: Delete User Account
+    SS->>US: deleteUser(currentUserId)
+    US-->>SS: updatedUsersDB
+    
+    Note over SS: End Session
+    SS->>SS: LoggedUser.endSession()
+    SS-->>UI: {updatedUsersDB, updatedReviewsDB}
+```
+
+## 4. Notes Management Flow
 
 ```mermaid
 sequenceDiagram
@@ -114,36 +248,62 @@ sequenceDiagram
     participant ST as Storage
     
     Note over UI,ST: Add Note to Recipe
-    UI->>SS: LoggedUser.addNote(recipeId, noteText)
+    UI->>SS: LoggedUser.addNote(recipeId, text)
     SS->>SS: LoggedUser.getId()
-    SS->>US: updateUserNotes(userId, recipeId, noteText)
-    US->>ST: get('users', {storageLocation: 'local'})
-    ST-->>US: userData[]
-    US->>US: createNoteAndAddToUser(userId, recipeId, noteText)
-    US->>ST: set('users', updatedData, {storageLocation: 'local'})
-    ST-->>US: success
-    US-->>SS: void
-    SS-->>UI: void
+    SS->>US: updateUserNotes(userId, recipeId, text, null)
+    US->>US: searchUser("id", userId)
+    US->>US: userNotes = user.notes
+    alt Valid parameters (text && recipeId && !noteId)
+        US->>US: new Note(recipeId, text)
+        US->>US: userNotes.unshift(newNote)
+        US->>US: updateUserData(userId, "notes", userNotes)
+        US->>ST: get('users', {storageLocation: 'local'})
+        ST-->>US: userData[]
+        US->>ST: set('users', updatedData, {storageLocation: 'local'})
+        ST-->>US: processedData
+        US-->>SS: userNotes
+        SS-->>UI: userNotes
+    else Invalid parameters
+        US-->>SS: throw Error("Wrong data format")
+        SS-->>UI: Error (Wrong data format)
+    end
     
     Note over UI,ST: Delete Note
     UI->>SS: LoggedUser.deleteNote(noteId)
     SS->>SS: LoggedUser.getId()
     SS->>US: updateUserNotes(userId, null, null, noteId)
-    US->>ST: get('users', {storageLocation: 'local'})
-    ST-->>US: userData[]
-    US->>US: removeNoteFromUser(userId, noteId)
-    US->>ST: set('users', updatedData, {storageLocation: 'local'})
-    ST-->>US: success
-    US-->>SS: void
-    SS-->>UI: void
-    
-    Note over UI,ST: Get User Notes
-    UI->>SS: LoggedUser.getNotes(recipeId)
+    US->>US: searchUser("id", userId)
+    US->>US: userNotes = user.notes
+    alt Valid parameters (!text && !recipeId && noteId)
+        US->>US: findIndex(userNotes, noteId)
+        US->>US: userNotes.splice(index, 1)
+        US->>US: updateUserData(userId, "notes", userNotes)
+        US->>ST: get('users', {storageLocation: 'local'})
+        ST-->>US: userData[]
+        US->>ST: set('users', updatedData, {storageLocation: 'local'})
+        ST-->>US: processedData
+        US-->>SS: userNotes
+        SS-->>UI: userNotes
+    else Invalid parameters
+        US-->>SS: throw Error("Wrong data format")
+        SS-->>UI: Error (Wrong data format)
+    end
+    Note over UI,ST: Get User Notes for Recipe
+    UI->>SS: LoggedUser.getRecipeNotes(recipeId)
     SS->>SS: LoggedUser.getId()
     SS->>US: searchUser("id", userId)
-    US-->>SS: userObject.notes
-    SS->>SS: filterNotesByRecipe(notes, recipeId)
-    SS-->>UI: filteredNotes[]
+    US->>ST: get('users', {storageLocation: 'local'})
+    ST-->>US: userData[]
+    US-->>SS: userObject
+    SS->>SS: userObject.notes.filter(note => note.recipeId === recipeId)
+    SS-->>UI: Array (filtered notes)
+    
+    Note over UI,ST: Get All User Reviews
+    UI->>SS: LoggedUser.getReviews()
+    SS->>SS: LoggedUser.getId()
+    SS->>SS: ReviewsManagement.getStoredReviews()
+    SS->>SS: allReviews.filter(element => element.userId === LoggedUser.getId())
+    SS-->>UI: Array (user reviews)
 ```
 
 ## Session Service Architecture
@@ -181,12 +341,16 @@ graph TB
         LU1[getId]
         LU2[isLogged]
         LU3[getData]
-        LU4[getNotes]
-        LU5[updateFavourites]
-        LU6[addNote]
-        LU7[deleteNote]
-        LU8[deleteAccount]
-        LU9[endSession]
+        LU4[getRecipeNotes]
+        LU5[getReviews]
+        LU6[changeUsername]
+        LU7[changeEmail]
+        LU8[changePassword]
+        LU9[updateFavourites]
+        LU10[addNote]
+        LU11[deleteNote]
+        LU12[deleteAccount]
+        LU13[endSession]
     end
     
     subgraph "Dependencies"
@@ -201,17 +365,21 @@ graph TB
     LU2 --> SS
     LU3 --> US
     LU4 --> US
-    LU5 --> US
+    LU5 --> RVS
     LU6 --> US
     LU7 --> US
     LU8 --> US
-    LU8 --> RVS
-    LU9 --> SS
+    LU9 --> US
+    LU10 --> US
+    LU11 --> US
+    LU12 --> US
+    LU12 --> RVS
+    LU13 --> SS
     
     classDef operation fill:#e8f5e8
     classDef service fill:#fff3cd
     
-    class LU1,LU2,LU3,LU4,LU5,LU6,LU7,LU8,LU9 operation
+    class LU1,LU2,LU3,LU4,LU5,LU6,LU7,LU8,LU9,LU10,LU11,LU12,LU13 operation
     class US,RVS,ST,SS service
 ```
 

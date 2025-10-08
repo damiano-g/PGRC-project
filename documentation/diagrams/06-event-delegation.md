@@ -15,17 +15,16 @@ graph TB
     end
     
     subgraph "Event Delegation Layer"
-        LISTENER[Single Event Listener]
-        DETECTOR[Target Detection]
-        ROUTER[Action Router]
-        GUARD[Authentication Guard]
+        LISTENER[Container Event Listener]
+        TARGET[Target Detection closest/matches]
+        CONDITIONAL[Conditional Logic]
     end
     
     subgraph "Action Handlers"
-        FAV[Toggle Favorite]
         NAV[Navigate to Details]
-        RATE[Update Rating]
+        FAV[Toggle Favorite]
         NOTE[Add/Edit Note]
+        RATE[Update Rating]
     end
     
     CONTAINER --> LISTENER
@@ -36,14 +35,13 @@ graph TB
     BTN2 --> CARD1
     BTN3 --> CARD1
     
-    LISTENER --> DETECTOR
-    DETECTOR --> ROUTER
-    ROUTER --> GUARD
+    LISTENER --> TARGET
+    TARGET --> CONDITIONAL
     
-    GUARD --> FAV
-    GUARD --> NAV
-    GUARD --> RATE
-    GUARD --> NOTE
+    CONDITIONAL --> NAV
+    CONDITIONAL --> FAV
+    CONDITIONAL --> NOTE
+    CONDITIONAL --> RATE
     
     classDef dom fill:#e3f2fd
     classDef delegation fill:#e8f5e8
@@ -62,34 +60,30 @@ sequenceDiagram
     participant BTN as Button Element
     participant CONTAINER as Container
     participant HANDLER as Event Handler
-    participant DETECTOR as Target Detector
-    participant ROUTER as Action Router
-    participant AUTH as Auth Guard
     participant SESSION as Session Service
     
     USER->>BTN: Click favorite button
     BTN->>CONTAINER: Event bubbles up
     CONTAINER->>HANDLER: Capture click event
-    HANDLER->>DETECTOR: event.target analysis
-    DETECTOR->>DETECTOR: closest('[data-recipe-id]')
-    DETECTOR->>DETECTOR: matches('.favorite-btn')
-    DETECTOR-->>ROUTER: {action: 'favorite', recipeId: '123'}
+    HANDLER->>HANDLER: click.target.closest('.card')
+    HANDLER->>HANDLER: click.target.matches('.fav-icon')
     
-    ROUTER->>AUTH: checkAuthentication()
-    AUTH->>SESSION: LoggedUser.getId()
-    
-    alt User Authenticated
-        SESSION-->>AUTH: userId
-        AUTH-->>ROUTER: authenticated
-        ROUTER->>SESSION: Recipe.toggleFavorite(recipeId)
-        SESSION-->>ROUTER: {success: true, isFavorite: true}
-        ROUTER->>HANDLER: updateUI(success, data)
-        HANDLER-->>USER: Visual feedback (icon change)
-    else User Not Authenticated
-        SESSION-->>AUTH: null
-        AUTH-->>ROUTER: not authenticated
-        ROUTER->>HANDLER: redirectToLogin()
-        HANDLER-->>USER: Redirect to login page
+    alt Click on card (not button)
+        HANDLER->>HANDLER: window.location.href = recipe-details.html?id=recipeId
+        HANDLER-->>USER: Navigate to recipe details
+    else Click on favorite button
+        HANDLER->>SESSION: LoggedUser.isLogged()
+        alt User Logged In
+            SESSION-->>HANDLER: true
+            HANDLER->>SESSION: LoggedUser.updateFavourites(recipeId)
+            SESSION-->>HANDLER: updatedFavourites
+            HANDLER->>HANDLER: Update UI (icon change)
+            HANDLER-->>USER: Visual feedback
+        else User Not Logged In
+            SESSION-->>HANDLER: false
+            HANDLER->>HANDLER: window.location.href = login.html
+            HANDLER-->>USER: Redirect to login
+        end
     end
 ```
 

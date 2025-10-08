@@ -4,8 +4,8 @@
 
 ```mermaid
 flowchart TD
-    A[Request getData(dataType)] --> B{Cache exists?}
-    B -->|No| C[createLocalDB()]
+    A[Request getData dataType] --> B{Cache exists?}
+    B -->|No| C[createLocalDB]
     B -->|Yes| D{Cache valid today?}
     D -->|No| E[Cache expired]
     D -->|Yes| F[Return cached data]
@@ -14,30 +14,18 @@ flowchart TD
     G --> H{API Response OK?}
     H -->|No| I[Handle API Error]
     H -->|Yes| J[Normalize data]
-    J --> K[Store in localStorage]
-    K --> L[Add timestamp]
-    L --> M[Return fresh data]
+    J --> L[Add timestamp]
+    L --> K[Store in localStorage]
+    K --> M[Return fresh data]
     I --> N[Graceful degradation]
     
     subgraph "API Integration Details"
         G1[Categories endpoint]
         G2[Recipes A-Z endpoint]
-        G3[Batch processing]
-    end
-    
-    subgraph "Cache Management"
-        K1[localStorage key strategy]
-        K2[Timestamp validation]
-        K3[Data normalization]
     end
     
     G --> G1
     G --> G2
-    G --> G3
-    
-    K --> K1
-    L --> K2
-    J --> K3
     
     classDef cache fill:#e8f5e8
     classDef api fill:#e3f2fd
@@ -45,9 +33,9 @@ flowchart TD
     classDef process fill:#fff3e0
     
     class B,D,F,K,L cache
-    class G,G1,G2,G3,H api
+    class G,G1,G2,H api
     class E,I,N error
-    class A,C,J,M,K1,K2,K3 process
+    class A,C,J,M process
 ```
 
 ## API Integration Architecture
