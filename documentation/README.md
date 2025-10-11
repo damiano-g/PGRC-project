@@ -3,13 +3,11 @@
 # RELAZIONE TECNICA
 ---
 
+*Corso: Programmazione Web e Mobile*
 
+*Anno Accademico: 2024/2025*
 
-*Corso: Programmazione Web e Mobile  *
-
-*Anno Accademico: 2024/2025  *
-
-*Candidato: Damiano Ghibaudo  *
+*Candidato: Damiano Ghibaudo*
 
 *Data: 10 ottobre 2025*
 
