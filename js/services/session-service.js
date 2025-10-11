@@ -2,10 +2,10 @@
  * @fileoverview Gestione sessione utente e stato ricette
  * @description Modulo per controllo autenticazione, gestione sessione e query stato ricette.
  * Fornisce interfacce per login/logout, operazioni utente e verifica stato ricette.
- * @requires ./business/reviewsManagement.js - Gestione recensioni
- * @requires ../core/users-service.js - Gestione utenti
- * @requires ./business/recipesManagement.js - Gestione utenti
- * @requires ../core/storage.js - Gestione storage
+ * @requires reviews-service.js - Gestione recensioni
+ * @requires users-service.js - Gestione utenti
+ * @requires recipes-service.js - Gestione utenti
+ * @requires storage.js - Gestione storage
  */
 
 import { createUsers } from "../../utils/create-user-db.js";
@@ -789,11 +789,11 @@ export async function initUsersDB(){
 
 
 // ============================================================================
-// ANALISI E DESCRIZIONE DEL FILE
+// DESCRIZIONE DEL FILE
 // ============================================================================
 
 /**
- * @description Analisi e descrizione del file session-service.js
+ * @description session-service.js
  * 
  * **Scopo e ruolo nel progetto:**
  * Modulo centrale di servizio per la gestione dello stato sessione utente e delle operazioni su ricette.
@@ -814,58 +814,16 @@ export async function initUsersDB(){
  * - **Business (users-service.js, recipes-service.js, reviews-service.js):** Wrapper per operazioni CRUD.
  * - **Storage (storage.js):** Persistenza stato sessione e dati utente.
  * - **Errors (errors.js):** Rilancio errori custom per validazioni.
- * - **Data models (data-models.js):** Utilizzo classi per generazione ID.
-  * - **UI (ui.js, pagine):** Interagiscono direttamente con per accesso dati e operazioni utente.
- * 
- * **Flusso di esecuzione documentato:**
- * 
- * 1. **Import e configurazione:**
- *    - Importa moduli business, storage, errori e utility.
- *    - Definisce chiave sessionStorage per ID utente loggato.
- * 
- * 2. **Utility functions:**
- *    - updateLoggedUser: Salva ID utente in sessionStorage.
- *    - recipesAccumulator: Accumula oggetti ricetta da array ID.
- * 
- * 3. **Namespace NewUser:**
- *    - startSession: Autentica utente e avvia sessione.
- *    - addToDB: Registra nuovo utente.
- * 
- * 4. **Namespace LoggedUser:**
- *    - getId/isLogged: Lettura/verifica stato autenticazione.
- *    - getData/getRecipeNotes/getReviews: Lettura dati utente.
- *    - changeUsername/changeEmail/changePassword: Aggiornamenti profilo.
- *    - updateFavourites/addNote/deleteNote: Gestione preferenze/note.
- *    - deleteAccount: Eliminazione account con trasferimento recensioni.
- *    - authOperations/endSession: Autenticazione e logout.
- * 
- * 5. **Namespace Recipe:**
- *    - isFavourite/isReviewed: Verifica stato ricetta per utente.
- *    - userTasteRate/userDifficultyRate: Rating utente per ricetta.
- *    - avgTasteRate/avgDifficultyRate: Rating aggregato ricetta.
- *    - addUserReview/deleteUserReview: CRUD recensioni.
- *    - getFullData: Recupero ricetta completa.
- * 
- * 6. **Namespace PreviewArray:**
- *    - categories/mealsByName/mealsByCategory: Ricerca per tipo.
- *    - mealsById/rndMeals: Recupero specifico/casuale.
- *    - fromUserReviews/fromUserFavourites/fromAllUserNotes: Dati utente.
- *    - mostPopular: Ordinamento per popolarità.
- * 
- * 7. **Funzioni globali:**
- *    - inputValidation: Validazione form per tipo input.
- *    - initUsersDB: Inizializzazione database per testing.
+ * - **Data models (data-models.js):** Utilizzo per generazione ID.
+ * - **UI (ui.js, pagine):** Interagiscono per accesso dati e operazioni utente.
  * 
  * **Note tecniche:**
  * - **Astrazione layer:** Wrapper isolano dipendenze, facilitano testing e refactoring.
- * - **Gestione sessione:** sessionStorage per stato temporaneo, localStorage per dati persistenti.
+ * - **Gestione sessione:** sessionStorage per stato temporaneo.
  * - **Validazione input:** Delegata a business layer per consistenza.
  * - **Aggregazioni real-time:** Calcoli on-demand senza caching per accuratezza.
  * - **Gestione errori:** Rilancio errori custom per graceful degradation.
  * - **Performance:** Operazioni sincrone per lettura, asincrone per scrittura/storage.
  * - **Scalabilità:** Namespace modulari facilitano aggiunta funzionalità.
- * - **Limitazioni:** Nessun caching aggregazioni, dipendenza storage browser.
- * 
- * @note Questo modulo è il cuore dell'applicazione: errori qui impattano autenticazione e stato utente.
- * @note Compatibilità: Usa sessionStorage/localStorage, compatibile con browser moderni.
+ * - **Limitazioni:** Nessun caching aggregazioni, dipendenza web storage.
  */

@@ -3,12 +3,12 @@
  * @description Gestisce l'inizializzazione, il caricamento e le interazioni della pagina personale dell'utente.
  * Include popolamento dinamico delle sezioni preferiti, recensioni e note, gestione degli eventi di click
  * per navigazione e toggle preferiti, e gestione errori con graceful degradation.
- * @requires sessionControl.js Per moduli LoggedUser, PreviewArray, Recipe
- * @requires UI.js Per funzioni di rendering UI (addPreviewToContainer, favBtnDisplay, initializeNavbar, populatePreviewContainer, removePreviewFromContainer)
+ * @requires session-service.js Per moduli LoggedUser, PreviewArray, Recipe
+ * @requires ui.js Per funzioni di rendering UI
  */
 
 import { LoggedUser, PreviewArray, Recipe } from "../services/session-service.js";
-import { addPreviewToContainer, favBtnDisplay, hideOverlay, initializeNavbar, populatePreviewContainer, removePreviewFromContainer, showOverlay } from "../components/ui.js";
+import { favBtnDisplay, hideOverlay, initializeNavbar, populatePreviewContainer, showOverlay } from "../components/ui.js";
 
 // ================================================================================================
 // DOM ELEMENTS
@@ -43,70 +43,6 @@ const personalPageBody = document.querySelector("body");
  * document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
  */
 document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
-
-/**
- * Event listener per gestione click su card ricetta e icona preferiti
- * 
- * @param {Event} click - Evento click catturato dal container
- * 
- * @see {@link favBtnDisplay} Per gestione stato icona preferiti
- * @see {@link addPreviewToContainer} Per aggiunta preview al container
- * @see {@link removePreviewFromContainer} Per rimozione preview dal container
- * @see {@link LoggedUser.updateFavourites} Per toggle preferiti
- * @see {@link PreviewArray.mealsById} Per recupero preview ricetta
- * 
- * @description
- * Gestisce interazioni utente su card e preferiti tramite event delegation.
- * - Click su .card: naviga a pagina dettagli ricetta
- * - Click su .fav-icon: toggle preferiti, aggiorna container e icone nei altri container
- * - Gestione errori con graceful degradation: alert utente, log console
- * - Event delegation per gestire elementi creati dinamicamente
- * 
- * Gestione errori dettagliata:
- * - Try-catch interno: cattura errori specifici nelle operazioni (fav), mostra alert generico e log errore console
- * - Graceful degradation: in caso di errore, UI rimane funzionale per altre azioni
- * - Nessun crash dell'applicazione: errori vengono contenuti e gestiti localmente senza interrompere il flusso utente
- * 
- * @example
- * // Evento catturato automaticamente dal container
- * personalPageBody.addEventListener("click", async click => {
- *    if(card && !isBtn){ ... }
- *    if(isBtn){ ... }
- * });
- * 
- * @todo Aggiungere feedback visivo (spinner, messaggi di stato) durante operazioni asincrone
- */
-personalPageBody.addEventListener("click", async (click) => {
-    const card = click.target.closest(".card");
-    const isBtn = click.target.matches(".fav-icon");
-
-    if(card && !isBtn){
-        window.location.href = `../../pages/recipe-details.html?id=${card.dataset.itemId}`;
-    };
-
-    if(isBtn){
-        
-        const clickedCardRecipeId = card.dataset.itemId;
-        
-        try {
-            await LoggedUser.updateFavourites(clickedCardRecipeId);
-            
-            // Aggiunge o rimuove ricetta dal container dei preferiti
-            if(Recipe.isFavourite(card.dataset.itemId)){
-                populatePreviewContainer(await PreviewArray.fromUserFavourites(), personalFavsContainer);
-            }else{
-                removePreviewFromContainer(await PreviewArray.mealsById([clickedCardRecipeId]), personalFavsContainer);
-            }
-    
-            // Aggiorna icone preferiti nei container reviews e notes
-            personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
-            personalNotesContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
-        } catch (error) {
-            console.error(error);
-            alert("Ooops! Something went wrong. Try reload the page");
-        }
-    };
-});
 
 /**
  /**
@@ -183,6 +119,71 @@ window.addEventListener("load", async () => {
 });
 
 /**
+ * Event listener per gestione click su card ricetta e icona preferiti
+ * 
+ * @param {Event} click - Evento click catturato dal container
+ * 
+ * @see {@link favBtnDisplay} Per gestione stato icona preferiti
+ * @see {@link addPreviewToContainer} Per aggiunta preview al container
+ * @see {@link removePreviewFromContainer} Per rimozione preview dal container
+ * @see {@link LoggedUser.updateFavourites} Per toggle preferiti
+ * @see {@link PreviewArray.mealsById} Per recupero preview ricetta
+ * 
+ * @description
+ * Gestisce interazioni utente su card e preferiti tramite event delegation.
+ * - Click su .card: naviga a pagina dettagli ricetta
+ * - Click su .fav-icon: toggle preferiti, aggiorna container e icone nei altri container
+ * - Gestione errori con graceful degradation: alert utente, log console
+ * - Event delegation per gestire elementi creati dinamicamente
+ * 
+ * Gestione errori dettagliata:
+ * - Try-catch interno: cattura errori specifici nelle operazioni (fav), mostra alert generico e log errore console
+ * - Graceful degradation: in caso di errore, UI rimane funzionale per altre azioni
+ * - Nessun crash dell'applicazione: errori vengono contenuti e gestiti localmente senza interrompere il flusso utente
+ * 
+ * @example
+ * // Evento catturato automaticamente dal container
+ * personalPageBody.addEventListener("click", async click => {
+ *    if(card && !isBtn){ ... }
+ *    if(isBtn){ ... }
+ * });
+ */
+personalPageBody.addEventListener("click", async (click) => {
+    const card = click.target.closest(".card");
+    const isBtn = click.target.matches(".fav-icon");
+
+    if(card && !isBtn){
+        window.location.href = `../../pages/recipe-details.html?id=${card.dataset.itemId}`;
+    };
+
+    if(isBtn){
+        
+        const clickedCardRecipeId = card.dataset.itemId;
+        
+        try {
+            await LoggedUser.updateFavourites(clickedCardRecipeId);
+            
+            // Aggiunge o rimuove ricetta dal container dei preferiti
+            showOverlay();
+            if(Recipe.isFavourite(card.dataset.itemId)){
+                populatePreviewContainer(await PreviewArray.fromUserFavourites(), personalFavsContainer);
+            }else{
+                populatePreviewContainer(await PreviewArray.mealsById([clickedCardRecipeId]), personalFavsContainer, "remove");
+            }
+            hideOverlay();
+    
+            // Aggiorna icone preferiti nei container reviews e notes
+            personalRevsContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
+            personalNotesContainer.querySelectorAll(".fav-icon").forEach(btn => favBtnDisplay(btn, btn.closest(".card").dataset.itemId));
+        } catch (error) {
+            console.error(error);
+            alert("Ooops! Something went wrong. Try reload the page");
+        }
+    };
+});
+
+
+/**
  * Event listener per gestione navigazione tab
  * 
  * @param {Event} click - Evento click catturato dal container
@@ -206,11 +207,11 @@ document.getElementById("page-title").addEventListener("click", click => {
 
 
 // ================================================================================================
-// FLUSSO DI ESECUZIONE DOCUMENTATO
+// FLUSSO DI ESECUZIONE
 // ================================================================================================
 
 /**
- * @description Flusso di esecuzione del file favourites.js
+ * @description favourites.js
  * 
  * 1. **Import moduli e dipendenze**:
  *    - Importa LoggedUser, PreviewArray, Recipe da sessionControl.js

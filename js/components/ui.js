@@ -1,7 +1,6 @@
 /**
  * @fileoverview Componenti UI per rendering card e popolamento container
- * @description Fornisce funzioni per creare elementi DOM delle card preview
- * e gestire il popolamento dei contenuti nelle pagine
+ * @description Fornisce funzioni per creare elementi DOM delle card preview e gestire il popolamento dei contenuti nelle pagine
  * @requires sessionControl
  */
 
@@ -12,7 +11,7 @@ import { inputValidation, LoggedUser, Recipe } from "../services/session-service
 // ================================================================================================
 
 /**
- * Crea elemento card preview da oggetto ItemPreview con contenuto opzionale
+ * Crea elemento card preview da oggetto FullRecipe con contenuto opzionale
  * 
  * @function createPreviewCard
  * @private
@@ -26,8 +25,8 @@ import { inputValidation, LoggedUser, Recipe } from "../services/session-service
  * Factory per card preview con layout responsive e contenuto dinamico.
  * - Struttura base: immagine + titolo + body opzionale
  * - Data attribute dataset.itemId per event delegation
- * - Icona preferiti aggiunta automaticamente se bodyElement fornito
- * - Styling Bootstrap per consistenza UI
+ * - Icona preferiti aggiunta automaticamente se bodyElement fornito (solo su ricette, no categorie)
+ * - Styling Bootstrap
  * 
  * @example
  * const recipe = {id: "52772", image: "pizza.jpg", name: "Pizza Margherita"};
@@ -35,8 +34,6 @@ import { inputValidation, LoggedUser, Recipe } from "../services/session-service
  * const card = createPreviewCard(recipe, ratingElement);
  * container.appendChild(card);
  * 
- * @todo Aggiungere validazione input per itemObj
- * @todo Considerare lazy loading per immagini
  */
 function createPreviewCard (itemObj, bodyElement = null) { 
    const card = document.createElement("div");
@@ -79,8 +76,8 @@ function createPreviewCard (itemObj, bodyElement = null) {
  * Factory per elemento rating con icone Bootstrap e testo.
  * - Mostra titolo sezione
  * - Se valutazioni > 0: icone stella e forchetta con valori
- * - Altrimenti: messaggio "Ancora nessuna recensione"
- * - Styling Bootstrap per layout responsive
+ * - Altrimenti: messaggio per contenuto vuoto
+ * - Styling Bootstrap
  * 
  * @example
  * const ratingDiv = cardRatingContent(4.2, 3.1, "Global ratings");
@@ -114,7 +111,7 @@ function cardRatingContent(tasteRate, difficultyRate, title) {
  * 
  * @param {Object} itemsObj - Oggetto con type e array items
  * @param {HTMLElement} displayContainer - Container target per inserimento card
- * @param {string|null} [action=null] - Azione speciale: "add" o "remove"
+ * @param {"add"|"remove"|null} [action=null] - add: aggiunge card senza refresh - remove: rimuove card - null: refresh container
  * 
  * @see {@link createPreviewCard} Per creazione singola card
  * @see {@link CardDisplayStrategy} Per strategie contenuto body
@@ -122,7 +119,7 @@ function cardRatingContent(tasteRate, difficultyRate, title) {
  * @description
  * Popolazione sequenziale container con matching 1:1 tra preview e body elements.
  * - Reset completo container (innerHTML = "") se action non "add"
- * - Iterazione con indice per matching array paralleli
+ * - Iterazione con indice per matching array paralleli (item - body element)
  * - Creazione card con body element corrispondente se fornito
  * - Supporto rimozione selettiva per action "remove"
  * - Gestione errori locale: console.error per tipi non supportati, graceful degradation con relatedBodyElement = null
@@ -171,44 +168,6 @@ export function populatePreviewContainer (itemsObj, displayContainer, action = n
    }
 };
 
-/**
- * Aggiunge preview al container esistente senza reset
- * 
- * @function addPreviewToContainer
- * @param {Object} itemsObj - Oggetto con type e array items
- * @param {HTMLElement} displayContainer - Container target
- * 
- * @throws {Error} Rilancia errore se oggetto passato non conforme
- * 
- * @see {@link populatePreviewContainer}
- */
-export function addPreviewToContainer(itemsObj, displayContainer){
-   try {
-      populatePreviewContainer(itemsObj, displayContainer, "add");
-   } catch (error) {
-      throw error;
-   }
-};
-
-/**
- * Aggiunge preview al container esistente senza reset
- * 
- * @function addPreviewToContainer
- * @param {Object} itemsObj - Oggetto con type e array items
- * @param {HTMLElement} displayContainer - Container target
- * 
- * @throws {Error} Rilancia errore se oggetto passato non conforme
- * 
- * @see {@link populatePreviewContainer} 
- */
-export function removePreviewFromContainer(itemsObj, displayContainer){
-   try {
-      populatePreviewContainer(itemsObj, displayContainer, "remove");
-   } catch (error) {
-      throw error;
-   }
-};
-
 
 /**
  * Crea elemento slide per carousel Bootstrap da oggetto ItemPreview
@@ -232,8 +191,6 @@ export function removePreviewFromContainer(itemsObj, displayContainer){
  * const slideElement = createCarouselItem(recipe);
  * carouselInner.appendChild(slideElement);
  * 
- * @todo Aggiungere validazione input per recipeObj
- * @todo Considerare lazy loading per immagini slide
  */
 function createCarouselItem(recipeObj) { 
    const carouselItem = document.createElement("div");
@@ -304,8 +261,6 @@ function createCarouselItem(recipeObj) {
  * const note = {id: "123", text: "Ricetta facile"};
  * const card = createNoteCard(note);
  * notesContainer.appendChild(card);
- * 
- * @todo Aggiungere truncate per note lunghe
  */
 function createNoteCard(userNote) { 
    const noteCard = document.createElement("div");
@@ -320,7 +275,7 @@ function createNoteCard(userNote) {
 };
 
 // ================================================================================================
-// PUBLIC API - DISPLAY STRATEGIES
+// DISPLAY STRATEGIES
 // ================================================================================================
 
 /**
@@ -451,7 +406,7 @@ const CardDisplayStrategy = {
 // ================================================================================================
 
 /**
- * Popola carousel Bootstrap con array di slide da ItemPreview
+ * Popola carousel Bootstrap con array di slide da oggetto FullRecipe
  * 
  * @param {Object} recipesObj - Oggetto con array items
  * @param {HTMLElement} carouselInner - Elemento .carousel-inner di Bootstrap
@@ -471,8 +426,6 @@ const CardDisplayStrategy = {
  * populateCarousel(randomRecipes, document.querySelector(".carousel-inner"));
  * // Attivazione manuale primo slide
  * document.querySelector(".carousel-item").classList.add("active");
- * 
- * @todo Implementare lazy loading per immagini slide
  */
 export function populateCarousel(recipesObj, carouselInner) { 
    carouselInner.innerHTML = "";
@@ -508,16 +461,11 @@ export function populateCarousel(recipesObj, carouselInner) {
  * 
  * // Container visibile con note
  * populateRecipeNotes(userNotes, notesContainer);
- * 
- * @todo Aggiungere animazioni show/hide
- * @todo Implementare paginazione per molte note
  */
 export function populateRecipeNotes(userNotesArray, container) { 
    container.innerHTML = "";
    if(userNotesArray.length > 0){
-      userNotesArray.forEach(element => {
-         container.appendChild(createNoteCard(element));
-      });
+      userNotesArray.forEach(element => container.appendChild(createNoteCard(element)));
       container.classList.remove("d-none");
    }else{
       container.classList.add("d-none");
@@ -539,7 +487,7 @@ export function populateRecipeNotes(userNotesArray, container) {
  * 
  * @description
  * State management per icona toggle preferiti con classi Bootstrap Icons.
- * - UserStatus.isLogged() && RecipeStatus.isFavourite(recipeId) → bi-heart-fill (pieno)
+ * - RecipeStatus.isFavourite(recipeId) → bi-heart-fill (pieno)
  * - Altri casi → bi-heart (vuoto)
  * - Gestione automatica aggiunta/rimozione classi CSS
  * - Intercetta e gestisce eventuali errori provenienti dai moduli downstream
@@ -578,7 +526,7 @@ export function favBtnDisplay(btn, recipeId) {
  * 
  * @description
  * State management per pulsante toggle recensione.
- * - UserStatus.isLogged() && RecipeStatus.isReviewed(recipeId) → "Delete review"
+ * - RecipeStatus.isReviewed(recipeId) → "Delete review"
  * - Altri casi → "Add review"
  * - Intercetta e gestisce eventuali errori provenienti dai moduli downstream
  *   senza interrompere il flusso delle funzioni chiamanti -> graceful degradation: nessun testo per btn
@@ -627,8 +575,6 @@ export function revBtnDisplay(btn, recipeId) {
  * @example
  * const overview = createRecipeOverview(recipeData);
  * recipeContainer.appendChild(overview);
- * 
- * @todo Implementare strategia gestione errori
  */
 export function createRecipeOverview(recipeObj) {
    
@@ -887,11 +833,11 @@ export function hideOverlay(){
 
 
 // ============================================================================
-// ANALISI E DESCRIZIONE DEL FILE
+// DESCRIZIONE DEL FILE
 // ============================================================================
 
 /**
- * @description Analisi e descrizione del file ui.js
+ * @description ui.js
  * 
  * **Scopo e ruolo nel progetto:**
  * Modulo principale per la gestione dell'interfaccia utente (UI).
@@ -906,11 +852,10 @@ export function hideOverlay(){
  * - **Dipendenze:** Importa moduli da session-service.js per logica business (LoggedUser, Recipe, inputValidation).
  * 
  * **Interazioni con altri moduli:**
- * - **session-service.js:** Riceve dati e stati utente/ricette per rendering dinamico.
- * - **Pagine (es. signin.js, recipe-details.js):** Utilizzano funzioni come formatInputField, showOverlay per validazione e feedback.
- * - **Storage:** Indiretto tramite moduli business per recupero dati da visualizzare.
+ * - **session-service.js:** Scambia dati e stati utente/ricette per rendering dinamico.
+ * - **Pagine (es. signin.js, recipe-details.js):** Chiamano funzioni per UI dinamica.
  * 
- * **Flusso di esecuzione documentato:**
+ * **Flusso di esecuzione:**
  * 
  * 1. **Import moduli e dipendenze:**
  *    - Importa funzioni da session-service.js per validazione, stati utente e ricette.
@@ -931,11 +876,11 @@ export function hideOverlay(){
  *    - addPreviewToContainer/removePreviewFromContainer: Wrapper per aggiunta/rimozione selettiva.
  *    - populateCarousel: Popola carousel Bootstrap con slide.
  *    - populateRecipeNotes: Gestisce container note con show/hide automatico.
+ *    - createRecipeOverview: Crea card completa overview con rating e pulsante.
  * 
  * 5. **API pubblica - gestione stato pulsanti:**
  *    - favBtnDisplay: Aggiorna icona preferiti (bi-heart/bi-heart-fill) basata su stato.
  *    - revBtnDisplay: Aggiorna testo pulsante recensione (Add/Delete) basata su stato.
- *    - createRecipeOverview: Crea card completa overview con rating e pulsante.
  * 
  * 6. **API pubblica - navbar e form:**
  *    - initializeNavbar: Configura navbar dinamica basata su pagina e stato utente.
@@ -945,11 +890,5 @@ export function hideOverlay(){
  *    - showOverlay: Crea e mostra spinner overlay per operazioni asincrone.
  *    - hideOverlay: Rimuove spinner overlay al completamento.
  * 
- * **Note tecniche:**
- * - **Graceful degradation:** Errori nei moduli downstream (es. Recipe.avgTasteRate) non bloccano rendering.
- * - **Scalabilità:** Permette aggiunta facile di nuovi tipi di contenuto senza modificare codice esistente.
- * - **Testabilità:** Funzioni pure dove possibile, separazione logica UI da business facilita unit testing.
- * 
- * @note Questo modulo è centrale per l'UX: errori qui impattano direttamente l'interfaccia utente.
  * @note Compatibilità: Dipendente da Bootstrap 5 per classi CSS e componenti (carousel, modal, form validation).
  */

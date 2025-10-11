@@ -2,8 +2,8 @@
  * @fileoverview Gestione pagina login utente - validazione form e autenticazione
  * @description Implementa validazione in tempo reale, gestione submit sicuro con autenticazione,
  * navigazione a registrazione e protezione accesso autenticato
- * @requires sessionControl.js Per moduli LoggedUser e NewUser
- * @requires UI.js Per funzioni di rendering UI (initializeNavbar, showOverlay, hideOverlay)
+ * @requires session-service.js Per moduli LoggedUser e NewUser
+ * @requires ui.js Per funzioni di rendering UI (initializeNavbar, showOverlay, hideOverlay)
  */
 
 // ============================================================================
@@ -70,20 +70,14 @@ document.addEventListener("DOMContentLoaded", initializeNavbar(document.querySel
  * @description
  * Gestisce la protezione dell'accesso alla pagina di login e i redirect intelligenti.
  * - Verifica se l'utente è già autenticato.
- * - Se autenticato: redirect intelligente basato su pagina precedente.
- * - Se provenienza da favourites.html: redirect a index.html.
- * - Altrimenti: redirect a favourites.html.
+ * - Se autenticato: redirect a favourites.html
  * - Se non autenticato: mostra la pagina rimuovendo la classe d-none dal body.
  * - Gestione errori con try-catch per graceful degradation.
  * 
  * @example
  * window.addEventListener("load", () => {
  *    if(LoggedUser.isLogged()){
- *        if(previousUrl.includes("favourites.html")){
- *            window.location.href = "../index.html";
- *        } else {
- *            window.location.href = "./favourites.html";
- *        }
+ *        window.location.href = "../fovourites.html";
  *    } else {
  *        document.querySelector("body").classList.remove("d-none");
  *    }
@@ -91,15 +85,9 @@ document.addEventListener("DOMContentLoaded", initializeNavbar(document.querySel
  */
 window.addEventListener("load", () => {
 
-    const previousUrl = document.referrer;
-
     try {
         if(LoggedUser.isLogged()){
-            if(previousUrl && previousUrl.includes("favourites.html")){
-                window.location.href = "../index.html";
-            }else{
-                window.location.href = "./favourites.html";
-            }
+            window.location.href = "./favourites.html";
         }else{
             document.querySelector("body").classList.remove("d-none");
         }
@@ -152,6 +140,7 @@ loginRequiredInputs.forEach(inputField => inputField.addEventListener("input", (
             allValid = false;
         }
     });
+
     allValid ? loginSubBtn.disabled = false : loginSubBtn.disabled = true;
 }));
 
@@ -242,13 +231,16 @@ loginSubBtn.addEventListener("click", async () => {
 loginGotoSigninBtn.addEventListener("click", () => window.location.href = "./signin.html");
 
 
+// ================================================================================================
+// FLUSSO DI ESECUZIONE
+// ================================================================================================
 
 /**
- * @description Flusso di esecuzione del file login.js
+ * @description login.js
  * 
  * 1. **Import moduli e dipendenze**:
- *    - Importa LoggedUser e NewUser da sessionControl.js per gestione autenticazione
- *    - Importa funzioni UI da UI.js (initializeNavbar, showOverlay, hideOverlay)
+ *    - Importa LoggedUser e NewUser da session-service.js per gestione autenticazione
+ *    - Importa funzioni UI da ui.js (initializeNavbar, showOverlay, hideOverlay)
  * 
  * 2. **Selezione elementi DOM**:
  *    - Recupera riferimenti a input form, pulsante submit e pulsante navigazione
@@ -258,7 +250,7 @@ loginGotoSigninBtn.addEventListener("click", () => window.location.href = "./sig
  * 
  * 4. **Protezione accesso (window load)**:
  *    - Verifica autenticazione esistente
- *    - Redirect intelligente basato su provenienza
+ *    - Redirect a pagina personale se autenticato
  *    - Mostra pagina se non autenticato
  * 
  * 5. **Gestione validazione input (event listener su loginRequiredInputs)**:

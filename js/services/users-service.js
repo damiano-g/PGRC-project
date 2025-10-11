@@ -143,8 +143,7 @@ export function deleteUser(userId){
 // ============================================================================
 
 /**
- * Aggiorna username utente con validation duplicati
- * API pubblica per modifica profilo con controlli atomici
+ * Aggiorna username utente con validazione formato e controllo duplicati
  * 
  * @async
  * @param {string} userId - ID utente da aggiornare
@@ -173,8 +172,7 @@ export async function updateUserUsername(userId, newUsername){
 }
 
 /**
- * Aggiorna email utente con validation duplicati
- * API pubblica per modifica profilo con controlli atomici
+ * Aggiorna email utente con validazione formato e controllo duplicati
  * 
  * @async
  * @param {string} userId - ID utente da aggiornare
@@ -203,8 +201,7 @@ export async function updateUserEmail(userId, newEmail){
 }
 
 /**
- * Aggiorna password utente con hashing automatico
- * API pubblica per cambio password sicuro
+ * Aggiorna password utente con hashing automatico e controllo formato
  * 
  * @async
  * @param {string} userId - ID utente da aggiornare
@@ -232,7 +229,6 @@ export async function updateUserPassword(userId, newPassword, passConfirm){
 
 /**
  * Gestisce toggle favourites per ricetta specifica (add/remove automatico)
- * API pubblica per gestione ricette preferite con logica toggle
  * 
  * @async
  * @param {string} userId - ID utente da aggiornare
@@ -269,7 +265,6 @@ export async function updateUserFavourites(userId, recipeId){
 
 /**
  * Gestisce toggle note utente per ricetta specifica (add/remove automatico)
- * API pubblica per gestione note utente con logica toggle
  * 
  * @async
  * @param {string} userId - ID utente
@@ -595,7 +590,7 @@ export function searchUser(searchField, searchValue){
             throw new ErrorsManagement.NotFound("User", searchField, searchValue);
         }
 
-        return structuredClone(actualRegUsersArray[index]); // Deep copy assicura consistenza dati in caso di implementazione cache
+        return structuredClone(actualRegUsersArray[index]);
     } catch (error) {
         throw error;
     }
@@ -649,11 +644,11 @@ async function updateUserData(userId, field, newValue, needsHashing = null) {
 
 
 // ============================================================================
-// ANALISI E DESCRIZIONE DEL FILE
+// DESCRIZIONE DEL FILE
 // ============================================================================
 
 /**
- * @description Analisi e descrizione del file users-service.js
+ * @description users-service.js
  * 
  * **Scopo e ruolo nel progetto:**
  * Modulo di servizio per la gestione completa degli utenti.
@@ -678,47 +673,18 @@ async function updateUserData(userId, field, newValue, needsHashing = null) {
  * - **Errors (errors.js):** Lancia errori custom (Duplicated, NotFound, InvalidFormat) per validazioni.
  * - **Session (session-service.js):** Agisce come layer di astrazione superiore, orchestrando operazioni business sugli utenti tramite chiamate a questo modulo (users-service.js) 
  *      per isolamento e astrazione dalla logica di basso livello.
- * - **UI (ui.js, pagine):** Non interagisce direttamente - accedono ai dati unicamente tramite session-service per isolamento e astrazione.
  * 
- * **Flusso di esecuzione documentato:**
- * 
- * 1. **Import e configurazione:**
- *    - Importa classi modelli, storage e errori.
- *    - Definisce costanti chiave storage e opzioni.
- * 
- * 2. **Lettura dati:**
- *    - getRegisteredUsers: Recupera array utenti con deep copy.
- * 
- * 3. **CRUD operations:**
- *    - addNewUser: Validation chain, creazione User, storage atomico.
- *    - deleteUser: Ricerca per ID, rimozione da array, update storage.
- *    - updateUserUsername/updateUserEmail/updateUserPassword: Validation, update atomico.
- *    - updateUserFavourites: Toggle add/remove ricetta da preferiti.
- *    - updateUserNotes: Toggle add/remove note utente.
- * 
- * 4. **Autenticazione:**
- *    - admitUser: Verifica credenziali con confronto hash.
- *    - hashString: Genera hash SHA-256 per password.
- * 
- * 5. **Validazione:**
- *    - searchDuplicates: Controllo unicità username/email.
- *    - authPassword/authEmail/authUsername: Validazione formato + duplicati.
- * 
- * 6. **Factory e utility:**
- *    - createUserObject: Costruzione User con hashing.
- *    - searchUser: Ricerca generica per campo univoco.
- *    - updateUserData: Aggiornamento atomico con preprocessing.
  * 
  * **Note tecniche:**
  * - **Sicurezza:** Hashing SHA-256 per password, validation chain per input.
- * - **Consistenza:** Operazioni atomiche (read-modify-write) per evitare race conditions.
+ * - **Consistenza:** Operazioni CRUD atomiche (read-modify-write).
  * - **Immutabilità:** Deep copy per prevenzione mutazioni accidentali.
  * - **Business rules:** Unicità username/email, formato password complesso.
  * - **Gestione errori:** Rilancio errori custom per graceful degradation.
  * - **Performance:** Letture sincrone, scritture asincrone per hashing.
  * - **Scalabilità:** Funzioni modulari facilitano aggiunta campi/validazioni.
- * - **Limitazioni:** Dipendenza localStorage (no server), hashing lato client.
+ * - **Limitazioni:** Dipendenza localStorage, hashing lato client.
  * 
  * @note Questo modulo gestisce logica utenti: errori qui impattano registrazione e autenticazione.
- * @note Compatibilità: Usa Web Crypto API per hashing, compatibile con browser moderni.
+ * @note Compatibilità: Usa Web Crypto API per hashing.
  */

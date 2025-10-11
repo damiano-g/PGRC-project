@@ -1,9 +1,8 @@
 /**
  * @fileoverview Dashboard principale - gestione carousel, categorie e ricerca
- * @description Pagina home con carousel ricette casuali, griglia categorie
- * e barra di ricerca per navigazione verso pagine specializzate
- * @requires sessionControl.js Per moduli LoggedUser, PreviewArray
- * @requires UI.js Per funzioni di rendering UI (favBtnDisplay, initializeNavbar, populateCarousel, populatePreviewContainer)
+ * @description Pagina home con carousel ricette popolari e/o casuali e griglia categorie
+ * @requires session-service.js Per moduli LoggedUser, PreviewArray
+ * @requires ui.js Per funzioni di rendering UI (favBtnDisplay, initializeNavbar, populateCarousel, populatePreviewContainer)
  */
 
 // ===============================
@@ -11,7 +10,7 @@
 // ===============================
 
 import { initUsersDB, LoggedUser, PreviewArray } from "../services/session-service.js";
-import { favBtnDisplay, hideOverlay, initializeNavbar, populateCarousel, populatePreviewContainer, showOverlay } from "../components/ui.js"; // Componenti UI per rendering
+import { favBtnDisplay, hideOverlay, initializeNavbar, populateCarousel, populatePreviewContainer, showOverlay } from "../components/ui.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -67,15 +66,14 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  *    populateCarousel(await PreviewArray.mostPopular(5), slideshow);
  *    populatePreviewContainer(await PreviewArray.categories(), catContainer);
  * });
- * 
- * @todo Aggiungere loading spinner durante caricamento dati
  */
 window.addEventListener("load", async () => {
     
     showOverlay();
+
     // Solo per testing: popola users database
     await initUsersDB();
-
+    
     /** Popola il carousel con le cinque ricette più votate */
     try {
         populateCarousel(await PreviewArray.mostPopular(5), slideshow);
@@ -192,14 +190,14 @@ slideshow.addEventListener("click", (click) => {
 });
 
 // ================================================================================================
-// FLUSSO DI ESECUZIONE DOCUMENTATO
+// FLUSSO DI ESECUZIONE
 // ================================================================================================
 
 /**
- * @description Flusso di esecuzione del file index.js
+ * @description index.js
  * 
  * 1. **Import moduli e dipendenze**:
- *    - Importa LoggedUser, PreviewArray da sessionControl.js
+ *    - Importa LoggedUser, PreviewArray da session-service.js
  *    - Importa funzioni UI da UI.js (favBtnDisplay, initializeNavbar, populateCarousel, populatePreviewContainer)
  * 
  * 2. **Selezione elementi DOM**:

@@ -38,66 +38,6 @@ flowchart TD
     class A,C,J,M process
 ```
 
-## API Integration Architecture
-
-```mermaid
-graph TB
-    subgraph "TheMealDB API"
-        API1[Categories Endpoint]
-        API2[Search by First Letter A-Z]
-        API3[Recipe Details]
-    end
-    
-    subgraph "Recipes Service"
-        RS1[getData orchestrator]
-        RS2[createLocalRecipesDB]
-        RS3[createLocalCategoriesDB]
-        RS4[fetchRecipes wrapper]
-    end
-    
-    subgraph "Cache Layer"
-        CACHE1[recipes localStorage]
-        CACHE2[categories localStorage]
-        CACHE3[timestamp validation]
-    end
-    
-    subgraph "Data Processing"
-        PROC1[API response normalization]
-        PROC2[FullRecipe factory]
-        PROC3[Error handling]
-        PROC4[Search algorithm]
-    end
-    
-    API1 --> RS4
-    API2 --> RS4
-    API3 --> RS4
-    
-    RS1 --> RS2
-    RS1 --> RS3
-    RS2 --> RS4
-    RS3 --> RS4
-    
-    RS4 --> PROC1
-    PROC1 --> PROC2
-    PROC2 --> CACHE1
-    RS3 --> CACHE2
-    
-    CACHE1 --> CACHE3
-    CACHE2 --> CACHE3
-    
-    RS4 --> PROC3
-    CACHE1 --> PROC4
-    
-    classDef api fill:#ffebee
-    classDef service fill:#e3f2fd
-    classDef cache fill:#e8f5e8
-    classDef process fill:#fff3e0
-    
-    class API1,API2,API3 api
-    class RS1,RS2,RS3,RS4 service
-    class CACHE1,CACHE2,CACHE3 cache
-    class PROC1,PROC2,PROC3,PROC4 process
-```
 
 ## Cache Validation Logic
 

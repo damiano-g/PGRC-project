@@ -1,8 +1,6 @@
 /**
- * @fileoverview Data models per ricette e categorie - costruttori e utilità per oggetti business
- * @description Fornisce classi unificate per gestire dati provenienti da TheMealDB API
- * con normalizzazione campi e pattern di fallback per gestione dati incompleti
-
+ * @fileoverview Data models per oggetti business
+ * @description Fornisce classi unificate per gestione dati
  * @requires Nessuna dipendenza esterna - modulo self-contained
  */
 
@@ -36,7 +34,7 @@ export function generateItemId(itemType) {
 };
 
 // ================================================================================================
-// USER MANAGEMENT MODELS
+// DATA MODELS
 // ================================================================================================
 
 /**
@@ -70,9 +68,9 @@ export class User {
 
     constructor(validUsername, validEmail, hashedPassword) {
         this.id = generateItemId("user");
-        this.username = validUsername; // Username fornito (già validato)
-        this.email = validEmail; // Email fornita (già validata)
-        this.password = hashedPassword; // Password hashata
+        this.username = validUsername; 
+        this.email = validEmail;
+        this.password = hashedPassword;
         this.favourites = [];
         this.notes = [];
         this.creationDate = new Date();
@@ -87,7 +85,7 @@ export class User {
  * @param {string} text - Contenuto testuale della nota
  * 
  * @description
- * Factory per annotazioni utente con metadata automatici.
+ * Oggetto per note utente con metadata automatici.
  * - ID auto-generato per riferimenti univoci
  * - Oggetto date per tracciamento creazione oggetto
  * - Associazione diretta recipeId per lookup rapido
@@ -120,9 +118,8 @@ export class Note {
  * @param {number} difficultyRate - Rating difficoltà preparazione
  * 
  * @description
- * Factory per recensioni con business rule validation.
- * - Dual rating system per categorizzazione multi-dimensionale
- * - User-recipe uniqueness gestita a livello storage
+ * Oggetto per recensioni ricetta.
+ * - Dual rating system - tasteRate/difficultyRate
  * - Oggetto date per tracciamento creazione oggetto
  * 
  * @example
@@ -148,9 +145,6 @@ export class Review {
     }
 };
 
-// ================================================================================================
-// API DATA MODELS - PREVIEW OBJECTS
-// ================================================================================================
 
 /**
  * Classe per oggetti categoria
@@ -177,7 +171,7 @@ export class Review {
  * // Uso con dati incompleti (graceful degradation)
  * const partialPreview = new ItemPreview({
  *   strMeal: "Pizza"
- *   // id e image saranno stringhe vuote e fallback image
+ *   // id e image saranno stringhe vuote
  * }, "meals");
  */
 export class Category {
@@ -190,14 +184,11 @@ export class Category {
     constructor(rawCategoryObj){
         this.id = rawCategoryObj.strCategory || "";
         this.name = rawCategoryObj.strCategory || "";
-        this.image = rawCategoryObj.strCategoryThumb || "../assets/images/no_image.jpg";
+        this.image = rawCategoryObj.strCategoryThumb || "";
         this.creationDate = new Date();
     }
 };
 
-// ================================================================================================
-// API DATA MODELS - FULL RECIPE OBJECTS
-// ================================================================================================
 
 /**
  * Classe per oggetti ricetta
@@ -304,11 +295,11 @@ export class FullRecipe {
 
 
 // ============================================================================
-// ANALISI E DESCRIZIONE DEL FILE
+// DESCRIZIONE DEL FILE
 // ============================================================================
 
 /**
- * @description Analisi e descrizione del file data-models.js
+ * @description data-models.js
  * 
  * **Scopo e ruolo nel progetto:**
  * Modulo core per la definizione e gestione dei modelli dati del progetto PGRC.
@@ -319,44 +310,16 @@ export class FullRecipe {
  * 
  * **Architettura e struttura:**
  * - **Utility functions:** Funzioni helper per generazione ID univoci (generateItemId).
- * - **User management models:** Classi per entità utente (User, Note, Review).
- * - **API data models:** Classi per dati da API (Category, FullRecipe).
+ * - **Data models:** Classi per entità utente (User, Note, Review) e dati da TMDB API (Category, FullRecipe) 
  * - **Dipendenze:** Nessuna dipendenza esterna - modulo self-contained.
  * 
  * **Interazioni con altri moduli:**
- * - **Storage (storage.js):** Classi istanziate vengono serializzate/deserializzate per persistenza.
- * - **Business (usersManagement.js, recipesManagement.js):** Utilizzate per creazione e manipolazione oggetti.
- * - **UI (ui.js):** Oggetti popolano componenti di rendering (card, preview).
- * - **Session (session-service.js):** Integrazione con logica autenticazione e stato utente.
- * 
- * **Flusso di esecuzione documentato:**
- * 
- * 1. **Import e setup:**
- *    - Nessun import esterno - modulo autonomo.
- * 
- * 2. **Utility functions:**
- *    - generateItemId: Genera ID univoci con timestamp + random per tutte le entità.
- * 
- * 3. **User management models:**
- *    - User: Costruttore per nuovi utenti con dati pre-validati (username, email, password hashata).
- *    - Note: Costruttore per note utente legate a ricette, con metadata automatici.
- *    - Review: Costruttore per recensioni con rating duali (gusto + difficoltà).
- * 
- * 4. **API data models - Preview objects:**
- *    - Category: Normalizzazione dati categoria da TheMealDB API, con fallback per campi mancanti.
- * 
- * 5. **API data models - Full recipe objects:**
- *    - FullRecipe: Costruttore per ricette complete, con processamento ingredienti via prototype method.
- *    - getIngredients: Metodo per trasformare 20 campi API separati in array strutturato.
+ * - **Business (users-service.js, recipes-service.js, reviews-service.js):** Utilizzano classi per creazione e manipolazione oggetti.
  * 
  * **Note tecniche:**
  * - **Normalizzazione API:** Gestisce strutture peculiari TheMealDB (20 campi ingredienti separati) con processamento robusto.
  * - **Fallback chain:** Uso di `|| ""` per campi mancanti, previene errori runtime.
  * - **ID generation:** Strategia timestamp + random riduce collisioni, prefisso tipo per categorizzazione.
  * - **Validazione:** Delegata upstream (es. password hashata in User), focus su struttura dati.
- * - **Scalabilità:** Facile aggiunta nuove classi seguendo pattern esistente.
- * - **Limitazioni:** Nessuna validazione interna (delegata), dipendenza da struttura API esterna.
- * 
- * @note Questo modulo è fondamentale per data integrity: errori qui impattano storage e rendering.
- * @note Compatibilità: Indipendente da framework, usa solo JavaScript vanilla.
+ * - **Limitazioni:** Dipende da struttura API esterna.
  */

@@ -2,15 +2,15 @@
  * @fileoverview Gestione pagina registrazione utente - validazione form e submit
  * @description Implementa validazione in tempo reale, gestione submit sicuro,
  * reset form e navigazione alla pagina login
- * @requires sessionControl.js Per modulo NewUser
- * @requires UI.js Per funzioni di rendering UI (initializeNavbar, formatInputField, showOverlay, hideOverlay)
+ * @requires session-service.js Per modulo NewUser
+ * @requires ui.js Per funzioni di rendering UI (initializeNavbar, formatInputField, showOverlay, hideOverlay)
  */
 
 // ============================================================================
 // IMPORT MODULI E DIPENDENZE
 // ============================================================================
 
-import { NewUser } from "../services/session-service.js";
+import { LoggedUser, NewUser } from "../services/session-service.js";
 import { initializeNavbar, formatInputField, showOverlay, hideOverlay } from "../components/ui.js";
 
 // ============================================================================
@@ -49,6 +49,43 @@ const signinGotoLogBtn = document.getElementById("gotoLog");
  * document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
  */
 document.addEventListener("DOMContentLoaded", initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
+
+/**
+ * Event listener per protezione accesso e gestione redirect
+ * 
+ * @param {Event} load - Evento triggerato quando la pagina è completamente caricata
+ * 
+ * @see {@link LoggedUser.isLogged} Per verifica stato autenticazione
+ * 
+ * @description
+ * Gestisce la protezione dell'accesso alla pagina di login e i redirect intelligenti.
+ * - Verifica se l'utente è già autenticato.
+ * - Se autenticato: redirect a favourites.html
+ * - Se non autenticato: mostra la pagina rimuovendo la classe d-none dal body.
+ * - Gestione errori con try-catch per graceful degradation.
+ * 
+ * @example
+ * window.addEventListener("load", () => {
+ *    if(LoggedUser.isLogged()){
+ *        window.location.href = "../fovourites.html";
+ *    } else {
+ *        document.querySelector("body").classList.remove("d-none");
+ *    }
+ * });
+ */
+window.addEventListener("load", () => {
+
+    try {
+        if(LoggedUser.isLogged()){
+            window.location.href = "./favourites.html";
+        }else{
+            document.querySelector("body").classList.remove("d-none");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Ooops. Something went wrong. Please try again");
+    }
+});
 
 // ============================================================================
 // GESTIONE VALIDAZIONE INPUT
@@ -235,8 +272,13 @@ signinClearBtn.addEventListener("click", () => {
 signinGotoLogBtn.addEventListener("click", () => window.location.href = "./login.html");
 
 
+
+// ================================================================================================
+// FLUSSO DI ESECUZIONE
+// ================================================================================================
+
 /**
- * @description Flusso di esecuzione del file signin.js
+ * @description signin.js
  * 
  * 1. **Import moduli e dipendenze**:
  *    - Importa NewUser da sessionControl.js per gestione registrazione
@@ -245,8 +287,9 @@ signinGotoLogBtn.addEventListener("click", () => window.location.href = "./login
  * 2. **Selezione elementi DOM**:
  *    - Recupera riferimenti a input form, pulsanti submit, clear e navigazione
  * 
- * 3. **Inizializzazione pagina (DOMContentLoaded)**:
+ * 3. **Inizializzazione pagina**:
  *    - Al caricamento del DOM, chiama initializeNavbar per configurare menu navigazione
+ *    - load: verifica autenticazione, mostra pagina o redirect
  * 
  * 4. **Gestione validazione input (event listener su signinInputFields)**:
  *    - Ascolta input su ogni campo: valida formato, aggiorna UI, abilita/disabilita conferma password

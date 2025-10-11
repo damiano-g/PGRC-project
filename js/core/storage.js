@@ -41,7 +41,7 @@ export const StorageOperations = {
         try {
             let retrievedData;
 
-            // Selezione storage engine basato su parametro
+            // Selezione storage basata su parametro
             switch (storageLocation) {
                 case "local":
                     retrievedData = localStorage.getItem(storageKey);
@@ -115,7 +115,7 @@ export const StorageOperations = {
                     throw new Error(`Unsupported data type: ${dataType}`);
             }
 
-            // Persistenza su storage engine selezionato
+            // Persistenza su storage selezionato
             switch (storageLocation) {
                 case "local":
                     localStorage.setItem(storageKey, processedData);
@@ -137,11 +137,11 @@ export const StorageOperations = {
 
 
 // ============================================================================
-// ANALISI E DESCRIZIONE DEL FILE
+// DESCRIZIONE DEL FILE
 // ============================================================================
 
 /**
- * @description Analisi e descrizione del file storage.js
+ * @description storage.js
  * 
  * **Scopo e ruolo nel progetto:**
  * Modulo core per la gestione centralizzata del web storage.
@@ -157,41 +157,12 @@ export const StorageOperations = {
  * - **Dipendenze:** Nessuna dipendenza esterna - modulo self-contained basato su Web Storage API.
  * 
  * **Interazioni con altri moduli:**
- * - **Business (users-service.js, recipes-service.js):** Salvataggio/recupero dati utenti e ricette.
-* - **Session (session-service.js):** Persistenza stato login e preferenze utente.
- * - **UI (ui.js, pagine):** Nessuna interazione diretta: accedono ai dati unicamente tramite session-service per isolamento e astrazione.
- * - **Data models (data-models.js):** Serializzazione oggetti User, Recipe, ecc.
- * 
- * **Flusso di esecuzione documentato:**
- * 
- * 1. **Import e setup:**
- *    - Nessun import esterno - modulo autonomo.
- * 
- * 2. **Operazione get:**
- *    - Selezione storage engine (local/session) basato su options.storageLocation.
- *    - Recupero dato grezzo con getItem().
- *    - Deserializzazione basata su options.dataType: JSON.parse per array, string diretta per string.
- *    - Fallback: [] per array null, "" per string null.
- *    - Return dato deserializzato o throw error.
- * 
- * 3. **Operazione set:**
- *    - Serializzazione basata su options.dataType: JSON.stringify per array, invariata per string.
- *    - Selezione storage engine (local/session) basato su options.storageLocation.
- *    - Persistenza con setItem().
- *    - Throw error se problemi.
- * 
- * 4. **Gestione errori:**
- *    - Cattura errori storage (quota, invalid JSON, ecc.).
- *    - Logging console per debug.
- *    - Re-throw per propagazione a business layer.
+ * - **Business (users-service.js, recipes-service.js, reviews-service.js):** Salvataggio/recupero dati utenti, ricette e recensioni.
+ * - **Session (session-service.js):** Persistenza stato login e preferenze utente.
  * 
  * **Note tecniche:**
- * - **Serializzazione:** JSON.stringify/parse per array, string diretta per semplicità.
- * - **Fallback:** Previene errori runtime per chiavi mancanti (null/undefined).
+ * - **Serializzazione:** JSON.stringify/parse per array, string diretta.
  * - **Type safety:** Switch statement per validazione tipi supportati.
  * - **Compatibilità:** Web Storage API supportata in tutti browser moderni.
- * - **Limitazioni:** Nessun supporto per IndexedDB (per dati complessi), quota storage limitata (~5-10MB).
- * 
- * @note Questo modulo è essenziale per persistenza: errori qui causano perdita dati o crash app.
- * @note Compatibilità: Funziona solo in browser: richiede supporto Web Storage.
+ * - **Limitazioni:** Nessun supporto per dati complessi, quota storage limitata (~5-10MB).
  */

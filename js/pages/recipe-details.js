@@ -1,9 +1,9 @@
 /**
  * @fileoverview Gestione della pagina dettagli ricetta
  * @description Gestisce il caricamento, rendering e interazioni utente per la pagina dettagli di una ricetta specifica.
- * Include gestione preferiti, recensioni, note personali e popolamento dinamico dei contenuti.
- * @requires sessionControl.js Per moduli LoggedUser e Recipe
- * @requires UI.js Per funzioni di rendering UI
+ * Include gestione preferiti e recensioni per utenti autenticati
+ * @requires session-service.js Per moduli LoggedUser e Recipe
+ * @requires ui.js Per funzioni di rendering UI
  */
 
 // ===============================
@@ -51,7 +51,86 @@ const recipeOverviewContainer = document.getElementById("recipe-overview");
 const detailedRecipeId = window.location.search.substring(4);
 
 
+// ============================================================================
+// INIZIALIZZAZIONE PAGINA
+// ============================================================================
+
+/**
+ * Event listener per inizializzazione navbar
+ * 
+ * @param {Event} DOMContentLoaded - Evento triggerato quando il DOM è completamente caricato
+ * 
+ * @see {@link initializeNavbar} Per configurazione menu navigazione
+ * 
+ * @description
+ * Inizializza la navbar quando il DOM è pronto, passando body e nav come argomenti.
+ * 
+ * @example
+ * document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
+ */
 document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
+
+/**
+ * Event listener per caricamento iniziale della pagina ricetta
+ * 
+ * @param {Event} load - Evento load della finestra (triggerato automaticamente al caricamento completo della pagina)
+ * @returns {void}
+ * 
+ * @see {@link Recipe.getFullData} Per recupero dati completi ricetta
+ * @see {@link createRecipeOverview} Per creazione card overview ricetta
+ * @see {@link populateRecipeNotes} Per popolamento note utente
+ * @see {@link LoggedUser.isLogged} Per verifica stato login utente
+ * @see {@link LoggedUser.getRecipeNotes} Per recupero note utente per ricetta
+ * 
+ * @description
+ * Gestisce il caricamento e rendering iniziale della pagina dettagli ricetta.
+ * - Recupera dati completi ricetta tramite ID URL
+ * - Popola card overview, lista ingredienti e istruzioni
+ * - Mostra sezione note se utente loggato e popola note esistenti
+ * - Gestione errori con alert e log console per graceful degradation
+ * 
+ * @example
+ * // Evento triggerato automaticamente al caricamento pagina
+ * window.addEventListener("load", async () => {
+ *    const fullRecipeObj = await Recipe.getFullData(detailedRecipeId);
+ *    recipeOverviewContainer.appendChild(createRecipeOverview(fullRecipeObj));
+ *    // ... popolamento ingredienti, istruzioni, note
+ * });
+ */
+window.addEventListener("load", async () => {
+   
+   try {
+      showOverlay();
+      const fullRecipeObj = await Recipe.getFullData(detailedRecipeId);
+ 
+      recipeOverviewContainer.appendChild(createRecipeOverview(fullRecipeObj)); 
+      
+      // Popola la lista degli ingredienti
+      fullRecipeObj.ingredients.forEach(element => {
+         const listItem = document.createElement("li");
+         listItem.innerText = element.name+": "+element.measure;
+         ingredientsList.appendChild(listItem);
+      });
+
+      ingredientsList.parentElement.classList.remove("d-none");
+      
+      // Inserisce le istruzioni di preparazione
+      instructionsSteps.innerText = fullRecipeObj.instructions;
+
+      instructionsSteps.parentElement.classList.remove("d-none");
+      
+      // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
+      if(LoggedUser.isLogged()){
+         notesSection.classList.remove("d-none");
+         populateRecipeNotes(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
+      }
+   } catch (error) {
+      alert("Something went wrong. Please try reload the page.");
+      console.error(error);
+   }finally{
+      hideOverlay();
+   }
+});
 
 // ===============================
 // EVENT LISTENERS - GESTIONE PREFERITI E RECENSIONI
@@ -89,9 +168,6 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  * recipeOverviewContainer.addEventListener("click", async click => {
  *    if(click.target.matches(".fav-icon") || click.target.matches("#rev-btn")){ ... }
  * });
- * 
- * @todo Implementare retry automatico per operazioni fallite a causa di problemi temporanei
- * @todo Aggiungere feedback visivo (spinner, messaggi di stato) durante operazioni asincrone
  */
 recipeOverviewContainer.addEventListener("click", async click => { // Event delegation in container per aggirare tempi di caricamento card
    
@@ -111,7 +187,7 @@ recipeOverviewContainer.addEventListener("click", async click => { // Event dele
             if(click.target.matches("#rev-btn")){
                if(isUserLogged){
                   document.getElementById("review-dialog").classList.remove("d-none"); // d-none previene che la modal venga mostrata prima del reindirizzamento in caso di utente non loggato
-                  revConfirmBtn.onclick = async () =>{ // NB -> eventListener si accumulano - onCLick viene sostituito
+                  revConfirmBtn.onclick = async () =>{
                      if(Recipe.isReviewed(detailedRecipeId)){
                         Recipe.deleteUserReview(detailedRecipeId);
                         alert("Review deleted");
@@ -201,82 +277,13 @@ userNotesContainer.addEventListener("click", click => {
    }
 });
 
-// ===============================
-// CARICAMENTO E RENDERING RICETTA
-// ===============================
-
-/**
- * Event listener per caricamento iniziale della pagina ricetta
- * 
- * @param {Event} load - Evento load della finestra (triggerato automaticamente al caricamento completo della pagina)
- * @returns {void}
- * 
- * @see {@link Recipe.getFullData} Per recupero dati completi ricetta
- * @see {@link createRecipeOverview} Per creazione card overview ricetta
- * @see {@link populateRecipeNotes} Per popolamento note utente
- * @see {@link LoggedUser.isLogged} Per verifica stato login utente
- * @see {@link LoggedUser.getRecipeNotes} Per recupero note utente per ricetta
- * 
- * @description
- * Gestisce il caricamento e rendering iniziale della pagina dettagli ricetta.
- * - Recupera dati completi ricetta tramite ID URL
- * - Popola card overview, lista ingredienti e istruzioni
- * - Mostra sezione note se utente loggato e popola note esistenti
- * - Gestione errori con alert e log console per graceful degradation
- * 
- * @example
- * // Evento triggerato automaticamente al caricamento pagina
- * window.addEventListener("load", async () => {
- *    const fullRecipeObj = await Recipe.getFullData(detailedRecipeId);
- *    recipeOverviewContainer.appendChild(createRecipeOverview(fullRecipeObj));
- *    // ... popolamento ingredienti, istruzioni, note
- * });
- * 
- * @todo Aggiungere loading spinner durante caricamento dati
- * @todo Implementare fallback per ricette non trovate (es. redirect a pagina errore)
- */
-window.addEventListener("load", async () => {
-   
-   try {
-      showOverlay();
-      const fullRecipeObj = await Recipe.getFullData(detailedRecipeId);
- 
-      recipeOverviewContainer.appendChild(createRecipeOverview(fullRecipeObj)); 
-      
-      // Popola la lista degli ingredienti
-      fullRecipeObj.ingredients.forEach(element => {
-         const listItem = document.createElement("li");
-         listItem.innerText = element.name+": "+element.measure;
-         ingredientsList.appendChild(listItem);
-      });
-
-      ingredientsList.parentElement.classList.remove("d-none");
-      
-      // Inserisce le istruzioni di preparazione
-      instructionsSteps.innerText = fullRecipeObj.instructions;
-
-      instructionsSteps.parentElement.classList.remove("d-none");
-      
-      // Se utente loggato: mostra sezione note e popola note esistenti per ricetta corrente
-      if(LoggedUser.isLogged()){
-         notesSection.classList.remove("d-none");
-         populateRecipeNotes(LoggedUser.getRecipeNotes(detailedRecipeId), userNotesContainer);
-      }
-   } catch (error) {
-      alert("Something went wrong. Please try reload the page.");
-      console.error(error);
-   }finally{
-      hideOverlay();
-   }
-});
-
 
 // ===============================
-// FLUSSO DI ESECUZIONE DOCUMENTATO
+// FLUSSO DI ESECUZIONE
 // ===============================
 
 /**
- * @description Flusso di esecuzione del file recipe-details.js
+ * @description recipe-details.js
  * 
  * 1. **Import moduli e dipendenze**:
  *    - Importa LoggedUser, Recipe da sessionControl.js
@@ -289,24 +296,24 @@ window.addEventListener("load", async () => {
  * 3. **Inizializzazione navbar (DOMContentLoaded)**:
  *    - Al caricamento del DOM, chiama initializeNavbar per configurare menu navigazione basato su stato utente
  * 
- * 4. **Gestione interazioni preferiti e recensioni (event delegation su recipeOverviewContainer)**:
- *    - Ascolta click su .fav-icon: se loggato, toggle preferiti e aggiorna UI; altrimenti redirect a login
- *    - Ascolta click su #rev-btn: se loggato, gestisce aggiunta/eliminazione review con validazione; altrimenti redirect a login
- *    - Aggiorna UI dopo ogni azione (replaceChild per ricreare card overview)
- *    - Gestione errori con try-catch per graceful degradation
- * 
- * 5. **Gestione note personali**:
- *    - Abilita/disabilita pulsante inserimento nota in base a input testo (event listener su noteTextInput)
- *    - Inserimento nota: valida, aggiunge via LoggedUser.addNote, aggiorna UI e reset input
- *    - Eliminazione nota: event delegation su userNotesContainer, chiama LoggedUser.deleteNote e aggiorna UI
- *    - Gestione errori per ogni operazione
- * 
- * 6. **Caricamento iniziale ricetta (window load)**:
+ * 4. **Caricamento iniziale ricetta (window load)**:
  *    - Recupera dati completi ricetta via Recipe.getFullData(detailedRecipeId)
  *    - Crea e appende card overview
  *    - Popola lista ingredienti e istruzioni
  *    - Se utente loggato, mostra sezione note e popola note esistenti
  *    - Gestione errori con alert e log console
+ * 
+ * 5. **Gestione interazioni preferiti e recensioni (event delegation su recipeOverviewContainer)**:
+ *    - Ascolta click su .fav-icon: se loggato, toggle preferiti e aggiorna UI; altrimenti redirect a login
+ *    - Ascolta click su #rev-btn: se loggato, gestisce aggiunta/eliminazione review con validazione; altrimenti redirect a login
+ *    - Aggiorna UI dopo ogni azione (replaceChild per ricreare card overview)
+ *    - Gestione errori con try-catch per graceful degradation
+ * 
+ * 6. **Gestione note personali**:
+ *    - Abilita/disabilita pulsante inserimento nota in base a input testo (event listener su noteTextInput)
+ *    - Inserimento nota: valida, aggiunge via LoggedUser.addNote, aggiorna UI e reset input
+ *    - Eliminazione nota: event delegation su userNotesContainer, chiama LoggedUser.deleteNote e aggiorna UI
+ *    - Gestione errori per ogni operazione
  * 
  * @note Il flusso è asincrono: operazioni come recupero dati e aggiornamenti UI sono await/async
  * @note Event delegation usato per gestire elementi dinamici (card, note)

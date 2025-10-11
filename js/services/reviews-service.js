@@ -182,11 +182,11 @@ export function recipeUserRate(recipeId, userId, ratingType) {
 }
 
 // ============================================================================
-// ANALISI E DESCRIZIONE DEL FILE
+// DESCRIZIONE DEL FILE
 // ============================================================================
 
 /**
- * @description Analisi e descrizione del file reviews-service.js
+ * @description reviews-service.js
  * 
  * **Scopo e ruolo nel progetto:**
  * Modulo di servizio per la gestione unificata delle recensioni utente.
@@ -208,35 +208,15 @@ export function recipeUserRate(recipeId, userId, ratingType) {
  * - **Storage (storage.js):** Persiste/legge array recensioni in localStorage.
  * - **Errors (errors.js):** Lancia errori custom (Duplicated, NotFound) per validazioni.
  * - **Session (session-service.js):** Utilizzato per operazioni business su recensioni
- * - **UI (ui.js, pagine):** Non interagisce direttamente - accedono ai dati unicamente tramite session-service per isolamento e astrazione.
- * 
- * **Flusso di esecuzione documentato:**
- * 
- * 1. **Import e configurazione:**
- *    - Importa classi modelli, errori e storage.
- *    - Definisce costanti chiave storage e opzioni.
- * 
- * 2. **Lettura dati:**
- *    - getStoredReviews: Recupera array da storage, ritorna copia profonda.
- * 
- * 3. **CRUD operazioni:**
- *    - updateRecipeReviews: Toggle ADD/DELETE basato su parametri (rating presenti = ADD, null = DELETE).
- *    - Validazione unicità per ADD, ricerca per DELETE.
- *    - Persistenza aggiornata in storage.
- * 
- * 4. **Aggregazioni statistiche:**
- *    - recipeAvgRate: Itera recensioni per media aritmetica su tipo rating.
- *    - recipeUserRate: Ricerca rating specifico utente per ricetta.
  * 
  * **Note tecniche:**
  * - **Sistema rating duale:** Supporto gusto/difficoltà per feedback completo.
  * - **Business rules:** Unicità per coppia utente-ricetta, validazione parametri.
- * - **Real-time aggregation:** Calcoli on-demand senza caching per leggerezza.
  * - **Immutabilità:** Copia profonda previene mutazioni accidentali.
  * - **Gestione errori:** Rilancia errori custom per graceful degradation.
  * - **Scalabilità:** Facile aggiunta tipi rating o statistiche seguendo pattern esistente.
  * - **Limitazioni:** Nessun caching aggregazioni, dipendenza storage locale.
  * 
  * @note Questo modulo gestisce logica recensioni: errori qui impattano rating e feedback utente.
- * @note Compatibilità: Usa localStorage per persistenza, compatibile con browser moderni.
+ * @note Compatibilità: Usa localStorage per persistenza.
  */

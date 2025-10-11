@@ -2,8 +2,8 @@
  * @fileoverview Gestione pagina modifica profilo utente - validazione form e submit autorizzato
  * @description Implementa validazione in tempo reale, gestione submit sicuro con autenticazione,
  * toggle sezioni form, reset stato e protezione accesso autenticato
- * @requires sessionControl.js Per modulo LoggedUser
- * @requires UI.js Per funzioni di rendering UI (initializeNavbar, formatInputField)
+ * @requires session-service.js Per modulo LoggedUser
+ * @requires ui.js Per funzioni di rendering UI (initializeNavbar, formatInputField)
  */
 
 // ============================================================================
@@ -136,6 +136,7 @@ window.addEventListener("load", () => {
             document.querySelector("body").classList.remove("d-none");
         }
     } catch (error) {
+        console.error(error);
         alert("Ooops! Something went wrong. Please try again");
     }
 });
@@ -176,13 +177,14 @@ allowModifBtns.forEach(btn => btn.addEventListener("click", (event) => {
     try {
         sectionInputFields.forEach(input => {
             input.toggleAttribute("required");
-            if(!input.required && (input.id === "username" || input.id === "email")){
+            if(!input.required && (input.id === "username" || input.id === "email")){ // Reset se modifica disabilitata
                 input.value = LoggedUser.getData()[input.id];
                 formatInputField(input);
             }
             input.toggleAttribute("disabled");
         });
     } catch (error) {
+        console.error(error);
         alert("Oooops. Something went wrong. Please try again.");
     }
 }));
@@ -234,8 +236,8 @@ settingsInputFields.forEach(field => field.addEventListener("input", () => {
     formatInputField(field, reference);
     
     if(field.id === "password"){
-        const passConfirm = document.getElementById("confirm-password");
-        passConfirm.value = "";
+        const passConfirm = document.getElementById("confirm-password"); 
+        passConfirm.value = ""; // Resetta campo confirm password durante digitazione in campo password
         if(field.classList.contains("is-valid")){
             passConfirm.disabled = false;
             passConfirm.required = true;
@@ -408,7 +410,7 @@ settingsConfirmBtn.addEventListener("click", async () => {
         if(await LoggedUser.authOperations(currentPasswordInput.value)){
             
             if(!deleteRequest){ // Modifica dati
-                for(const input of settingsInputFields){ // NB -> forech non adatto per async op
+                for(const input of settingsInputFields){
                     if(input.required){
                         currentInputField = input.dataset.field;       
                         switch(currentInputField){
@@ -428,9 +430,7 @@ settingsConfirmBtn.addEventListener("click", async () => {
                                 break;
                             default:
                                 if(input.dataset.field != "confirm-password"){
-                                    const badRequest = new Error(`${input.id} is not a supported field type`);
-                                    console.error(badRequest.message);
-                                    throw badRequest;   
+                                    throw new Error(`${input.id} is not a supported field type`);   
                                 }
                         }
                     }
@@ -455,7 +455,7 @@ settingsConfirmBtn.addEventListener("click", async () => {
         if(error.code === 409 || error.code === 422){
             alert(error.message);
         }else{
-            console.error(error.stack);
+            console.error(error);
             alert(`Ooops! Something went wrong.\nUnable to modify ${currentInputField}. Please try again.`);
         }
         location.reload();
@@ -482,10 +482,12 @@ settingsConfirmBtn.addEventListener("click", async () => {
 settingsClearBtn.addEventListener("click", () => location.reload());
 
 
-
+// ================================================================================================
+// FLUSSO DI ESECUZIONE
+// ================================================================================================
 
 /**
- * @description Flusso di esecuzione del file settings.js
+ * @description settings.js
  * 
  * 1. **Import moduli e dipendenze**:
  *    - Importa LoggedUser da sessionControl.js per gestione utente autenticato

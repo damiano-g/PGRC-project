@@ -2,8 +2,8 @@
  * @fileoverview Gestione pagina ricerca ricette - controllo UI e navigazione
  * @description Implementa funzionalità di ricerca per nome e categoria, gestione risultati,
  * navigazione ai dettagli e sincronizzazione con cronologia browser
- * @requires sessionControl.js Per moduli LoggedUser, PreviewArray
- * @requires UI.js Per funzioni di rendering UI (favBtnDisplay, initializeNavbar, populatePreviewContainer)
+ * @requires session-service.js Per moduli LoggedUser, PreviewArray
+ * @requires ui.js Per funzioni di rendering UI (favBtnDisplay, initializeNavbar, populatePreviewContainer)
  */
 
 // ===============================
@@ -11,7 +11,7 @@
 // ===============================
 
 import { LoggedUser, PreviewArray } from "../services/session-service.js";
-import { favBtnDisplay, hideOverlay, initializeNavbar, populatePreviewContainer, showOverlay } from "../components/ui.js"; // Componenti UI per rendering
+import { favBtnDisplay, hideOverlay, initializeNavbar, populatePreviewContainer, showOverlay } from "../components/ui.js";
 
 // ===============================
 // SELEZIONE ELEMENTI DOM
@@ -88,12 +88,6 @@ async function navigationSearch(){
 document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.querySelector("body"), document.querySelector("nav")));
 
 
-
-
-// ================================================================================================
-// GESTIONE CARICAMENTO PAGINA
-// ================================================================================================
-
 /**
  * Event listener per caricamento iniziale della pagina
  * 
@@ -110,8 +104,6 @@ document.addEventListener("DOMContentLoaded", () => initializeNavbar(document.qu
  * window.addEventListener("load", navigationSearch);
  */
 window.addEventListener("load", navigationSearch);
-
-
 
 
 
@@ -135,8 +127,6 @@ window.addEventListener("load", navigationSearch);
  * window.addEventListener("popstate", navigationSearch);
  */
 window.addEventListener("popstate", navigationSearch);
-
-
 
 
 
@@ -196,8 +186,6 @@ searchBtn.addEventListener("click", async () => {
 });
 
 
-
-
 // ================================================================================================
 // NAVIGAZIONE AI DETTAGLI RICETTA
 // ================================================================================================
@@ -234,8 +222,6 @@ searchBtn.addEventListener("click", async () => {
  */
 resultsContainer.addEventListener("click", (click) => {
 
-    // Cattura evento click -> se il target è inserito in un elemento .card (o lo è) 
-    // restituisce il primo elemento card incontrato nella gerarchia (event bubbling)
     const card = click.target.closest(".card");
     const isBtn = click.target.matches(".fav-icon");
 
@@ -263,11 +249,11 @@ resultsContainer.addEventListener("click", (click) => {
 
 
 // ================================================================================================
-// FLUSSO DI ESECUZIONE DOCUMENTATO
+// FLUSSO DI ESECUZIONE
 // ================================================================================================
 
 /**
- * @description Flusso di esecuzione del file search.js
+ * @description search.js
  * 
  * 1. **Import moduli e dipendenze**:
  *    - Importa LoggedUser, PreviewArray da sessionControl.js
