@@ -49,7 +49,7 @@ async function navigationSearch(){
     const query = window.location.search.substring(1).split("=");
     
     if(query[0] === "q"){
-        searchBar.value = query[1];
+        searchBar.value = query[1].trim().split(/[^a-zA-Z]+/).join(" ");
         searchBtn.click();
     }
     
